@@ -1,0 +1,6 @@
+spotify:
+  clientId: dwa
+  clientSecret: dwa
+server:
+  host: localhost
+  port: 8080
