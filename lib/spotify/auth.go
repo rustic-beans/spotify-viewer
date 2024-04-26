@@ -43,12 +43,17 @@ func newSpotifyAuth(config *utils.Config) *SpotifyAuth {
 func (sa *SpotifyAuth) createClient(ctx context.Context, token *oauth2.Token) *spotifyLib.Client {
 	client := spotifyLib.New(sa.auth.Client(ctx, token))
 
-	json, err := json.Marshal(token)
+	token, err := client.Token()
+	if err != nil {
+		utils.Logger.Error("failed getting token", zap.Error(err))
+	}
+
+	jsonData, err := json.Marshal(token)
 	if err != nil {
 		utils.Logger.Error("failed marshalling token", zap.Error(err))
 	}
 
-	err = os.WriteFile(sa.tokenFile, json, 0o600)
+	err = os.WriteFile(sa.tokenFile, jsonData, 0o600)
 	if err != nil {
 		utils.Logger.Error("failed writing token to file", zap.Error(err))
 	}
@@ -124,32 +129,17 @@ func (sa *SpotifyAuth) attemptToReadTokenFromFile() *oauth2.Token {
 func (sa *SpotifyAuth) authenticate() {
 	token := sa.attemptToReadTokenFromFile()
 	if token != nil {
-		utils.Logger.Info("using token from file")
-		sa.ch <- sa.createClient(context.Background(), token)
+		utils.Logger.Info("attempting to use token from file")
 
+		client := sa.createClient(context.Background(), token)
+
+		sa.ch <- client
+
+		utils.Logger.Info("new client created from token")
 		return
 	}
 
 	url := sa.auth.AuthURL(sa.state)
 
 	utils.Logger.Error("needs spotify login", zap.String("url", url))
-}
-
-func (sa *SpotifyAuth) checkClient(ctx context.Context, client *spotifyLib.Client) (newClient *spotifyLib.Client, err error) {
-	currentToken, err := client.Token()
-	if err != nil {
-		return nil, err
-	}
-
-	newToken, err := sa.auth.RefreshToken(ctx, currentToken)
-	if err != nil {
-		return nil, err
-	}
-
-	if newToken.AccessToken == currentToken.AccessToken {
-		return client, nil
-	}
-
-	newClient = sa.createClient(ctx, newToken)
-	return newClient, nil
 }

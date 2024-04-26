@@ -39,12 +39,8 @@ func callSpotify[R *Q, Q any](ctx context.Context, spot *Spotify, f func(ctx con
 	var err error
 
 	if spot.Client == nil {
+		// TODO: return a custom error type
 		return nil, fmt.Errorf("client is not authenticated yet")
-	}
-
-	spot.Client, err = spot.auth.checkClient(ctx, spot.Client)
-	if err != nil {
-		return nil, err
 	}
 
 	response, err := f(ctx, opts...)
