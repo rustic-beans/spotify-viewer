@@ -1,6 +1,7 @@
 spotify:
   clientId: dwa
   clientSecret: dwa
+  tokenFile: token.json
 server:
   host: localhost
   port: 8080

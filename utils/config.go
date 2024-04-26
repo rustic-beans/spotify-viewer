@@ -10,6 +10,7 @@ type Config struct {
 	Spotify struct {
 		ClientID     string `yaml:"clientId"`
 		ClientSecret string `yaml:"clientSecret"`
+		TokenFile    string `yaml:"tokenFile"`
 	}
 	Server struct {
 		Host string `yaml:"host"`

@@ -24,9 +24,10 @@ func (s *Spotify) SetupRoutes(e *echo.Echo) {
 }
 
 func (s *Spotify) Authenticate() {
-	s.auth.authenticate()
 
 	go func() {
 		s.Client = s.auth.waitForClient()
 	}()
+
+	s.auth.authenticate()
 }
