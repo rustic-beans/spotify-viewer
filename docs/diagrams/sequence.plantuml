@@ -1,0 +1,20 @@
+@startuml
+Server -> Spotify: Authentication
+Spotify -> Server: Tokens
+
+loop infinetly
+    Server -> Spotify: /me/player
+    group Authentication failure
+        Spotify -> Server: 401 Unauthorized
+        Server -> Spotify: Refresh token
+        Spotify -> Server: New tokens
+    end
+
+    Spotify -> Server: Currently playing in JSON
+    Server -> Server: Check if state should be updated
+    group State update
+        Server -> Clients: Update state
+        Server -> DB: Update state
+    end
+end
+@enduml
