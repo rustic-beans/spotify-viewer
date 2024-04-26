@@ -12,12 +12,13 @@ import (
 	spotifyLib "github.com/zmb3/spotify/v2"
 	spotifyAuth "github.com/zmb3/spotify/v2/auth"
 	"go.uber.org/zap"
+	"golang.org/x/oauth2"
 )
 
 type SpotifyAuth struct {
-	auth  *spotifyAuth.Authenticator
-	state string
-	ch    chan *spotifyLib.Client
+	auth      *spotifyAuth.Authenticator
+	state     string
+	ch        chan *spotifyLib.Client
 	tokenFile string
 }
 
@@ -26,15 +27,15 @@ func newSpotifyAuth(config *utils.Config) *SpotifyAuth {
 
 	auth := spotifyAuth.New(
 		spotifyAuth.WithRedirectURL(redirectURL),
-		spotifyAuth.WithScopes(spotifyAuth.ScopeUserReadPrivate),
+		spotifyAuth.WithScopes(spotifyAuth.ScopeUserReadPrivate, spotifyAuth.ScopeUserReadPlaybackState),
 		spotifyAuth.WithClientID(config.Spotify.ClientID),
 		spotifyAuth.WithClientSecret(config.Spotify.ClientSecret),
 	)
 
 	return &SpotifyAuth{
-		state: "state", // TODO: unique state string to identify the session, should be random
-		auth:  auth,
-		ch:    make(chan *spotifyLib.Client),
+		state:     "state", // TODO: unique state string to identify the session, should be random
+		auth:      auth,
+		ch:        make(chan *spotifyLib.Client),
 		tokenFile: config.Spotify.TokenFile,
 	}
 }
@@ -54,6 +55,7 @@ func (sa *SpotifyAuth) createClient(ctx context.Context, token *oauth2.Token) *s
 
 	return client
 }
+
 // TODO: Refactor this method to be more readable
 func (sa *SpotifyAuth) finalizeAuth() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -76,6 +78,7 @@ func (sa *SpotifyAuth) finalizeAuth() echo.HandlerFunc {
 		if err != nil {
 			utils.Logger.Fatal("failed getting current user", zap.Error(err))
 		}
+
 		return c.String(http.StatusOK, "You are logged in as: "+user.User.DisplayName)
 	}
 }
@@ -88,8 +91,10 @@ func (sa *SpotifyAuth) waitForClient() *spotifyLib.Client {
 	user, err := client.CurrentUser(context.Background())
 	if err != nil {
 		utils.Logger.Fatal("failed getting current user", zap.Error(err))
+		return nil
 	}
-	fmt.Println("You are logged in as:", user.ID)
+
+	utils.Logger.Info("logged in as: " + user.User.DisplayName)
 
 	return client
 }
@@ -130,4 +135,21 @@ func (sa *SpotifyAuth) authenticate() {
 	utils.Logger.Error("needs spotify login", zap.String("url", url))
 }
 
+func (sa *SpotifyAuth) checkClient(ctx context.Context, client *spotifyLib.Client) (newClient *spotifyLib.Client, err error) {
+	currentToken, err := client.Token()
+	if err != nil {
+		return nil, err
+	}
+
+	newToken, err := sa.auth.RefreshToken(ctx, currentToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if newToken.AccessToken == currentToken.AccessToken {
+		return client, nil
+	}
+
+	newClient = sa.createClient(ctx, newToken)
+	return newClient, nil
 }
