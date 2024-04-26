@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -12,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 
+	"github.com/albe2669/spotify-viewer/lib/spotify"
 	spotifyLib "github.com/albe2669/spotify-viewer/lib/spotify"
 )
 
@@ -44,6 +46,17 @@ func graphqlServer() *handler.Server {
 	)
 
 	return server
+}
+
+func getPlayer(sa *spotify.Spotify) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		player, err := sa.GetPlayerState(c.Request().Context())
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err)
+		}
+
+		return c.JSON(http.StatusOK, player)
+	}
 }
 
 func httpServer(graphqlServer *handler.Server) *echo.Echo {
@@ -85,6 +98,8 @@ func main() {
 	spotify := spotifyLib.NewSpotify(config)
 	spotify.SetupRoutes(e)
 	spotify.Authenticate()
+
+	e.GET("/player", getPlayer(spotify))
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)))
 }
