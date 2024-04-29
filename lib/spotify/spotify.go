@@ -2,7 +2,6 @@ package spotify
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/albe2669/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
@@ -40,7 +39,7 @@ func callSpotify[R *Q, Q any](ctx context.Context, spot *Spotify, f func(ctx con
 
 	if spot.Client == nil {
 		// TODO: return a custom error type
-		return nil, fmt.Errorf("client is not authenticated yet")
+		return nil, NotAuthenticatedError{}
 	}
 
 	response, err := f(ctx, opts...)
