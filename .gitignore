@@ -1,4 +1,5 @@
 config.yaml
+token.json
 generated/
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,windows,macos,visualstudiocode,vim,go
