@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -22,6 +23,10 @@ const (
 	PlaygroundPath = "/playground"
 	state          = "state" // TODO: unique state string to identify the session, should be random
 )
+
+type PlayerState struct {
+	Progress int `json:"progress_ms"`
+}
 
 func configureLogger(e *echo.Echo) {
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
@@ -57,6 +62,23 @@ func getPlayer(sa *spotify.Spotify) echo.HandlerFunc {
 
 		return c.JSON(http.StatusOK, player)
 	}
+}
+
+func playerStateLoop(sa *spotify.Spotify) {
+	var c echo.Context
+
+	//TODO: start a loop here to
+	for {
+
+	player, err := sa.GetPlayerState(c.Request().Context())
+	if err != nil {
+		panic(err.Error())
+	}
+
+	utils.Logger.Info(string(rune(player.Progress)))
+	time.Sleep(5 * time.Second)
+}
+
 }
 
 func httpServer(graphqlServer *handler.Server) *echo.Echo {
