@@ -1,17 +1,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 
+	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/albe2669/spotify-viewer/ent"
 	"github.com/albe2669/spotify-viewer/generated"
 	"github.com/albe2669/spotify-viewer/resolver"
 	"github.com/albe2669/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
+
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/albe2669/spotify-viewer/lib/spotify"
 	spotifyLib "github.com/albe2669/spotify-viewer/lib/spotify"
@@ -80,6 +86,22 @@ func httpServer(graphqlServer *handler.Server) *echo.Echo {
 	return e
 }
 
+func connectDatabase() *ent.Client {
+	// Create an ent.Client with in-memory SQLite database.
+	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
+	if err != nil {
+		log.Fatalf("failed opening connection to sqlite: %v", err)
+	}
+	defer client.Close()
+	ctx := context.Background()
+	// Run the automatic migration tool to create all schema resources.
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+
+	return client
+}
+
 func main() {
 	// Logger
 	defer func() {
@@ -91,6 +113,11 @@ func main() {
 	if err != nil {
 		utils.Logger.Fatal("failed reading config", zap.Error(err))
 	}
+
+  log.Println("hi")
+	dbClient := connectDatabase()
+	tracks, _ := dbClient.Track.Query().All(context.Background())
+	log.Println("Tracks:", tracks)
 
 	graphqlServer := graphqlServer()
 	e := httpServer(graphqlServer)
