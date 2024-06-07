@@ -21,7 +21,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/albe2669/spotify-viewer/lib/spotify"
-	spotifyLib "github.com/albe2669/spotify-viewer/lib/spotify"
+	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
 const (
@@ -31,7 +31,9 @@ const (
 )
 
 type PlayerState struct {
-	Progress int `json:"progress_ms"`
+	Track     ent.Track // This the track struct from the DB schema
+	Progress  int       `json:"progress_ms"` // This is the current progress of the track in ms
+	Date_Time time.Time // The time that the struct was updated last
 }
 
 func configureLogger(e *echo.Echo) {
@@ -70,21 +72,63 @@ func getPlayer(sa *spotify.Spotify) echo.HandlerFunc {
 	}
 }
 
+// Global playerstate variable 
+var playerState *PlayerState
+
 func playerStateLoop(sa *spotify.Spotify) {
-	var c echo.Context
+	//TODO: Add a loop restart if error occours
+	ctx := context.Background()
 
-	//TODO: start a loop here to
+	// This is the initial playerstate
+	playerState = &PlayerState{}
 	for {
+		player, err := sa.GetPlayerState(ctx)
+		if err != nil {
+			// This will more than likely happen in the case where nothing is playing or authentication
+			// fails
+			utils.Logger.Error("Error getting playerstate", zap.Error(err))
+		}
+		if player != nil {
+			*playerState = updatePlayerState(player)
+		}
 
-	player, err := sa.GetPlayerState(c.Request().Context())
-	if err != nil {
-		panic(err.Error())
+		// For testing to see if the loop is working
+		utils.Logger.Info("Playerstate recieved", zap.Any("player", playerState))
+
+		time.Sleep(5 * time.Second)
 	}
 
-	utils.Logger.Info(string(rune(player.Progress)))
-	time.Sleep(5 * time.Second)
 }
 
+func updatePlayerState(player *spotifyLib.PlayerState) PlayerState {
+	if player.Item == nil {
+		return *playerState
+	}
+
+	artists := make([]string, len(player.Item.Artists))
+	//TODO: For some reason the genres field is not available
+	// From Item.Artists despite the API saying so. This may be connected
+	// to a type issue where Item is not locked to being a track object
+	// genres := make(map[string]byte) 
+	// e.g. player.Item.SimpleTrack.Artists[0].Genres
+
+	for i, artist := range player.Item.Artists {
+		artists[i] = artist.Name
+	}
+	//TODO: Move to a separate function
+	track := &ent.Track{
+		Name : player.Item.Name,
+		Artists : artists,
+		ArtistsGenres : nil,
+		AlbumName : player.Item.Album.Name,
+		AlbumImageURI : player.Item.Album.Images[0].URL,
+		DurationMs : int32(player.Item.Duration),
+		URI: string(player.Item.URI),
+	}
+
+	//TODO: not sure if this is how you do pointer updates in Golang
+	ps := &PlayerState{*track,player.Progress, time.Now()} 
+	return *ps
 }
 
 func httpServer(graphqlServer *handler.Server) *echo.Echo {
@@ -136,18 +180,18 @@ func main() {
 		utils.Logger.Fatal("failed reading config", zap.Error(err))
 	}
 
-  log.Println("hi")
-	dbClient := connectDatabase()
-	tracks, _ := dbClient.Track.Query().All(context.Background())
-	log.Println("Tracks:", tracks)
+	// dbClient := connectDatabase()
+	// tracks, _ := dbClient.Track.Query().All(context.Background())
+	//log.Println("Tracks:", tracks)
 
 	graphqlServer := graphqlServer()
 	e := httpServer(graphqlServer)
 
-	spotify := spotifyLib.NewSpotify(config)
+	spotify := spotify.NewSpotify(config)
 	spotify.SetupRoutes(e)
 	spotify.Authenticate()
 
+	playerStateLoop(spotify)
 	e.GET("/player", getPlayer(spotify))
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)))
