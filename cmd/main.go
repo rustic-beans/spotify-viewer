@@ -72,7 +72,7 @@ func getPlayer(sa *spotify.Spotify) echo.HandlerFunc {
 	}
 }
 
-// Global playerstate variable 
+// Global playerstate variable
 var playerState *PlayerState
 
 func playerStateLoop(sa *spotify.Spotify) {
@@ -109,7 +109,7 @@ func updatePlayerState(player *spotifyLib.PlayerState) PlayerState {
 	//TODO: For some reason the genres field is not available
 	// From Item.Artists despite the API saying so. This may be connected
 	// to a type issue where Item is not locked to being a track object
-	// genres := make(map[string]byte) 
+	// genres := make(map[string]byte)
 	// e.g. player.Item.SimpleTrack.Artists[0].Genres
 
 	for i, artist := range player.Item.Artists {
@@ -117,18 +117,34 @@ func updatePlayerState(player *spotifyLib.PlayerState) PlayerState {
 	}
 	//TODO: Move to a separate function
 	track := &ent.Track{
-		Name : player.Item.Name,
-		Artists : artists,
-		ArtistsGenres : nil,
-		AlbumName : player.Item.Album.Name,
-		AlbumImageURI : player.Item.Album.Images[0].URL,
-		DurationMs : int32(player.Item.Duration),
-		URI: string(player.Item.URI),
+		Name:          player.Item.Name,
+		Artists:       artists,
+		ArtistsGenres: nil,
+		AlbumName:     player.Item.Album.Name,
+		AlbumImageURI: player.Item.Album.Images[0].URL,
+		DurationMs:    int32(player.Item.Duration),
+		URI:           string(player.Item.URI),
 	}
 
+	// Check if the track has changed
+	dbCheckUpdate(track, player.Progress)
+
 	//TODO: not sure if this is how you do pointer updates in Golang
-	ps := &PlayerState{*track,player.Progress, time.Now()} 
+	ps := &PlayerState{*track, player.Progress, time.Now()}
 	return *ps
+}
+
+func dbCheckUpdate(track *ent.Track, progress int) {
+	if playerState.Track.Name != track.Name {
+		//TODO: add track to db using ent
+	}
+
+	// Check for replays
+	// TODO: Maybe find a better way to do this but works for now
+	if (int(track.DurationMs /50) * 100) < playerState.Progress && progress <= int((track.DurationMs/05) * 100) {
+		//TODO: add track to db using ent
+	}
+
 }
 
 func httpServer(graphqlServer *handler.Server) *echo.Echo {
