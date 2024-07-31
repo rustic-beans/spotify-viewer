@@ -248,10 +248,7 @@ func main() {
 		utils.Logger.Fatal("failed reading config", zap.Error(err))
 	}
 
-	//TODO: Should this be a pointer instead so that we can do reconnects later down the line?
 	dbClient := connectDatabase()
-	// tracks, _ := dbClient.Track.Query().All(context.Background())
-	//log.Println("Tracks:", tracks)
 
 	graphqlServer := graphqlServer()
 	e := httpServer(graphqlServer)
