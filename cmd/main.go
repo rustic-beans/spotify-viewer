@@ -110,14 +110,14 @@ func playerStateLoop(sa *spotify.Spotify, dbClient *ent.Client) {
 		}
 
 		// For testing to see if the loop is working
-		//utils.Logger.Info("Playerstate recieved", zap.Any("player", playerState))
+		utils.Logger.Debug("Playerstate recieved", zap.Any("player", playerState))
 		// Debugging Query to see if the tracks are being added to the db correctly 
 		// Best to use len since it removes some of the clutter from the log
 		tr, err := dbClient.Track.Query().All(ctx)
 		if err != nil {
 			utils.Logger.Error("Error querying tracks", zap.Error(err))
 		}
-		utils.Logger.Info("Tracks", zap.Any("tracks", len(tr)))
+		utils.Logger.Debug("Tracks", zap.Any("tracks", len(tr)))
 
 		time.Sleep(5 * time.Second)
 	}
