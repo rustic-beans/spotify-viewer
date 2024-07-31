@@ -106,7 +106,7 @@ func playerStateLoop(sa *spotify.Spotify, dbClient *ent.Client) {
 			dbCheckUpdate(dbClient, track, player.Progress, ctx)
 
 			// This function updates the playerstate with the new track and progress 
-			playerState = updatePlayerState(track, player.Progress)
+			updatePlayerState(track, player.Progress)
 		}
 
 		// For testing to see if the loop is working
@@ -151,14 +151,16 @@ func makeTrack(player *spotifyLib.PlayerState) *ent.Track {
 
 }
 
-func updatePlayerState(track *ent.Track, progress int) *PlayerState {
+// since playerstate is a public variable we can just update the values inside the pointer instead of returning
+func updatePlayerState(track *ent.Track, progress int) {
 	if track.Name == "" {
-		return playerState
+		return
 	}
 
 	//TODO: not sure if this is how you do pointer updates in Golang
-	ps := &PlayerState{*track, progress, time.Now()}
-	return ps
+	playerState.Track = *track
+	playerState.Progress = progress
+	playerState.Date_Time = time.Now()
 }
 
 func dbCheckUpdate(dbClient *ent.Client, track *ent.Track, progress int, ctx context.Context) {
