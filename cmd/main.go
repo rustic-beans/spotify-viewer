@@ -172,6 +172,8 @@ func dbCheckUpdate(dbClient *ent.Client, track *ent.Track, progress int, ctx con
 
 	// Check for replays
 	// TODO: Maybe find a better way to do this but works for now
+	// Check if last track update duration is more than 50% done and if current progress is less than 05% into the track
+	// This is what constitutes as a replay
 	if (int(track.DurationMs/50)*100) < playerState.Progress && progress <= int((track.DurationMs/05)*100) {
 		addTrack(dbClient, track, ctx)
 	}
