@@ -9,11 +9,11 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/spf13/viper v1.18.2
-	github.com/vektah/gqlparser/v2 v2.5.11
+	github.com/vektah/gqlparser/v2 v2.5.16
 	github.com/zmb3/spotify/v2 v2.4.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.15.0
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.8.0
 )
 
 require (
