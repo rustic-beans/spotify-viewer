@@ -12,7 +12,7 @@ require (
 	github.com/zmb3/spotify/v2 v2.4.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.15.0
-	golang.org/x/sync v0.7.0
+	golang.org/x/sync v0.8.0
 )
 
 require (
