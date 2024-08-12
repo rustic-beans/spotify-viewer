@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	entgo.io/contrib v0.4.6-0.20240411174711-4ec197664a20
-	entgo.io/ent v0.13.1
+	entgo.io/ent v0.14.0
 	github.com/99designs/gqlgen v0.17.45
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/labstack/echo/v4 v4.12.0
