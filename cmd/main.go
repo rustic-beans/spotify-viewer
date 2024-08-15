@@ -157,7 +157,6 @@ func updatePlayerState(track *ent.Track, progress int) {
 		return
 	}
 
-	//TODO: not sure if this is how you do pointer updates in Golang
 	playerState.Track = *track
 	playerState.Progress = progress
 	playerState.Date_Time = time.Now()
