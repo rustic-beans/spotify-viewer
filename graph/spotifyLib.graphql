@@ -1,0 +1,97 @@
+type Restrictions {
+  reason: String
+}
+
+type ExternalUrls {
+  spotify: String
+}
+
+type ExternalIds {
+  isrc: String
+  ean: String
+  upc: String
+}
+
+type Artists {
+  href: String
+  id: String
+  name: String
+  type: String
+  uri: String
+  external_urls: ExternalUrls
+}
+
+type Images {
+  url: String
+  height: Int
+  width: Int
+}
+
+type Album {
+  album_type: String
+  total_tracks: Int
+  href: String
+  id: String
+  name: String
+  release_date: String
+  release_date_precision: String
+  type: String
+  uri: String
+  artists: [Artists]
+  restrictions: Restrictions
+  images: [Images]
+  external_urls: ExternalUrls
+  available_markets: [String]
+}
+
+type Item {
+  disc_number: Int
+  duration_ms: Int
+  explicit: Boolean
+  href: String
+  id: String
+  is_playable: Boolean
+  name: String
+  popularity: Int
+  preview_url: String
+  track_number: Int
+  type: String
+  uri: String
+  is_local: Boolean
+  restrictions: Restrictions
+  external_urls: ExternalUrls
+  external_ids: ExternalIds
+  available_markets: [String]
+  artists: [Artists]
+  album: Album
+}
+
+type Context {
+  type: String
+  href: String
+  uri: String
+  external_urls: ExternalUrls
+}
+
+type Device {
+  id: String
+  is_active: Boolean
+  is_private_session: Boolean
+  is_restricted: Boolean
+  name: String
+  type: String
+  volume_percent: Int
+  supports_volume: Boolean
+}
+
+type PlayerState {
+  timestamp: Int
+  context: Context
+  progress_ms: Int
+  is_playing: Boolean
+  item: Item
+  device: Device
+  shuffle_state: Boolean
+  repeat_state: String
+}
+
