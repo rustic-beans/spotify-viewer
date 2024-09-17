@@ -1,4 +1,4 @@
-module github.com/albe2669/spotify-viewer
+module github.com/rustic-beans/spotify-viewer
 
 go 1.22.1
 

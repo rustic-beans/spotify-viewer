@@ -8,9 +8,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/albe2669/spotify-viewer/ent"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/generated"
+	"github.com/rustic-beans/spotify-viewer/ent"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/generated"
 )
 
 // Node is the resolver for the node field.

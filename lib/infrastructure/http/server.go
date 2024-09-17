@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/albe2669/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"

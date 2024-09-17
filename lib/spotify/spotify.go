@@ -3,7 +3,7 @@ package spotify
 import (
 	"context"
 
-	"github.com/albe2669/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
 	spotifyLib "github.com/zmb3/spotify/v2"
 )

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/albe2669/spotify-viewer/ent/predicate"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/predicate"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 )
 
 // ID filters vertices based on their ID field.

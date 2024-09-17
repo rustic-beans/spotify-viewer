@@ -9,18 +9,18 @@ import (
 
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/albe2669/spotify-viewer/ent"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/generated"
-	"github.com/albe2669/spotify-viewer/resolver"
-	"github.com/albe2669/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/ent"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/generated"
+	"github.com/rustic-beans/spotify-viewer/resolver"
+	"github.com/rustic-beans/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
 	_ "github.com/mattn/go-sqlite3"
 
-	httpLib "github.com/albe2669/spotify-viewer/lib/infrastructure/http"
-	"github.com/albe2669/spotify-viewer/lib/spotify"
+	httpLib "github.com/rustic-beans/spotify-viewer/lib/infrastructure/http"
+	"github.com/rustic-beans/spotify-viewer/lib/spotify"
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 

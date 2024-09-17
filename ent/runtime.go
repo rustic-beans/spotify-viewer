@@ -5,9 +5,9 @@ package ent
 import (
 	"time"
 
-	"github.com/albe2669/spotify-viewer/ent/schema"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 // The init function reads all schema descriptors with runtime code

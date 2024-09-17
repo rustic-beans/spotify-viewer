@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/albe2669/spotify-viewer/ent/predicate"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/predicate"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 // TrackDelete is the builder for deleting a Track entity.
