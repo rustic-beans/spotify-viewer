@@ -5,3 +5,6 @@ spotify:
 server:
   host: localhost
   port: 8080
+database:
+  driver: sqlite3
+  source: "file:ent?mode=memory&cache=shared&_fk=1"

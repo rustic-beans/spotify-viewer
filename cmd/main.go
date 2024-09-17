@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"entgo.io/ent/dialect"
 	"github.com/labstack/echo/v4"
 	"github.com/rustic-beans/spotify-viewer/ent"
 	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
@@ -169,15 +168,15 @@ func addTrack(dbClient *ent.Client, track *ent.Track, ctx context.Context) {
 
 }
 
-func connectDatabase() *ent.Client {
-	// Create an ent.Client with in-memory SQLite database.
-	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
+func connectDatabase(config *utils.Config) *ent.Client {
+	// Create an ent.Client with the configured database
+	client, err := ent.Open(config.Database.Driver, config.Database.Source)
 	if err != nil {
-		log.Fatalf("failed opening connection to sqlite: %v", err)
+		log.Fatalf("failed opening connection to database: %v", err)
 	}
-	ctx := context.Background()
+
 	// Run the automatic migration tool to create all schema resources.
-	if err := client.Schema.Create(ctx); err != nil {
+	if err := client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
@@ -196,7 +195,7 @@ func main() {
 		utils.Logger.Fatal("failed reading config", zap.Error(err))
 	}
 
-	dbClient := connectDatabase()
+	dbClient := connectDatabase(config)
 
 	graphqlServer := graphql.NewServer()
 	e := httpLib.NewServer(graphqlServer)

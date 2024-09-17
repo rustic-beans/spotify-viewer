@@ -16,6 +16,10 @@ type Config struct {
 		Host string `yaml:"host"`
 		Port int    `yaml:"port"`
 	} `yaml:"server"`
+	Database struct {
+		Driver string `yaml:"driver"`
+		Source string `yaml:"source"`
+	}
 }
 
 func NewConfig() *Config {
