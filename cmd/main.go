@@ -9,47 +9,29 @@ import (
 
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/albe2669/spotify-viewer/ent"
 	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
 	"github.com/albe2669/spotify-viewer/generated"
 	"github.com/albe2669/spotify-viewer/resolver"
 	"github.com/albe2669/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 
 	_ "github.com/mattn/go-sqlite3"
 
+	httpLib "github.com/albe2669/spotify-viewer/lib/infrastructure/http"
 	"github.com/albe2669/spotify-viewer/lib/spotify"
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
 const (
-	QueryPath      = "/query"
-	PlaygroundPath = "/playground"
-	state          = "state" // TODO: unique state string to identify the session, should be random
+	state = "state" // TODO: unique state string to identify the session, should be random
 )
 
 type PlayerState struct {
 	Track     ent.Track // This the track struct from the DB schema
 	Progress  int       `json:"progress_ms"` // This is the current progress of the track in ms
 	Date_Time time.Time // The time that the struct was updated last
-}
-
-func configureLogger(e *echo.Echo) {
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			utils.Logger.Info("request",
-				zap.String("URI", v.URI),
-				zap.Int("status", v.Status),
-			)
-
-			return nil
-		},
-	}))
 }
 
 func graphqlServer() *handler.Server {
@@ -105,13 +87,13 @@ func playerStateLoop(sa *spotify.Spotify, dbClient *ent.Client) {
 			// This is to check if the track has changed and if so add it to the db or if the track has been replayed
 			dbCheckUpdate(dbClient, track, player.Progress, ctx)
 
-			// This function updates the playerstate with the new track and progress 
+			// This function updates the playerstate with the new track and progress
 			updatePlayerState(track, player.Progress)
 		}
 
 		// For testing to see if the loop is working
 		utils.Logger.Debug("Playerstate recieved", zap.Any("player", playerState))
-		// Debugging Query to see if the tracks are being added to the db correctly 
+		// Debugging Query to see if the tracks are being added to the db correctly
 		// Best to use len since it removes some of the clutter from the log
 		tr, err := dbClient.Track.Query().All(ctx)
 		if err != nil {
@@ -164,7 +146,7 @@ func updatePlayerState(track *ent.Track, progress int) {
 
 func dbCheckUpdate(dbClient *ent.Client, track *ent.Track, progress int, ctx context.Context) {
 
-	// Check if the track has just changed and if so add it to the db	
+	// Check if the track has just changed and if so add it to the db
 	if playerState.Track.Name != track.Name {
 		addTrack(dbClient, track, ctx)
 	}
@@ -194,30 +176,9 @@ func addTrack(dbClient *ent.Client, track *ent.Track, ctx context.Context) {
 		Save(ctx)
 
 	if err != nil {
-			utils.Logger.Error("Error creating track", zap.Error(err))
+		utils.Logger.Error("Error creating track", zap.Error(err))
 	}
-	
-}
 
-func httpServer(graphqlServer *handler.Server) *echo.Echo {
-	e := echo.New()
-
-	configureLogger(e)
-
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{echo.GET, echo.POST, echo.OPTIONS},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-	}))
-
-	e.POST(QueryPath, echo.WrapHandler(graphqlServer))
-	e.GET(PlaygroundPath, func(c echo.Context) error {
-		playground.Handler("GraphQL", QueryPath).ServeHTTP(c.Response(), c.Request())
-		return nil
-	})
-
-	return e
 }
 
 func connectDatabase() *ent.Client {
@@ -250,7 +211,7 @@ func main() {
 	dbClient := connectDatabase()
 
 	graphqlServer := graphqlServer()
-	e := httpServer(graphqlServer)
+	e := httpLib.NewServer(graphqlServer)
 
 	spotify := spotify.NewSpotify(config)
 	spotify.SetupRoutes(e)
