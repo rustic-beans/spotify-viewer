@@ -12,9 +12,10 @@ linters-settings:
       - performance
       - style
   govet:
-    shadow: true
-    enable:
-      - fieldalignment
+    enable-all: true
+    settings:
+      shadow:
+        strict: true
   nolintlint:
     require-explanation: true
     require-specific: true
@@ -34,7 +35,7 @@ linters:
     - gocritic
     - gofmt
     - goimports
-    - gomnd
+    - mnd
     - gocyclo
     - gosec
     - gosimple
@@ -64,6 +65,3 @@ issues:
 
 run:
   issues-exit-code: 1
-
-
-
