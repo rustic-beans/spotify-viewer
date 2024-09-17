@@ -8,17 +8,15 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect"
-	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/labstack/echo/v4"
 	"github.com/rustic-beans/spotify-viewer/ent"
 	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
-	"github.com/rustic-beans/spotify-viewer/generated"
-	"github.com/rustic-beans/spotify-viewer/resolver"
 	"github.com/rustic-beans/spotify-viewer/utils"
-	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/rustic-beans/spotify-viewer/lib/infrastructure/graphql"
 	httpLib "github.com/rustic-beans/spotify-viewer/lib/infrastructure/http"
 	"github.com/rustic-beans/spotify-viewer/lib/spotify"
 	spotifyLib "github.com/zmb3/spotify/v2"
@@ -32,16 +30,6 @@ type PlayerState struct {
 	Track     ent.Track // This the track struct from the DB schema
 	Progress  int       `json:"progress_ms"` // This is the current progress of the track in ms
 	Date_Time time.Time // The time that the struct was updated last
-}
-
-func graphqlServer() *handler.Server {
-	server := handler.NewDefaultServer(
-		generated.NewExecutableSchema(
-			generated.Config{Resolvers: &resolver.Resolver{}},
-		),
-	)
-
-	return server
 }
 
 func getPlayer(sa *spotify.Spotify) echo.HandlerFunc {
@@ -210,7 +198,7 @@ func main() {
 
 	dbClient := connectDatabase()
 
-	graphqlServer := graphqlServer()
+	graphqlServer := graphql.NewServer()
 	e := httpLib.NewServer(graphqlServer)
 
 	spotify := spotify.NewSpotify(config)
