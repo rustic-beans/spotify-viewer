@@ -70,10 +70,6 @@ type Query {
     ids: [ID!]!
   ): [Node]!
 }
-"""
-The builtin Time type
-"""
-scalar Time
 type Track implements Node {
   id: ID!
   createdAt: Time!
