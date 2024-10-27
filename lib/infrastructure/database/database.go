@@ -18,7 +18,7 @@ func Connect(config *utils.Config) *ent.Client {
 	}
 
 	// Run the automatic migration tool to create all schema resources.
-	if err := client.Schema.Create(context.Background()); err != nil {
+	if err = client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
