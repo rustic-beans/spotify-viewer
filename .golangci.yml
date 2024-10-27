@@ -13,6 +13,8 @@ linters-settings:
       - style
   govet:
     enable-all: true
+    disable:
+      - fieldalignment
     settings:
       shadow:
         strict: true
