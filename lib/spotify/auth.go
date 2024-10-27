@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/rustic-beans/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
+	"github.com/rustic-beans/spotify-viewer/utils"
 	spotifyLib "github.com/zmb3/spotify/v2"
 	spotifyAuth "github.com/zmb3/spotify/v2/auth"
 	"go.uber.org/zap"
