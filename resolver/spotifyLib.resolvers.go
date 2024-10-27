@@ -8,8 +8,14 @@ import (
 	"context"
 
 	"github.com/rustic-beans/spotify-viewer/generated"
+	graphql1 "github.com/rustic-beans/spotify-viewer/lib/graphql"
 	spotify "github.com/zmb3/spotify/v2"
 )
+
+// ExternalIds is the resolver for the external_ids field.
+func (r *fullTrackResolver) ExternalIds(ctx context.Context, obj *spotify.FullTrack) (graphql1.StringMap, error) {
+	return obj.ExternalURLs, nil
+}
 
 // DurationMs is the resolver for the duration_ms field.
 func (r *fullTrackResolver) DurationMs(ctx context.Context, obj *spotify.FullTrack) (*int, error) {
@@ -31,6 +37,11 @@ func (r *fullTrackResolver) URI(ctx context.Context, obj *spotify.FullTrack) (*s
 	return getPointerString(string(obj.URI)), nil
 }
 
+// ExternalUrls is the resolver for the external_urls field.
+func (r *fullTrackResolver) ExternalUrls(ctx context.Context, obj *spotify.FullTrack) (graphql1.StringMap, error) {
+	return obj.ExternalURLs, nil
+}
+
 // Href is the resolver for the href field.
 func (r *playbackContextResolver) Href(ctx context.Context, obj *spotify.PlaybackContext) (*string, error) {
 	return getPointerString(obj.Endpoint), nil
@@ -39,6 +50,11 @@ func (r *playbackContextResolver) Href(ctx context.Context, obj *spotify.Playbac
 // URI is the resolver for the uri field.
 func (r *playbackContextResolver) URI(ctx context.Context, obj *spotify.PlaybackContext) (*string, error) {
 	return getPointerString(string(obj.URI)), nil
+}
+
+// ExternalUrls is the resolver for the external_urls field.
+func (r *playbackContextResolver) ExternalUrls(ctx context.Context, obj *spotify.PlaybackContext) (graphql1.StringMap, error) {
+	return obj.ExternalURLs, nil
 }
 
 // ID is the resolver for the id field.
@@ -91,6 +107,11 @@ func (r *simpleAlbumResolver) URI(ctx context.Context, obj *spotify.SimpleAlbum)
 	return getPointerString(string(obj.URI)), nil
 }
 
+// ExternalUrls is the resolver for the external_urls field.
+func (r *simpleAlbumResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleAlbum) (graphql1.StringMap, error) {
+	return obj.ExternalURLs, nil
+}
+
 // Href is the resolver for the href field.
 func (r *simpleArtistResolver) Href(ctx context.Context, obj *spotify.SimpleArtist) (*string, error) {
 	return getPointerString(obj.Endpoint), nil
@@ -104,6 +125,11 @@ func (r *simpleArtistResolver) ID(ctx context.Context, obj *spotify.SimpleArtist
 // URI is the resolver for the uri field.
 func (r *simpleArtistResolver) URI(ctx context.Context, obj *spotify.SimpleArtist) (*string, error) {
 	return getPointerString(string(obj.URI)), nil
+}
+
+// ExternalUrls is the resolver for the external_urls field.
+func (r *simpleArtistResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleArtist) (graphql1.StringMap, error) {
+	return obj.ExternalURLs, nil
 }
 
 // FullTrack returns generated.FullTrackResolver implementation.
