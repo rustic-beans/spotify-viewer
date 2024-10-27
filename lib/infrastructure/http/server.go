@@ -3,9 +3,9 @@ package http
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/rustic-beans/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/rustic-beans/spotify-viewer/utils"
 	"go.uber.org/zap"
 )
 
@@ -33,6 +33,7 @@ func NewServer(srv *handler.Server) *echo.Echo {
 	e := echo.New()
 
 	configureLogger(e)
+
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
