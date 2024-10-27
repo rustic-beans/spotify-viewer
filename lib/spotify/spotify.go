@@ -10,12 +10,12 @@ import (
 
 type Spotify struct {
 	Client *spotifyLib.Client
-	auth   *SpotifyAuth
+	auth   *Auth
 }
 
 func NewSpotify(config *utils.Config) *Spotify {
 	s := &Spotify{
-		auth: newSpotifyAuth(config),
+		auth: newAuth(config),
 	}
 
 	return s

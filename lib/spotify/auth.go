@@ -15,14 +15,14 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type SpotifyAuth struct {
+type Auth struct {
 	auth      *spotifyAuth.Authenticator
 	state     string
 	ch        chan *spotifyLib.Client
 	tokenFile string
 }
 
-func newSpotifyAuth(config *utils.Config) *SpotifyAuth {
+func newAuth(config *utils.Config) *Auth {
 	redirectURL := fmt.Sprintf("http://%s/callback", config.GetURL())
 
 	auth := spotifyAuth.New(
@@ -32,7 +32,7 @@ func newSpotifyAuth(config *utils.Config) *SpotifyAuth {
 		spotifyAuth.WithClientSecret(config.Spotify.ClientSecret),
 	)
 
-	return &SpotifyAuth{
+	return &Auth{
 		state:     "state", // TODO: unique state string to identify the session, should be random
 		auth:      auth,
 		ch:        make(chan *spotifyLib.Client),
@@ -40,7 +40,7 @@ func newSpotifyAuth(config *utils.Config) *SpotifyAuth {
 	}
 }
 
-func (sa *SpotifyAuth) createClient(ctx context.Context, token *oauth2.Token) *spotifyLib.Client {
+func (sa *Auth) createClient(ctx context.Context, token *oauth2.Token) *spotifyLib.Client {
 	client := spotifyLib.New(sa.auth.Client(ctx, token))
 
 	token, err := client.Token()
@@ -62,14 +62,16 @@ func (sa *SpotifyAuth) createClient(ctx context.Context, token *oauth2.Token) *s
 }
 
 // TODO: Refactor this method to be more readable
-func (sa *SpotifyAuth) finalizeAuth() echo.HandlerFunc {
+func (sa *Auth) finalizeAuth() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
+
 		tok, err := sa.auth.Token(ctx, sa.state, c.Request())
 		if err != nil {
 			utils.Logger.Error("failed getting token", zap.Error(err))
 			return echo.NewHTTPError(http.StatusForbidden, "failed getting token")
 		}
+
 		if st := c.FormValue("state"); st != sa.state {
 			utils.Logger.Fatal("state mismatch detected", zap.String("state", st), zap.String("expected", sa.state))
 			return echo.NewHTTPError(http.StatusForbidden, "state mismatch")
@@ -88,7 +90,7 @@ func (sa *SpotifyAuth) finalizeAuth() echo.HandlerFunc {
 	}
 }
 
-func (sa *SpotifyAuth) waitForClient() *spotifyLib.Client {
+func (sa *Auth) waitForClient() *spotifyLib.Client {
 	// wait for auth to complete
 	client := <-sa.ch
 
@@ -104,11 +106,11 @@ func (sa *SpotifyAuth) waitForClient() *spotifyLib.Client {
 	return client
 }
 
-func (sa *SpotifyAuth) setupAuthRoutes(e *echo.Echo) {
+func (sa *Auth) setupAuthRoutes(e *echo.Echo) {
 	e.GET("/callback", sa.finalizeAuth())
 }
 
-func (sa *SpotifyAuth) attemptToReadTokenFromFile() *oauth2.Token {
+func (sa *Auth) attemptToReadTokenFromFile() *oauth2.Token {
 	data, err := os.ReadFile(sa.tokenFile)
 	if err != nil {
 		utils.Logger.Error("failed reading token file", zap.Error(err))
@@ -126,7 +128,7 @@ func (sa *SpotifyAuth) attemptToReadTokenFromFile() *oauth2.Token {
 	return &token
 }
 
-func (sa *SpotifyAuth) authenticate() {
+func (sa *Auth) authenticate() {
 	token := sa.attemptToReadTokenFromFile()
 	if token != nil {
 		utils.Logger.Info("attempting to use token from file")
@@ -136,6 +138,7 @@ func (sa *SpotifyAuth) authenticate() {
 		sa.ch <- client
 
 		utils.Logger.Info("new client created from token")
+
 		return
 	}
 
