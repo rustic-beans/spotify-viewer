@@ -12,10 +12,6 @@ import (
 	"github.com/rustic-beans/spotify-viewer/lib/spotify"
 )
 
-const (
-	state = "state" // TODO: unique state string to identify the session, should be random
-)
-
 func main() {
 	// Logger
 	defer func() {
