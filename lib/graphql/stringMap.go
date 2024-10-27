@@ -10,7 +10,7 @@ import (
 // StringMap represents a map[string]string type for GraphQL
 type StringMap map[string]string
 
-func (s StringMap) MarshalGQLContext(ctx context.Context, w io.Writer) error {
+func (s StringMap) MarshalGQLContext(_ context.Context, w io.Writer) error {
 	if err := json.NewEncoder(w).Encode(s); err != nil {
 		return err
 	}
@@ -18,7 +18,7 @@ func (s StringMap) MarshalGQLContext(ctx context.Context, w io.Writer) error {
 	return nil
 }
 
-func (s *StringMap) UnmarshalGQLContext(ctx context.Context, v interface{}) error {
+func (s *StringMap) UnmarshalGQLContext(_ context.Context, v interface{}) error {
 	switch v := v.(type) {
 	case map[string]string:
 		*s = v
