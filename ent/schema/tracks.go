@@ -25,7 +25,7 @@ func (Track) Fields() []ent.Field {
 		field.Strings("artists_genres"),
 		field.String("album_name"),
 		field.String("album_image_uri"),
-		field.Int32("duration_ms"),
+		field.Int("duration_ms"),
 		field.String("uri"),
 	}
 }

@@ -86,7 +86,7 @@ func AlbumImageURI(v string) predicate.Track {
 }
 
 // DurationMs applies equality check predicate on the "duration_ms" field. It's identical to DurationMsEQ.
-func DurationMs(v int32) predicate.Track {
+func DurationMs(v int) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldDurationMs, v))
 }
 
@@ -441,42 +441,42 @@ func AlbumImageURIContainsFold(v string) predicate.Track {
 }
 
 // DurationMsEQ applies the EQ predicate on the "duration_ms" field.
-func DurationMsEQ(v int32) predicate.Track {
+func DurationMsEQ(v int) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldDurationMs, v))
 }
 
 // DurationMsNEQ applies the NEQ predicate on the "duration_ms" field.
-func DurationMsNEQ(v int32) predicate.Track {
+func DurationMsNEQ(v int) predicate.Track {
 	return predicate.Track(sql.FieldNEQ(FieldDurationMs, v))
 }
 
 // DurationMsIn applies the In predicate on the "duration_ms" field.
-func DurationMsIn(vs ...int32) predicate.Track {
+func DurationMsIn(vs ...int) predicate.Track {
 	return predicate.Track(sql.FieldIn(FieldDurationMs, vs...))
 }
 
 // DurationMsNotIn applies the NotIn predicate on the "duration_ms" field.
-func DurationMsNotIn(vs ...int32) predicate.Track {
+func DurationMsNotIn(vs ...int) predicate.Track {
 	return predicate.Track(sql.FieldNotIn(FieldDurationMs, vs...))
 }
 
 // DurationMsGT applies the GT predicate on the "duration_ms" field.
-func DurationMsGT(v int32) predicate.Track {
+func DurationMsGT(v int) predicate.Track {
 	return predicate.Track(sql.FieldGT(FieldDurationMs, v))
 }
 
 // DurationMsGTE applies the GTE predicate on the "duration_ms" field.
-func DurationMsGTE(v int32) predicate.Track {
+func DurationMsGTE(v int) predicate.Track {
 	return predicate.Track(sql.FieldGTE(FieldDurationMs, v))
 }
 
 // DurationMsLT applies the LT predicate on the "duration_ms" field.
-func DurationMsLT(v int32) predicate.Track {
+func DurationMsLT(v int) predicate.Track {
 	return predicate.Track(sql.FieldLT(FieldDurationMs, v))
 }
 
 // DurationMsLTE applies the LTE predicate on the "duration_ms" field.
-func DurationMsLTE(v int32) predicate.Track {
+func DurationMsLTE(v int) predicate.Track {
 	return predicate.Track(sql.FieldLTE(FieldDurationMs, v))
 }
 

@@ -100,7 +100,7 @@ func makeTrack(player *spotifyLib.PlayerState) *ent.Track {
 		ArtistsGenres: nil,
 		AlbumName:     player.Item.Album.Name,
 		AlbumImageURI: player.Item.Album.Images[0].URL,
-		DurationMs:    int32(player.Item.Duration),
+		DurationMs:    player.Item.Duration,
 		URI:           string(player.Item.URI),
 	}
 
