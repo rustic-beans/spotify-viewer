@@ -53,6 +53,7 @@ func (sa *Auth) createClient(ctx context.Context, token *oauth2.Token) *spotifyL
 		utils.Logger.Error("failed marshalling token", zap.Error(err))
 	}
 
+	//nolint:mnd // 0o600 is the file permission
 	err = os.WriteFile(sa.tokenFile, jsonData, 0o600)
 	if err != nil {
 		utils.Logger.Error("failed writing token to file", zap.Error(err))
