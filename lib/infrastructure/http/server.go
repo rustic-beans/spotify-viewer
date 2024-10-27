@@ -18,7 +18,7 @@ func configureLogger(e *echo.Echo) {
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
 		LogStatus: true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+		LogValuesFunc: func(_ echo.Context, v middleware.RequestLoggerValues) error {
 			utils.Logger.Info("request",
 				zap.String("URI", v.URI),
 				zap.Int("status", v.Status),
@@ -32,6 +32,7 @@ func configureLogger(e *echo.Echo) {
 func NewServer(srv *handler.Server) *echo.Echo {
 	e := echo.New()
 
+	configureLogger(e)
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
