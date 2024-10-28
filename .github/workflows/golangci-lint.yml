@@ -19,10 +19,9 @@ jobs:
         with:
           go-version: '^1.23'
       - name: run generate
-        run: make generate
-        continue-on-error: true
-      - name: run generate
-        run: make generate
+        run: |
+          make generate || true
+          make generate
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
