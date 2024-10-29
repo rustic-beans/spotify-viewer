@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 // Track is the model entity for the Track schema.
@@ -36,7 +36,7 @@ type Track struct {
 	// AlbumImageURI holds the value of the "album_image_uri" field.
 	AlbumImageURI string `json:"album_image_uri,omitempty"`
 	// DurationMs holds the value of the "duration_ms" field.
-	DurationMs int32 `json:"duration_ms,omitempty"`
+	DurationMs int `json:"duration_ms,omitempty"`
 	// URI holds the value of the "uri" field.
 	URI          string `json:"uri,omitempty"`
 	selectValues sql.SelectValues
@@ -134,7 +134,7 @@ func (t *Track) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field duration_ms", values[i])
 			} else if value.Valid {
-				t.DurationMs = int32(value.Int64)
+				t.DurationMs = int(value.Int64)
 			}
 		case track.FieldURI:
 			if value, ok := values[i].(*sql.NullString); !ok {

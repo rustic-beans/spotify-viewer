@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/albe2669/spotify-viewer/ent"
+	"github.com/rustic-beans/spotify-viewer/ent"
 	// required by schema hooks.
-	_ "github.com/albe2669/spotify-viewer/ent/runtime"
+	_ "github.com/rustic-beans/spotify-viewer/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/albe2669/spotify-viewer/ent/migrate"
+	"github.com/rustic-beans/spotify-viewer/ent/migrate"
 )
 
 type (

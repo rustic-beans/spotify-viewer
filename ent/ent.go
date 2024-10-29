@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 // ent aliases to avoid import conflicts in user's code.

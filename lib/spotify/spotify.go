@@ -3,19 +3,19 @@ package spotify
 import (
 	"context"
 
-	"github.com/albe2669/spotify-viewer/utils"
 	"github.com/labstack/echo/v4"
+	"github.com/rustic-beans/spotify-viewer/utils"
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
 type Spotify struct {
 	Client *spotifyLib.Client
-	auth   *SpotifyAuth
+	auth   *Auth
 }
 
 func NewSpotify(config *utils.Config) *Spotify {
 	s := &Spotify{
-		auth: newSpotifyAuth(config),
+		auth: newAuth(config),
 	}
 
 	return s

@@ -9,13 +9,13 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/albe2669/spotify-viewer/ent/migrate"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/migrate"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 // Client is the client that holds all ent builders.

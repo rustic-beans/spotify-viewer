@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/albe2669/spotify-viewer/ent"
+	"github.com/rustic-beans/spotify-viewer/ent"
 )
 
 // The TrackFunc type is an adapter to allow the use of ordinary

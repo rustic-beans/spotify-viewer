@@ -9,7 +9,7 @@ scalar Cursor
 An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
-interface Node @goModel(model: "github.com/albe2669/spotify-viewer/ent.Noder") {
+interface Node @goModel(model: "github.com/rustic-beans/spotify-viewer/ent.Noder") {
   """
   The id of the object.
   """
@@ -70,10 +70,6 @@ type Query {
     ids: [ID!]!
   ): [Node]!
 }
-"""
-The builtin Time type
-"""
-scalar Time
 type Track implements Node {
   id: ID!
   createdAt: Time!

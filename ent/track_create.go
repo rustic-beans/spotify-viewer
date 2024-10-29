@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 // TrackCreate is the builder for creating a Track entity.
@@ -86,7 +86,7 @@ func (tc *TrackCreate) SetAlbumImageURI(s string) *TrackCreate {
 }
 
 // SetDurationMs sets the "duration_ms" field.
-func (tc *TrackCreate) SetDurationMs(i int32) *TrackCreate {
+func (tc *TrackCreate) SetDurationMs(i int) *TrackCreate {
 	tc.mutation.SetDurationMs(i)
 	return tc
 }
@@ -265,7 +265,7 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 		_node.AlbumImageURI = value
 	}
 	if value, ok := tc.mutation.DurationMs(); ok {
-		_spec.SetField(track.FieldDurationMs, field.TypeInt32, value)
+		_spec.SetField(track.FieldDurationMs, field.TypeInt, value)
 		_node.DurationMs = value
 	}
 	if value, ok := tc.mutation.URI(); ok {

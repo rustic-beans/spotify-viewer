@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
-	"github.com/albe2669/spotify-viewer/ent/predicate"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/predicate"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 // TrackUpdate is the builder for updating Track entities.
@@ -117,14 +117,14 @@ func (tu *TrackUpdate) SetNillableAlbumImageURI(s *string) *TrackUpdate {
 }
 
 // SetDurationMs sets the "duration_ms" field.
-func (tu *TrackUpdate) SetDurationMs(i int32) *TrackUpdate {
+func (tu *TrackUpdate) SetDurationMs(i int) *TrackUpdate {
 	tu.mutation.ResetDurationMs()
 	tu.mutation.SetDurationMs(i)
 	return tu
 }
 
 // SetNillableDurationMs sets the "duration_ms" field if the given value is not nil.
-func (tu *TrackUpdate) SetNillableDurationMs(i *int32) *TrackUpdate {
+func (tu *TrackUpdate) SetNillableDurationMs(i *int) *TrackUpdate {
 	if i != nil {
 		tu.SetDurationMs(*i)
 	}
@@ -132,7 +132,7 @@ func (tu *TrackUpdate) SetNillableDurationMs(i *int32) *TrackUpdate {
 }
 
 // AddDurationMs adds i to the "duration_ms" field.
-func (tu *TrackUpdate) AddDurationMs(i int32) *TrackUpdate {
+func (tu *TrackUpdate) AddDurationMs(i int) *TrackUpdate {
 	tu.mutation.AddDurationMs(i)
 	return tu
 }
@@ -246,10 +246,10 @@ func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(track.FieldAlbumImageURI, field.TypeString, value)
 	}
 	if value, ok := tu.mutation.DurationMs(); ok {
-		_spec.SetField(track.FieldDurationMs, field.TypeInt32, value)
+		_spec.SetField(track.FieldDurationMs, field.TypeInt, value)
 	}
 	if value, ok := tu.mutation.AddedDurationMs(); ok {
-		_spec.AddField(track.FieldDurationMs, field.TypeInt32, value)
+		_spec.AddField(track.FieldDurationMs, field.TypeInt, value)
 	}
 	if value, ok := tu.mutation.URI(); ok {
 		_spec.SetField(track.FieldURI, field.TypeString, value)
@@ -361,14 +361,14 @@ func (tuo *TrackUpdateOne) SetNillableAlbumImageURI(s *string) *TrackUpdateOne {
 }
 
 // SetDurationMs sets the "duration_ms" field.
-func (tuo *TrackUpdateOne) SetDurationMs(i int32) *TrackUpdateOne {
+func (tuo *TrackUpdateOne) SetDurationMs(i int) *TrackUpdateOne {
 	tuo.mutation.ResetDurationMs()
 	tuo.mutation.SetDurationMs(i)
 	return tuo
 }
 
 // SetNillableDurationMs sets the "duration_ms" field if the given value is not nil.
-func (tuo *TrackUpdateOne) SetNillableDurationMs(i *int32) *TrackUpdateOne {
+func (tuo *TrackUpdateOne) SetNillableDurationMs(i *int) *TrackUpdateOne {
 	if i != nil {
 		tuo.SetDurationMs(*i)
 	}
@@ -376,7 +376,7 @@ func (tuo *TrackUpdateOne) SetNillableDurationMs(i *int32) *TrackUpdateOne {
 }
 
 // AddDurationMs adds i to the "duration_ms" field.
-func (tuo *TrackUpdateOne) AddDurationMs(i int32) *TrackUpdateOne {
+func (tuo *TrackUpdateOne) AddDurationMs(i int) *TrackUpdateOne {
 	tuo.mutation.AddDurationMs(i)
 	return tuo
 }
@@ -520,10 +520,10 @@ func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error
 		_spec.SetField(track.FieldAlbumImageURI, field.TypeString, value)
 	}
 	if value, ok := tuo.mutation.DurationMs(); ok {
-		_spec.SetField(track.FieldDurationMs, field.TypeInt32, value)
+		_spec.SetField(track.FieldDurationMs, field.TypeInt, value)
 	}
 	if value, ok := tuo.mutation.AddedDurationMs(); ok {
-		_spec.AddField(track.FieldDurationMs, field.TypeInt32, value)
+		_spec.AddField(track.FieldDurationMs, field.TypeInt, value)
 	}
 	if value, ok := tuo.mutation.URI(); ok {
 		_spec.SetField(track.FieldURI, field.TypeString, value)

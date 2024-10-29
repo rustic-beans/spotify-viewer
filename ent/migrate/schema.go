@@ -19,7 +19,7 @@ var (
 		{Name: "artists_genres", Type: field.TypeJSON},
 		{Name: "album_name", Type: field.TypeString},
 		{Name: "album_image_uri", Type: field.TypeString},
-		{Name: "duration_ms", Type: field.TypeInt32},
+		{Name: "duration_ms", Type: field.TypeInt},
 		{Name: "uri", Type: field.TypeString},
 	}
 	// TracksTable holds the schema information for the "tracks" table.
