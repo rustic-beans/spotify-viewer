@@ -64,7 +64,8 @@ resolver:
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "github.com/albe2669/spotify-viewer/ent"
+  - "github.com/rustic-beans/spotify-viewer/ent"
+  - "github.com/zmb3/spotify/v2"
 
 # This section declares type mapping between them GraphQL and go type systems
 #
@@ -73,13 +74,13 @@ autobind:
 # your liking
 models:
   ID:
-    model:
-      - github.com/albe2669/spotify-viewer/ent/schema/pulid.ID
+    model: github.com/rustic-beans/spotify-viewer/ent/schema/pulid.ID
   Int:
     model:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
   Node:
-    model:
-      - github.com/albe2669/spotify-viewer/ent.Noder
+    model: github.com/rustic-beans/spotify-viewer/ent.Noder
+  StringMap:
+    model: github.com/rustic-beans/spotify-viewer/lib/graphql.StringMap

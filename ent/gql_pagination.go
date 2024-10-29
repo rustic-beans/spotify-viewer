@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 

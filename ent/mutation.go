@@ -11,9 +11,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/albe2669/spotify-viewer/ent/predicate"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
-	"github.com/albe2669/spotify-viewer/ent/track"
+	"github.com/rustic-beans/spotify-viewer/ent/predicate"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
 const (
@@ -44,8 +44,8 @@ type TrackMutation struct {
 	appendartists_genres []string
 	album_name           *string
 	album_image_uri      *string
-	duration_ms          *int32
-	addduration_ms       *int32
+	duration_ms          *int
+	addduration_ms       *int
 	uri                  *string
 	clearedFields        map[string]struct{}
 	done                 bool
@@ -476,13 +476,13 @@ func (m *TrackMutation) ResetAlbumImageURI() {
 }
 
 // SetDurationMs sets the "duration_ms" field.
-func (m *TrackMutation) SetDurationMs(i int32) {
+func (m *TrackMutation) SetDurationMs(i int) {
 	m.duration_ms = &i
 	m.addduration_ms = nil
 }
 
 // DurationMs returns the value of the "duration_ms" field in the mutation.
-func (m *TrackMutation) DurationMs() (r int32, exists bool) {
+func (m *TrackMutation) DurationMs() (r int, exists bool) {
 	v := m.duration_ms
 	if v == nil {
 		return
@@ -493,7 +493,7 @@ func (m *TrackMutation) DurationMs() (r int32, exists bool) {
 // OldDurationMs returns the old "duration_ms" field's value of the Track entity.
 // If the Track object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TrackMutation) OldDurationMs(ctx context.Context) (v int32, err error) {
+func (m *TrackMutation) OldDurationMs(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDurationMs is only allowed on UpdateOne operations")
 	}
@@ -508,7 +508,7 @@ func (m *TrackMutation) OldDurationMs(ctx context.Context) (v int32, err error) 
 }
 
 // AddDurationMs adds i to the "duration_ms" field.
-func (m *TrackMutation) AddDurationMs(i int32) {
+func (m *TrackMutation) AddDurationMs(i int) {
 	if m.addduration_ms != nil {
 		*m.addduration_ms += i
 	} else {
@@ -517,7 +517,7 @@ func (m *TrackMutation) AddDurationMs(i int32) {
 }
 
 // AddedDurationMs returns the value that was added to the "duration_ms" field in this mutation.
-func (m *TrackMutation) AddedDurationMs() (r int32, exists bool) {
+func (m *TrackMutation) AddedDurationMs() (r int, exists bool) {
 	v := m.addduration_ms
 	if v == nil {
 		return
@@ -755,7 +755,7 @@ func (m *TrackMutation) SetField(name string, value ent.Value) error {
 		m.SetAlbumImageURI(v)
 		return nil
 	case track.FieldDurationMs:
-		v, ok := value.(int32)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -799,7 +799,7 @@ func (m *TrackMutation) AddedField(name string) (ent.Value, bool) {
 func (m *TrackMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case track.FieldDurationMs:
-		v, ok := value.(int32)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

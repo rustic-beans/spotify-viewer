@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/albe2669/spotify-viewer/ent/runtime.go
+// The schema-stitching logic is generated in github.com/rustic-beans/spotify-viewer/ent/runtime.go
 
 const (
 	Version = "v0.13.1"                                         // Version of ent codegen.

@@ -12,9 +12,12 @@ linters-settings:
       - performance
       - style
   govet:
-    shadow: true
-    enable:
+    enable-all: true
+    disable:
       - fieldalignment
+    settings:
+      shadow:
+        strict: true
   nolintlint:
     require-explanation: true
     require-specific: true
@@ -28,13 +31,13 @@ linters:
     - dogsled
     - dupl
     - errcheck
-    - exportloopref
+    - copyloopvar
     - exhaustive
     - goconst
     - gocritic
     - gofmt
     - goimports
-    - gomnd
+    - mnd
     - gocyclo
     - gosec
     - gosimple
@@ -64,6 +67,3 @@ issues:
 
 run:
   issues-exit-code: 1
-
-
-

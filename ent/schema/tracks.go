@@ -3,7 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
-	"github.com/albe2669/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 )
 
 type Track struct {
@@ -25,7 +25,7 @@ func (Track) Fields() []ent.Field {
 		field.Strings("artists_genres"),
 		field.String("album_name"),
 		field.String("album_image_uri"),
-		field.Int32("duration_ms"),
+		field.Int("duration_ms"),
 		field.String("uri"),
 	}
 }
