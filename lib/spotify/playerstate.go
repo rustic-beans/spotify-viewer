@@ -6,6 +6,7 @@ import (
 
 	"github.com/rustic-beans/spotify-viewer/ent"
 	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
+	"github.com/rustic-beans/spotify-viewer/lib/infrastructure/http"
 	"github.com/rustic-beans/spotify-viewer/utils"
 	"go.uber.org/zap"
 
@@ -21,13 +22,15 @@ const (
 // Global playerstate variable
 var playerState *PlayerState
 
+type PlayerStateWebsocketHandler = http.WebsocketHandler[*spotifyLib.PlayerState]
+
 type PlayerState struct {
 	Track    ent.Track // This the track struct from the DB schema
 	Progress int       `json:"progress_ms"` // This is the current progress of the track in ms
 	DateTime time.Time // The time that the struct was updated last
 }
 
-func PlayerStateLoop(sa *Spotify, dbClient *ent.Client) {
+func PlayerStateLoop(sa *Spotify, dbClient *ent.Client, wsHandler *PlayerStateWebsocketHandler) {
 	// Sleep for 5 seconds to give the server time to start
 	time.Sleep(sleepTime)
 
@@ -54,7 +57,10 @@ func PlayerStateLoop(sa *Spotify, dbClient *ent.Client) {
 
 			// This function requires data from the previous loop so it needs to be called before the update to the playerstate
 			// This is to check if the track has changed and if so add it to the db or if the track has been replayed
-			dbCheckUpdate(ctx, dbClient, track, player.Progress)
+			updated := dbCheckUpdate(ctx, dbClient, track, player.Progress)
+			if updated {
+				wsHandler.Broadcast(player)
+			}
 
 			// This function updates the playerstate with the new track and progress
 			updatePlayerState(track, player.Progress)
@@ -112,10 +118,11 @@ func updatePlayerState(track *ent.Track, progress int) {
 	playerState.DateTime = time.Now()
 }
 
-func dbCheckUpdate(ctx context.Context, dbClient *ent.Client, track *ent.Track, progress int) {
+func dbCheckUpdate(ctx context.Context, dbClient *ent.Client, track *ent.Track, progress int) bool {
 	// Check if the track has just changed and if so add it to the db
 	if playerState.Track.Name != track.Name {
 		addTrack(ctx, dbClient, track)
+		return true
 	}
 
 	// Check for replays
@@ -125,7 +132,10 @@ func dbCheckUpdate(ctx context.Context, dbClient *ent.Client, track *ent.Track, 
 	if (track.DurationMs/lastTrackDurationPercentage)*100 < playerState.Progress &&
 		progress <= (track.DurationMs/replayTrackDurationPercentage)*100 {
 		addTrack(ctx, dbClient, track)
+		return true
 	}
+
+	return false
 }
 
 func addTrack(ctx context.Context, dbClient *ent.Client, track *ent.Track) {

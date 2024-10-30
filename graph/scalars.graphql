@@ -1,2 +1,4 @@
 scalar StringMap
 scalar Time
+
+type Subscription
