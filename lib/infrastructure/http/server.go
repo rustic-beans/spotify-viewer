@@ -1,6 +1,8 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
@@ -41,7 +43,7 @@ func NewServer(srv *handler.Server) *echo.Echo {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	e.POST(QueryPath, echo.WrapHandler(srv))
+	e.Match([]string{http.MethodGet, http.MethodPost}, QueryPath, echo.WrapHandler(srv))
 	e.GET(PlaygroundPath, func(c echo.Context) error {
 		playground.Handler("GraphQL", QueryPath).ServeHTTP(c.Response(), c.Request())
 		return nil
