@@ -27,6 +27,7 @@ type PlayerStateWebsocketHandler = http.WebsocketHandler[*spotifyLib.PlayerState
 type PlayerState struct {
 	Track    ent.Track // This the track struct from the DB schema
 	Progress int       `json:"progress_ms"` // This is the current progress of the track in ms
+	Playing  bool      `json:"is_playing"`  // This is a boolean to check if the track is playing
 	DateTime time.Time // The time that the struct was updated last
 }
 
@@ -58,16 +59,16 @@ func PlayerStateLoop(sa *Spotify, dbClient *ent.Client, wsHandler *PlayerStateWe
 			// This function requires data from the previous loop so it needs to be called before the update to the playerstate
 			// This is to check if the track has changed and if so add it to the db or if the track has been replayed
 			updated := dbCheckUpdate(ctx, dbClient, track, player.Progress)
-			if updated {
+			if updated || player.Playing != playerState.Playing {
 				wsHandler.Broadcast(player)
 			}
 
 			// This function updates the playerstate with the new track and progress
-			updatePlayerState(track, player.Progress)
+			updatePlayerState(track, player.Playing, player.Progress)
 		}
 
 		// For testing to see if the loop is working
-		utils.Logger.Debug("Playerstate receieved", zap.Any("player", playerState))
+		utils.Logger.Debug("Playerstate receieved", zap.Any("player", player))
 		// Debugging Query to see if the tracks are being added to the db correctly
 		// Best to use len since it removes some of the clutter from the log
 		tr, err := dbClient.Track.Query().All(ctx)
@@ -108,12 +109,13 @@ func makeTrack(player *spotifyLib.PlayerState) *ent.Track {
 }
 
 // since playerstate is a public variable we can just update the values inside the pointer instead of returning
-func updatePlayerState(track *ent.Track, progress int) {
+func updatePlayerState(track *ent.Track, playing bool, progress int) {
 	if track.Name == "" {
 		return
 	}
 
 	playerState.Track = *track
+	playerState.Playing = playing
 	playerState.Progress = progress
 	playerState.DateTime = time.Now()
 }
