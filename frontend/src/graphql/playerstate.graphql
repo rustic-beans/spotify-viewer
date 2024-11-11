@@ -1,0 +1,18 @@
+query getPlayerState {
+  playerState {
+    context{
+      href
+      type
+    }
+    progress_ms
+    is_playing
+    timestamp
+    item {
+      name
+      duration_ms
+      album {
+        name
+      }
+    }
+  }
+}

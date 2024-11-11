@@ -1,6 +1,18 @@
+<script lang="ts" setup>
+import { useGetPlayerStateQuery } from "@/__generated__/queries";
+
+const { result, loading, error } = useGetPlayerStateQuery();
+</script>
+
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
+  <div v-if="loading">
+    Loading...
+  </div>
+  <div v-else-if="error">
+    Error: {{ error.message }}
+  </div>
+  <div v-else>
+    {{ result }}
   </div>
 </template>
 
