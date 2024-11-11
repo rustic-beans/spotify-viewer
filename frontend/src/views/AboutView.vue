@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { useGetPlayerStateQuery } from "@/__generated__/queries";
+import { computed } from "vue";
+import { useGetPlayerStateSubscription } from "@/__generated__/queries";
 
-const { result, loading, error } = useGetPlayerStateQuery();
+const { result, loading, error } = useGetPlayerStateSubscription();
 </script>
 
 <template>

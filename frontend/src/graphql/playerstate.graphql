@@ -1,4 +1,4 @@
-query getPlayerState {
+subscription getPlayerState {
   playerState {
     context{
       href
