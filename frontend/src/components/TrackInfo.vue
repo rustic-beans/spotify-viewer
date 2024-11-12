@@ -19,7 +19,7 @@ const props = defineProps<{
 
 const trackObj = computed(() => useFragment(TrackFragment, props.fragment));
 const artistName = computed(() => {
-  let artists = trackObj.value.album?.artists
+  const artists = trackObj.value.album?.artists
   if (artists && artists.length > 0 && artists[0]) {
     return artists[0].name;
   }
