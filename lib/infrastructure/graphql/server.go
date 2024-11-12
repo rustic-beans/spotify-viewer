@@ -12,6 +12,7 @@ import (
 	"github.com/rustic-beans/spotify-viewer/generated"
 	"github.com/rustic-beans/spotify-viewer/lib/spotify"
 	"github.com/rustic-beans/spotify-viewer/resolver"
+	"github.com/vektah/gqlparser/v2/ast"
 )
 
 func NewServer(
@@ -39,10 +40,10 @@ func NewServer(
 	server.AddTransport(transport.GET{})
 	server.AddTransport(transport.POST{})
 
-	server.SetQueryCache(lru.New(1000))
+	server.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 	server.Use(extension.Introspection{})
 	server.Use(extension.AutomaticPersistedQuery{
-		Cache: lru.New(100),
+		Cache: lru.New[string](100),
 	})
 
 	return server
