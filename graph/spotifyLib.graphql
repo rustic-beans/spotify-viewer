@@ -57,6 +57,7 @@ type SimpleAlbum {
 
 type FullTrack {
   album: SimpleAlbum
+  artists: [SimpleArtist]
   external_ids: StringMap
   popularity: Int
   is_playable: Boolean
