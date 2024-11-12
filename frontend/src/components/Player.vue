@@ -2,12 +2,12 @@
 import AlbumCover from '@/components/AlbumCover.vue';
 import TrackInfo from '@/components/TrackInfo.vue';
 import ProgressBar from '@/components/ProgressBar.vue';
-import { type FragmentType,useFragment, graphql } from '@/__generated__';
+import { type FragmentType, useFragment, graphql } from '@/__generated__';
 import { computed, watch } from 'vue';
 
 const PlayerStateFragment = graphql(/* GraphQL */ `
   fragment PlayerState on PlayerState {
-    progress_ms
+    ...Progress
     item {
       ... Track
       album {
@@ -34,13 +34,19 @@ const imagesObj = computed(() => trackObj.value?.album);
   <div class="fixed inset-0 bg-gradient-to-b from-neutral-800 to-neutral-900">
     <div class="absolute bottom-0 left-0 right-0 p-12">
       <div class="flex items-end gap-6">
-        <AlbumCover v-if="imagesObj" :fragment="imagesObj" />
-        <TrackInfo  v-if="trackObj" :fragment="trackObj" />
+        <AlbumCover
+          v-if="imagesObj"
+          :fragment="imagesObj"
+        />
+        <TrackInfo
+          v-if="trackObj"
+          :fragment="trackObj"
+        />
       </div>
 
       <ProgressBar
-        :currentTime="playerStateObj.progress_ms"
-        :duration="153"
+        v-if="playerStateObj"
+        :fragment="playerStateObj"
       />
     </div>
   </div>
