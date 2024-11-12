@@ -59,10 +59,8 @@ func PlayerStateLoop(sa *Spotify, dbClient *ent.Client, wsHandler *PlayerStateWe
 
 			// This function requires data from the previous loop so it needs to be called before the update to the playerstate
 			// This is to check if the track has changed and if so add it to the db or if the track has been replayed
-			updated := dbCheckUpdate(ctx, dbClient, track, playerState.Progress)
-			if updated || playerState.Playing != lastPlayerState.Playing {
-				wsHandler.Broadcast(playerState)
-			}
+			_ = dbCheckUpdate(ctx, dbClient, track, playerState.Progress)
+			wsHandler.Broadcast(playerState)
 
 			// This function updates the playerstate with the new track and progress
 			updatePlayerState(playerState, track)
