@@ -13,14 +13,12 @@ const props = defineProps<{
 }>();
 
 const controlObj = computed(() => useFragment(ControlFragment, props.fragment));
-const isPlaying = computed(() => controlObj.value.is_playing || false);
+const isPlaying = computed(() => controlObj.value.is_playing);
 </script>
 
 <template>
   <div>
-    <button
-      class="w-16 h-16"
-    >
+    <button class="w-16 h-16">
       <svg
         v-if="isPlaying"
         xmlns="http://www.w3.org/2000/svg"

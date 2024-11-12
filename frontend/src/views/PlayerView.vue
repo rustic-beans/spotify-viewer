@@ -14,6 +14,7 @@ const { result, loading, error } = useSubscription(graphql(/* GraphQL */ `
     }
   }
 `));
+
 const playerState = computed(() => result?.value?.playerState);
 </script>
 
@@ -25,7 +26,10 @@ const playerState = computed(() => result?.value?.playerState);
       <UpNext />
       <Context />
     </div>
-    <div class="text-center" v-else-if="error">
+    <div
+      class="text-center"
+      v-else-if="error"
+    >
       {{ error.message }}
     </div>
     <div

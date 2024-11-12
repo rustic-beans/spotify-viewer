@@ -1,78 +1,75 @@
 type PlayerDevice {
-  id: String
-  is_active: Boolean
-  is_restricted: Boolean
-  name: String
-  type: String
-  volume_percent: Int
+  id: String!
+  is_active: Boolean!
+  is_restricted: Boolean!
+  name: String!
+  type: String!
+  volume_percent: Int!
 }
 
 type PlayerState {
-  timestamp: Int
+  device: PlayerDevice!
+  repeat_state: String!
+  shuffle_state: Boolean!
   context: PlaybackContext
-  progress_ms: Int
-  is_playing: Boolean
-
+  timestamp: Int!
+  progress_ms: Int!
+  is_playing: Boolean!
   item: FullTrack
-
-  device: PlayerDevice
-  shuffle_state: Boolean
-  repeat_state: String
 }
 
 type PlaybackContext {
-  type: String
-  href: String
-  uri: String
-  external_urls: StringMap
+  type: String!
+  href: String!
+  external_urls: StringMap!
+  uri: String!
 }
 
 type SimpleArtist {
-  href: String
-  id: String
-  name: String
-  uri: String
-  external_urls: StringMap
+  external_urls: StringMap!
+  href: String!
+  id: String!
+  name: String!
+  uri: String!
 }
 
 type Image {
-  url: String
-  height: Int
-  width: Int
+  url: String!
+  height: Int!
+  width: Int!
 }
 
 type SimpleAlbum {
-  album_type: String
-  href: String
-  id: String
-  name: String
-  release_date: String
-  release_date_precision: String
-  uri: String
-  artists: [SimpleArtist]
-  images: [Image]
-  external_urls: StringMap
-  available_markets: [String]
+  album_type: String!
+  available_markets: [String!]!
+  external_urls: StringMap!
+  href: String!
+  id: String!
+  images: [Image!]!
+  name: String!
+  release_date: String!
+  release_date_precision: String!
+  uri: String!
+  artists: [SimpleArtist!]!
 }
 
 type FullTrack {
-  album: SimpleAlbum
-  artists: [SimpleArtist]
-  external_ids: StringMap
-  popularity: Int
-  is_playable: Boolean
-
-  disc_number: Int
-  duration_ms: Int
-  explicit: Boolean
-  href: String
-  id: String
-  name: String
-  preview_url: String
-  track_number: Int
-  type: String
-  uri: String
-  external_urls: StringMap
+  album: SimpleAlbum!
+  artists: [SimpleArtist!]!
   available_markets: [String]
+  disc_number: Int!
+  duration_ms: Int!
+  explicit: Boolean!
+  external_ids: StringMap!
+  external_urls: StringMap!
+  href: String!
+  id: String!
+  is_playable: Boolean!
+  name: String!
+  popularity: Int!
+  preview_url: String
+  track_number: Int!
+  type: String!
+  uri: String!
 }
 

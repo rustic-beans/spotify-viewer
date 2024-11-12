@@ -20,8 +20,8 @@ const props = defineProps<{
 
 const progressObj = computed(() => useFragment(ProgressFragment, props.fragment));
 const timestamp = useTimestamp({ interval: 1000 });
-const timeAgo = computed(() => timestamp.value - (progressObj.value.timestamp || 0));
-const progressMs = computed(() => progressObj.value.progress_ms || 0);
+const timeAgo = computed(() => timestamp.value - (progressObj.value.timestamp));
+const progressMs = computed(() => progressObj.value.progress_ms);
 const durationMs = computed(() => progressObj.value.item?.duration_ms || 0);
 const actualProgressMs = computed(() => {
   let prog = progressMs.value;
@@ -37,10 +37,6 @@ const progressPercentage = computed(() => {
 });
 
 const formatTime = (ms: number) => {
-  if (!ms) {
-    return '0:00';
-  }
-
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
