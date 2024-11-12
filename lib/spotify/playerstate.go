@@ -59,7 +59,7 @@ func PlayerStateLoop(sa *Spotify, dbClient *ent.Client, wsHandler *PlayerStateWe
 
 			// This function requires data from the previous loop so it needs to be called before the update to the playerstate
 			// This is to check if the track has changed and if so add it to the db or if the track has been replayed
-			_ = dbCheckUpdate(ctx, dbClient, track, playerState.Progress)
+			_ = dbCheckUpdate(ctx, dbClient, track, int(playerState.Progress))
 			wsHandler.Broadcast(playerState)
 
 			// This function updates the playerstate with the new track and progress
@@ -99,7 +99,7 @@ func makeTrack(player *spotifyLib.PlayerState) *ent.Track {
 		ArtistsGenres: nil,
 		AlbumName:     player.Item.Album.Name,
 		AlbumImageURI: player.Item.Album.Images[0].URL,
-		DurationMs:    player.Item.Duration,
+		DurationMs:    int(player.Item.Duration),
 		URI:           string(player.Item.URI),
 	}
 
@@ -132,7 +132,7 @@ func dbCheckUpdate(ctx context.Context, dbClient *ent.Client, track *ent.Track, 
 	// TODO: Maybe find a better way to do this but works for now
 	// Check if last track update duration is more than 50% done and if current progress is less than 05% into the track
 	// This is what constitutes as a replay
-	if (track.DurationMs/lastTrackDurationPercentage)*100 < lastPlayerState.Progress &&
+	if (track.DurationMs/lastTrackDurationPercentage)*100 < int(lastPlayerState.Progress) &&
 		progress <= (track.DurationMs/replayTrackDurationPercentage)*100 {
 		addTrack(ctx, dbClient, track)
 		return true
