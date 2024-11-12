@@ -5,10 +5,10 @@ import { computed } from 'vue';
 const TrackFragment = graphql(/* GraphQL */ `
   fragment Track on FullTrack {
     name
-    album {
-      artists {
-        name
-      }
+    external_urls
+    artists {
+      name
+      external_urls
     }
   }
 `);
@@ -18,19 +18,42 @@ const props = defineProps<{
 }>();
 
 const trackObj = computed(() => useFragment(TrackFragment, props.fragment));
-const artistName = computed(() => {
-  const artists = trackObj.value.album?.artists
-  if (artists && artists.length > 0 && artists[0]) {
-    return artists[0].name;
-  }
+const artists = computed(() => {
+  return trackObj.value.artists?.map((artist) => {
+    return {
+      name: artist?.name,
+      link: artist?.external_urls?.spotify,
+    };
+  }).filter((artist) => artist.name);
+});
 
-  return "Unknown Artist";
+const trackLink = computed(() => {
+  return trackObj.value.external_urls?.spotify;
 });
 </script>
 
 <template>
   <div>
-    <h1 class="text-6xl font-bold text-white mb-2">{{ trackObj.name }}</h1>
-    <p class="text-xl text-gray-400">{{ artistName }}</p>
+    <a
+      :href="trackLink"
+      target="_blank"
+    >
+      <h1 class="text-6xl font-bold text-white mb-2">{{ trackObj.name }}</h1>
+    </a>
+
+    <p class="text-xl text-gray-400">
+      <template
+        v-for="(artist, index) in artists"
+        :key="artist.name!"
+      >
+        <template v-if="index > 0">, </template>
+        <a
+          :href="artist.link"
+          target="_blank"
+        >
+          {{ artist.name }}
+        </a>
+      </template>
+    </p>
   </div>
 </template>
