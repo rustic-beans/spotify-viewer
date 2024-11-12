@@ -2,6 +2,7 @@ package spotify
 
 import (
 	"context"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rustic-beans/spotify-viewer/utils"
@@ -52,5 +53,12 @@ func callSpotify[R *Q, Q any](ctx context.Context, spot *Spotify, f func(ctx con
 }
 
 func (s *Spotify) GetPlayerState(ctx context.Context) (*spotifyLib.PlayerState, error) {
-	return callSpotify(ctx, s, s.Client.PlayerState)
+	playerState, err := callSpotify(ctx, s, s.Client.PlayerState)
+	if err != nil {
+		return nil, err
+	}
+
+	playerState.Timestamp = time.Now().UnixMilli()
+
+	return playerState, nil
 }

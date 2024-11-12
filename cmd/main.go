@@ -10,6 +10,7 @@ import (
 	"github.com/rustic-beans/spotify-viewer/lib/infrastructure/graphql"
 	httpLib "github.com/rustic-beans/spotify-viewer/lib/infrastructure/http"
 	"github.com/rustic-beans/spotify-viewer/lib/spotify"
+	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
 func main() {
@@ -28,13 +29,15 @@ func main() {
 
 	spotifyClient := spotify.NewSpotify(config)
 
-	graphqlServer := graphql.NewServer(spotifyClient)
+	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*spotifyLib.PlayerState]()
+
+	graphqlServer := graphql.NewServer(spotifyClient, playerStateWebsocketHandler)
 	e := httpLib.NewServer(graphqlServer)
 
 	spotifyClient.SetupRoutes(e)
 	spotifyClient.Authenticate()
 
-	go spotify.PlayerStateLoop(spotifyClient, dbClient)
+	go spotify.PlayerStateLoop(spotifyClient, dbClient, playerStateWebsocketHandler)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)))
 }
