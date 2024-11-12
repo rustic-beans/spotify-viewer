@@ -3,7 +3,7 @@ import AlbumCover from '@/components/AlbumCover.vue';
 import TrackInfo from '@/components/TrackInfo.vue';
 import ProgressBar from '@/components/ProgressBar.vue';
 import { type FragmentType, useFragment, graphql } from '@/__generated__';
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 
 const PlayerStateFragment = graphql(/* GraphQL */ `
   fragment PlayerState on PlayerState {
@@ -20,10 +20,6 @@ const PlayerStateFragment = graphql(/* GraphQL */ `
 const props = defineProps<{
   fragment: FragmentType<typeof PlayerStateFragment>,
 }>();
-
-watch(() => props.fragment, () => {
-  console.log('PlayerStateFragment changed', props.fragment);
-});
 
 const playerStateObj = computed(() => useFragment(PlayerStateFragment, props.fragment));
 const trackObj = computed(() => playerStateObj.value.item);
