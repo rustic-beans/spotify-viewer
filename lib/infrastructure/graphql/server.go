@@ -34,15 +34,18 @@ func NewServer(
 				return true // TODO: Add origin check
 			},
 		},
+		//nolint:mnd // no need to change the ping interval
 		KeepAlivePingInterval: 10 * time.Second,
 	})
 	server.AddTransport(transport.Options{})
 	server.AddTransport(transport.GET{})
 	server.AddTransport(transport.POST{})
 
+	//nolint:mnd // no need to change the cache size
 	server.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 	server.Use(extension.Introspection{})
 	server.Use(extension.AutomaticPersistedQuery{
+		//nolint:mnd // no need to change the cache size
 		Cache: lru.New[string](100),
 	})
 
