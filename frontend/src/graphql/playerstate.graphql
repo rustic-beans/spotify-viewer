@@ -1,18 +1,40 @@
+fragment Images on SimpleAlbum {
+  images {
+    url
+  }
+}
+
+fragment Artists on SimpleAlbum {
+  artists {
+    name
+  }
+}
+
+fragment Album on SimpleAlbum {
+  name
+  ...Images
+  ...Artists
+}
+
+fragment Track on FullTrack {
+  name
+  duration_ms
+  album {
+    ...Album
+  }
+}
+
+fragment PlayerState on PlayerState {
+  progress_ms
+  is_playing
+  item {
+    ...Track
+  }
+}
+
+
 subscription getPlayerState {
   playerState {
-    context{
-      href
-      type
-    }
-    progress_ms
-    is_playing
-    timestamp
-    item {
-      name
-      duration_ms
-      album {
-        name
-      }
-    }
+    ...PlayerState
   }
 }

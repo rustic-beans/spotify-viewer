@@ -11,11 +11,12 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "format": "prettier --write src/",
-    "generate": "graphql-codegen --config gqlgen.yml"
+    "generate": "graphql-codegen"
   },
   "dependencies": {
     "@apollo/client": "^3.11.9",
     "@vue/apollo-composable": "^4.2.1",
+    "@vue/typescript-plugin": "^2.1.10",
     "graphql": "^16.9.0",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.16.0",
