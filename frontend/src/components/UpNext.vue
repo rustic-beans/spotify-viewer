@@ -8,7 +8,7 @@
     >
     <div class="pr-3">
       <div class="text-xs text-gray-400 uppercase tracking-wider">UP NEXT</div>
-      <div class="text-white font-medium">Midsummer • Sebastian Kamae</div>
+      <div class="text-white font-medium">This section</div>
     </div>
   </div>
 </template>
