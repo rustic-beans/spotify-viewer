@@ -13,7 +13,7 @@
 </p>
 
 ## Wnat is it?
-This project is a basic server-client application that allows users to view what is currently playing on their Spotify account through a website. The backend server is written in go and uses the spotify api to get information about the user's spotify account. The server will log songs that the user listens to in a SQL database, the logic for when the server logs a song is explained in the docs [here](docs/spotify-song-logging.md) WIP. The frontend is written in ... . The frontend will display the currently playing song (e.g. album art, artist name and song name), how far into the song the user is, as well as a small history of the last songs played and the future queue of songs to be played.
+This project is a basic server-client application that allows users to view what is currently playing on their Spotify account through a website. The backend server is written in Go and uses the Spotify API to get information about the user's spotify account. The server will log songs that the user listens to in a SQLite database, the logic for when the server logs a song is explained in the docs [here](docs/spotify-song-logging.md) WIP. The frontend is written in Vue 3. The frontend will display the currently playing song (e.g. album art, artist name and song name), how far into the song the user is, as well as a small history of the last songs played and the future queue of songs to be played.
 ## Usage
 ### Run
 To run the backend first configure the config variables by copying `config-example.yaml` to `config.yaml` and filling in the values.
@@ -35,7 +35,12 @@ make start
 TODO
 
 ### Frontend 
-TODO
+```
+cd frontend
+npm i
+npm run generate
+npm run dev
+```
 
 ## Host
 TODO
