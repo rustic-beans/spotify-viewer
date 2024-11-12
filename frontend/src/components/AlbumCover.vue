@@ -17,7 +17,7 @@ const props = defineProps<{
 const imagesObj = computed(() => useFragment(ImagesFragment, props.fragment));
 
 const albumUrl = computed(() => {
-  let imageValue = imagesObj.value.images;
+  const imageValue = imagesObj.value.images;
   if (imageValue && imageValue.length > 0 && imageValue[0]) {
     const image = imageValue[0];
     if (image.url) {
