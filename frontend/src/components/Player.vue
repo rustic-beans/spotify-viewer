@@ -42,15 +42,11 @@ const imagesObj = computed(() => trackObj.value?.album);
         />
         <Controls
           class="ml-auto"
-          v-if="trackObj"
           :fragment="playerStateObj"
         />
       </div>
 
-      <ProgressBar
-        v-if="playerStateObj"
-        :fragment="playerStateObj"
-      />
+      <ProgressBar :fragment="playerStateObj" />
     </div>
   </div>
 </template>

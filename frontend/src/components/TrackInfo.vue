@@ -19,12 +19,12 @@ const props = defineProps<{
 
 const trackObj = computed(() => useFragment(TrackFragment, props.fragment));
 const artists = computed(() => {
-  return trackObj.value.artists?.map((artist) => {
+  return trackObj.value.artists.map((artist) => {
     return {
-      name: artist?.name,
-      link: artist?.external_urls?.spotify,
+      name: artist.name,
+      link: artist.external_urls.spotify,
     };
-  }).filter((artist) => artist.name);
+  });
 });
 
 const trackLink = computed(() => {
