@@ -20,6 +20,10 @@ const (
 	FieldAlbumType = "album_type"
 	// FieldTotalTracks holds the string denoting the total_tracks field in the database.
 	FieldTotalTracks = "total_tracks"
+	// FieldAvailableMarkets holds the string denoting the available_markets field in the database.
+	FieldAvailableMarkets = "available_markets"
+	// FieldExternalUrls holds the string denoting the external_urls field in the database.
+	FieldExternalUrls = "external_urls"
 	// FieldHref holds the string denoting the href field in the database.
 	FieldHref = "href"
 	// FieldName holds the string denoting the name field in the database.
@@ -32,14 +36,16 @@ const (
 	FieldRestrictions = "restrictions"
 	// FieldURI holds the string denoting the uri field in the database.
 	FieldURI = "uri"
-	// FieldExternalIds holds the string denoting the external_ids field in the database.
-	FieldExternalIds = "external_ids"
+	// FieldGenres holds the string denoting the genres field in the database.
+	FieldGenres = "genres"
 	// FieldLabel holds the string denoting the label field in the database.
 	FieldLabel = "label"
 	// FieldPopularity holds the string denoting the popularity field in the database.
 	FieldPopularity = "popularity"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
+	// EdgeArtists holds the string denoting the artists edge name in mutations.
+	EdgeArtists = "artists"
 	// EdgeTracks holds the string denoting the tracks edge name in mutations.
 	EdgeTracks = "tracks"
 	// Table holds the table name of the album in the database.
@@ -49,13 +55,18 @@ const (
 	// ImagesInverseTable is the table name for the Image entity.
 	// It exists in this package in order to avoid circular dependency with the "image" package.
 	ImagesInverseTable = "images"
+	// ArtistsTable is the table that holds the artists relation/edge. The primary key declared below.
+	ArtistsTable = "artist_albums"
+	// ArtistsInverseTable is the table name for the Artist entity.
+	// It exists in this package in order to avoid circular dependency with the "artist" package.
+	ArtistsInverseTable = "artists"
 	// TracksTable is the table that holds the tracks relation/edge.
 	TracksTable = "tracks"
 	// TracksInverseTable is the table name for the Track entity.
 	// It exists in this package in order to avoid circular dependency with the "track" package.
 	TracksInverseTable = "tracks"
 	// TracksColumn is the table column denoting the tracks relation/edge.
-	TracksColumn = "album_tracks"
+	TracksColumn = "album_id"
 )
 
 // Columns holds all SQL columns for album fields.
@@ -63,13 +74,15 @@ var Columns = []string{
 	FieldID,
 	FieldAlbumType,
 	FieldTotalTracks,
+	FieldAvailableMarkets,
+	FieldExternalUrls,
 	FieldHref,
 	FieldName,
 	FieldReleaseDate,
 	FieldReleaseDatePrecision,
 	FieldRestrictions,
 	FieldURI,
-	FieldExternalIds,
+	FieldGenres,
 	FieldLabel,
 	FieldPopularity,
 }
@@ -78,6 +91,9 @@ var (
 	// ImagesPrimaryKey and ImagesColumn2 are the table columns denoting the
 	// primary key for the images relation (M2M).
 	ImagesPrimaryKey = []string{"album_id", "image_id"}
+	// ArtistsPrimaryKey and ArtistsColumn2 are the table columns denoting the
+	// primary key for the artists relation (M2M).
+	ArtistsPrimaryKey = []string{"artist_id", "album_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -199,11 +215,6 @@ func ByURI(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURI, opts...).ToFunc()
 }
 
-// ByExternalIds orders the results by the external_ids field.
-func ByExternalIds(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalIds, opts...).ToFunc()
-}
-
 // ByLabel orders the results by the label field.
 func ByLabel(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLabel, opts...).ToFunc()
@@ -228,6 +239,20 @@ func ByImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByArtistsCount orders the results by artists count.
+func ByArtistsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newArtistsStep(), opts...)
+	}
+}
+
+// ByArtists orders the results by artists terms.
+func ByArtists(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newArtistsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByTracksCount orders the results by tracks count.
 func ByTracksCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -246,6 +271,13 @@ func newImagesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ImagesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
+	)
+}
+func newArtistsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ArtistsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ArtistsTable, ArtistsPrimaryKey...),
 	)
 }
 func newTracksStep() *sqlgraph.Step {

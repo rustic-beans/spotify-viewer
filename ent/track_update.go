@@ -13,7 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -36,69 +38,56 @@ func (tu *TrackUpdate) SetUpdatedAt(t time.Time) *TrackUpdate {
 	return tu
 }
 
-// SetName sets the "name" field.
-func (tu *TrackUpdate) SetName(s string) *TrackUpdate {
-	tu.mutation.SetName(s)
+// SetAlbumID sets the "album_id" field.
+func (tu *TrackUpdate) SetAlbumID(s string) *TrackUpdate {
+	tu.mutation.SetAlbumID(s)
 	return tu
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tu *TrackUpdate) SetNillableName(s *string) *TrackUpdate {
+// SetNillableAlbumID sets the "album_id" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillableAlbumID(s *string) *TrackUpdate {
 	if s != nil {
-		tu.SetName(*s)
+		tu.SetAlbumID(*s)
 	}
 	return tu
 }
 
-// SetArtists sets the "artists" field.
-func (tu *TrackUpdate) SetArtists(s []string) *TrackUpdate {
-	tu.mutation.SetArtists(s)
+// SetAvailableMarkets sets the "available_markets" field.
+func (tu *TrackUpdate) SetAvailableMarkets(s []string) *TrackUpdate {
+	tu.mutation.SetAvailableMarkets(s)
 	return tu
 }
 
-// AppendArtists appends s to the "artists" field.
-func (tu *TrackUpdate) AppendArtists(s []string) *TrackUpdate {
-	tu.mutation.AppendArtists(s)
+// AppendAvailableMarkets appends s to the "available_markets" field.
+func (tu *TrackUpdate) AppendAvailableMarkets(s []string) *TrackUpdate {
+	tu.mutation.AppendAvailableMarkets(s)
 	return tu
 }
 
-// SetArtistsGenres sets the "artists_genres" field.
-func (tu *TrackUpdate) SetArtistsGenres(s []string) *TrackUpdate {
-	tu.mutation.SetArtistsGenres(s)
+// SetDiscNumber sets the "disc_number" field.
+func (tu *TrackUpdate) SetDiscNumber(i int) *TrackUpdate {
+	tu.mutation.ResetDiscNumber()
+	tu.mutation.SetDiscNumber(i)
 	return tu
 }
 
-// AppendArtistsGenres appends s to the "artists_genres" field.
-func (tu *TrackUpdate) AppendArtistsGenres(s []string) *TrackUpdate {
-	tu.mutation.AppendArtistsGenres(s)
-	return tu
-}
-
-// SetAlbumName sets the "album_name" field.
-func (tu *TrackUpdate) SetAlbumName(s string) *TrackUpdate {
-	tu.mutation.SetAlbumName(s)
-	return tu
-}
-
-// SetNillableAlbumName sets the "album_name" field if the given value is not nil.
-func (tu *TrackUpdate) SetNillableAlbumName(s *string) *TrackUpdate {
-	if s != nil {
-		tu.SetAlbumName(*s)
+// SetNillableDiscNumber sets the "disc_number" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillableDiscNumber(i *int) *TrackUpdate {
+	if i != nil {
+		tu.SetDiscNumber(*i)
 	}
 	return tu
 }
 
-// SetAlbumImageURI sets the "album_image_uri" field.
-func (tu *TrackUpdate) SetAlbumImageURI(s string) *TrackUpdate {
-	tu.mutation.SetAlbumImageURI(s)
+// AddDiscNumber adds i to the "disc_number" field.
+func (tu *TrackUpdate) AddDiscNumber(i int) *TrackUpdate {
+	tu.mutation.AddDiscNumber(i)
 	return tu
 }
 
-// SetNillableAlbumImageURI sets the "album_image_uri" field if the given value is not nil.
-func (tu *TrackUpdate) SetNillableAlbumImageURI(s *string) *TrackUpdate {
-	if s != nil {
-		tu.SetAlbumImageURI(*s)
-	}
+// ClearDiscNumber clears the value of the "disc_number" field.
+func (tu *TrackUpdate) ClearDiscNumber() *TrackUpdate {
+	tu.mutation.ClearDiscNumber()
 	return tu
 }
 
@@ -123,6 +112,130 @@ func (tu *TrackUpdate) AddDurationMs(i int) *TrackUpdate {
 	return tu
 }
 
+// SetExplicit sets the "explicit" field.
+func (tu *TrackUpdate) SetExplicit(b bool) *TrackUpdate {
+	tu.mutation.SetExplicit(b)
+	return tu
+}
+
+// SetNillableExplicit sets the "explicit" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillableExplicit(b *bool) *TrackUpdate {
+	if b != nil {
+		tu.SetExplicit(*b)
+	}
+	return tu
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (tu *TrackUpdate) SetExternalUrls(sm *schema.StringMap) *TrackUpdate {
+	tu.mutation.SetExternalUrls(sm)
+	return tu
+}
+
+// SetHref sets the "href" field.
+func (tu *TrackUpdate) SetHref(s string) *TrackUpdate {
+	tu.mutation.SetHref(s)
+	return tu
+}
+
+// SetNillableHref sets the "href" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillableHref(s *string) *TrackUpdate {
+	if s != nil {
+		tu.SetHref(*s)
+	}
+	return tu
+}
+
+// SetIsPlayable sets the "is_playable" field.
+func (tu *TrackUpdate) SetIsPlayable(b bool) *TrackUpdate {
+	tu.mutation.SetIsPlayable(b)
+	return tu
+}
+
+// SetNillableIsPlayable sets the "is_playable" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillableIsPlayable(b *bool) *TrackUpdate {
+	if b != nil {
+		tu.SetIsPlayable(*b)
+	}
+	return tu
+}
+
+// SetName sets the "name" field.
+func (tu *TrackUpdate) SetName(s string) *TrackUpdate {
+	tu.mutation.SetName(s)
+	return tu
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillableName(s *string) *TrackUpdate {
+	if s != nil {
+		tu.SetName(*s)
+	}
+	return tu
+}
+
+// SetPopularity sets the "popularity" field.
+func (tu *TrackUpdate) SetPopularity(i int) *TrackUpdate {
+	tu.mutation.ResetPopularity()
+	tu.mutation.SetPopularity(i)
+	return tu
+}
+
+// SetNillablePopularity sets the "popularity" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillablePopularity(i *int) *TrackUpdate {
+	if i != nil {
+		tu.SetPopularity(*i)
+	}
+	return tu
+}
+
+// AddPopularity adds i to the "popularity" field.
+func (tu *TrackUpdate) AddPopularity(i int) *TrackUpdate {
+	tu.mutation.AddPopularity(i)
+	return tu
+}
+
+// SetPreviewURL sets the "preview_url" field.
+func (tu *TrackUpdate) SetPreviewURL(s string) *TrackUpdate {
+	tu.mutation.SetPreviewURL(s)
+	return tu
+}
+
+// SetNillablePreviewURL sets the "preview_url" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillablePreviewURL(s *string) *TrackUpdate {
+	if s != nil {
+		tu.SetPreviewURL(*s)
+	}
+	return tu
+}
+
+// ClearPreviewURL clears the value of the "preview_url" field.
+func (tu *TrackUpdate) ClearPreviewURL() *TrackUpdate {
+	tu.mutation.ClearPreviewURL()
+	return tu
+}
+
+// SetTrackNumber sets the "track_number" field.
+func (tu *TrackUpdate) SetTrackNumber(i int) *TrackUpdate {
+	tu.mutation.ResetTrackNumber()
+	tu.mutation.SetTrackNumber(i)
+	return tu
+}
+
+// SetNillableTrackNumber sets the "track_number" field if the given value is not nil.
+func (tu *TrackUpdate) SetNillableTrackNumber(i *int) *TrackUpdate {
+	if i != nil {
+		tu.SetTrackNumber(*i)
+	}
+	return tu
+}
+
+// AddTrackNumber adds i to the "track_number" field.
+func (tu *TrackUpdate) AddTrackNumber(i int) *TrackUpdate {
+	tu.mutation.AddTrackNumber(i)
+	return tu
+}
+
 // SetURI sets the "uri" field.
 func (tu *TrackUpdate) SetURI(s string) *TrackUpdate {
 	tu.mutation.SetURI(s)
@@ -137,23 +250,24 @@ func (tu *TrackUpdate) SetNillableURI(s *string) *TrackUpdate {
 	return tu
 }
 
-// SetAlbumsID sets the "albums" edge to the Album entity by ID.
-func (tu *TrackUpdate) SetAlbumsID(id string) *TrackUpdate {
-	tu.mutation.SetAlbumsID(id)
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (tu *TrackUpdate) AddArtistIDs(ids ...string) *TrackUpdate {
+	tu.mutation.AddArtistIDs(ids...)
 	return tu
 }
 
-// SetNillableAlbumsID sets the "albums" edge to the Album entity by ID if the given value is not nil.
-func (tu *TrackUpdate) SetNillableAlbumsID(id *string) *TrackUpdate {
-	if id != nil {
-		tu = tu.SetAlbumsID(*id)
+// AddArtists adds the "artists" edges to the Artist entity.
+func (tu *TrackUpdate) AddArtists(a ...*Artist) *TrackUpdate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
 	}
-	return tu
+	return tu.AddArtistIDs(ids...)
 }
 
-// SetAlbums sets the "albums" edge to the Album entity.
-func (tu *TrackUpdate) SetAlbums(a *Album) *TrackUpdate {
-	return tu.SetAlbumsID(a.ID)
+// SetAlbum sets the "album" edge to the Album entity.
+func (tu *TrackUpdate) SetAlbum(a *Album) *TrackUpdate {
+	return tu.SetAlbumID(a.ID)
 }
 
 // Mutation returns the TrackMutation object of the builder.
@@ -161,9 +275,30 @@ func (tu *TrackUpdate) Mutation() *TrackMutation {
 	return tu.mutation
 }
 
-// ClearAlbums clears the "albums" edge to the Album entity.
-func (tu *TrackUpdate) ClearAlbums() *TrackUpdate {
-	tu.mutation.ClearAlbums()
+// ClearArtists clears all "artists" edges to the Artist entity.
+func (tu *TrackUpdate) ClearArtists() *TrackUpdate {
+	tu.mutation.ClearArtists()
+	return tu
+}
+
+// RemoveArtistIDs removes the "artists" edge to Artist entities by IDs.
+func (tu *TrackUpdate) RemoveArtistIDs(ids ...string) *TrackUpdate {
+	tu.mutation.RemoveArtistIDs(ids...)
+	return tu
+}
+
+// RemoveArtists removes "artists" edges to Artist entities.
+func (tu *TrackUpdate) RemoveArtists(a ...*Artist) *TrackUpdate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return tu.RemoveArtistIDs(ids...)
+}
+
+// ClearAlbum clears the "album" edge to the Album entity.
+func (tu *TrackUpdate) ClearAlbum() *TrackUpdate {
+	tu.mutation.ClearAlbum()
 	return tu
 }
 
@@ -203,7 +338,43 @@ func (tu *TrackUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tu *TrackUpdate) check() error {
+	if v, ok := tu.mutation.AlbumID(); ok {
+		if err := track.AlbumIDValidator(v); err != nil {
+			return &ValidationError{Name: "album_id", err: fmt.Errorf(`ent: validator failed for field "Track.album_id": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.DurationMs(); ok {
+		if err := track.DurationMsValidator(v); err != nil {
+			return &ValidationError{Name: "duration_ms", err: fmt.Errorf(`ent: validator failed for field "Track.duration_ms": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.Href(); ok {
+		if err := track.HrefValidator(v); err != nil {
+			return &ValidationError{Name: "href", err: fmt.Errorf(`ent: validator failed for field "Track.href": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.Name(); ok {
+		if err := track.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Track.name": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.URI(); ok {
+		if err := track.URIValidator(v); err != nil {
+			return &ValidationError{Name: "uri", err: fmt.Errorf(`ent: validator failed for field "Track.uri": %w`, err)}
+		}
+	}
+	if tu.mutation.AlbumCleared() && len(tu.mutation.AlbumIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Track.album"`)
+	}
+	return nil
+}
+
 func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := tu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(track.Table, track.Columns, sqlgraph.NewFieldSpec(track.FieldID, field.TypeString))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -215,30 +386,22 @@ func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.UpdatedAt(); ok {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tu.mutation.Name(); ok {
-		_spec.SetField(track.FieldName, field.TypeString, value)
+	if value, ok := tu.mutation.AvailableMarkets(); ok {
+		_spec.SetField(track.FieldAvailableMarkets, field.TypeJSON, value)
 	}
-	if value, ok := tu.mutation.Artists(); ok {
-		_spec.SetField(track.FieldArtists, field.TypeJSON, value)
-	}
-	if value, ok := tu.mutation.AppendedArtists(); ok {
+	if value, ok := tu.mutation.AppendedAvailableMarkets(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, track.FieldArtists, value)
+			sqljson.Append(u, track.FieldAvailableMarkets, value)
 		})
 	}
-	if value, ok := tu.mutation.ArtistsGenres(); ok {
-		_spec.SetField(track.FieldArtistsGenres, field.TypeJSON, value)
+	if value, ok := tu.mutation.DiscNumber(); ok {
+		_spec.SetField(track.FieldDiscNumber, field.TypeInt, value)
 	}
-	if value, ok := tu.mutation.AppendedArtistsGenres(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, track.FieldArtistsGenres, value)
-		})
+	if value, ok := tu.mutation.AddedDiscNumber(); ok {
+		_spec.AddField(track.FieldDiscNumber, field.TypeInt, value)
 	}
-	if value, ok := tu.mutation.AlbumName(); ok {
-		_spec.SetField(track.FieldAlbumName, field.TypeString, value)
-	}
-	if value, ok := tu.mutation.AlbumImageURI(); ok {
-		_spec.SetField(track.FieldAlbumImageURI, field.TypeString, value)
+	if tu.mutation.DiscNumberCleared() {
+		_spec.ClearField(track.FieldDiscNumber, field.TypeInt)
 	}
 	if value, ok := tu.mutation.DurationMs(); ok {
 		_spec.SetField(track.FieldDurationMs, field.TypeInt, value)
@@ -246,15 +409,93 @@ func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.AddedDurationMs(); ok {
 		_spec.AddField(track.FieldDurationMs, field.TypeInt, value)
 	}
+	if value, ok := tu.mutation.Explicit(); ok {
+		_spec.SetField(track.FieldExplicit, field.TypeBool, value)
+	}
+	if value, ok := tu.mutation.ExternalUrls(); ok {
+		_spec.SetField(track.FieldExternalUrls, field.TypeJSON, value)
+	}
+	if value, ok := tu.mutation.Href(); ok {
+		_spec.SetField(track.FieldHref, field.TypeString, value)
+	}
+	if value, ok := tu.mutation.IsPlayable(); ok {
+		_spec.SetField(track.FieldIsPlayable, field.TypeBool, value)
+	}
+	if value, ok := tu.mutation.Name(); ok {
+		_spec.SetField(track.FieldName, field.TypeString, value)
+	}
+	if value, ok := tu.mutation.Popularity(); ok {
+		_spec.SetField(track.FieldPopularity, field.TypeInt, value)
+	}
+	if value, ok := tu.mutation.AddedPopularity(); ok {
+		_spec.AddField(track.FieldPopularity, field.TypeInt, value)
+	}
+	if value, ok := tu.mutation.PreviewURL(); ok {
+		_spec.SetField(track.FieldPreviewURL, field.TypeString, value)
+	}
+	if tu.mutation.PreviewURLCleared() {
+		_spec.ClearField(track.FieldPreviewURL, field.TypeString)
+	}
+	if value, ok := tu.mutation.TrackNumber(); ok {
+		_spec.SetField(track.FieldTrackNumber, field.TypeInt, value)
+	}
+	if value, ok := tu.mutation.AddedTrackNumber(); ok {
+		_spec.AddField(track.FieldTrackNumber, field.TypeInt, value)
+	}
 	if value, ok := tu.mutation.URI(); ok {
 		_spec.SetField(track.FieldURI, field.TypeString, value)
 	}
-	if tu.mutation.AlbumsCleared() {
+	if tu.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   track.ArtistsTable,
+			Columns: track.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedArtistsIDs(); len(nodes) > 0 && !tu.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   track.ArtistsTable,
+			Columns: track.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   track.ArtistsTable,
+			Columns: track.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tu.mutation.AlbumCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   track.AlbumsTable,
-			Columns: []string{track.AlbumsColumn},
+			Table:   track.AlbumTable,
+			Columns: []string{track.AlbumColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
@@ -262,12 +503,12 @@ func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.AlbumsIDs(); len(nodes) > 0 {
+	if nodes := tu.mutation.AlbumIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   track.AlbumsTable,
-			Columns: []string{track.AlbumsColumn},
+			Table:   track.AlbumTable,
+			Columns: []string{track.AlbumColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
@@ -304,69 +545,56 @@ func (tuo *TrackUpdateOne) SetUpdatedAt(t time.Time) *TrackUpdateOne {
 	return tuo
 }
 
-// SetName sets the "name" field.
-func (tuo *TrackUpdateOne) SetName(s string) *TrackUpdateOne {
-	tuo.mutation.SetName(s)
+// SetAlbumID sets the "album_id" field.
+func (tuo *TrackUpdateOne) SetAlbumID(s string) *TrackUpdateOne {
+	tuo.mutation.SetAlbumID(s)
 	return tuo
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tuo *TrackUpdateOne) SetNillableName(s *string) *TrackUpdateOne {
+// SetNillableAlbumID sets the "album_id" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillableAlbumID(s *string) *TrackUpdateOne {
 	if s != nil {
-		tuo.SetName(*s)
+		tuo.SetAlbumID(*s)
 	}
 	return tuo
 }
 
-// SetArtists sets the "artists" field.
-func (tuo *TrackUpdateOne) SetArtists(s []string) *TrackUpdateOne {
-	tuo.mutation.SetArtists(s)
+// SetAvailableMarkets sets the "available_markets" field.
+func (tuo *TrackUpdateOne) SetAvailableMarkets(s []string) *TrackUpdateOne {
+	tuo.mutation.SetAvailableMarkets(s)
 	return tuo
 }
 
-// AppendArtists appends s to the "artists" field.
-func (tuo *TrackUpdateOne) AppendArtists(s []string) *TrackUpdateOne {
-	tuo.mutation.AppendArtists(s)
+// AppendAvailableMarkets appends s to the "available_markets" field.
+func (tuo *TrackUpdateOne) AppendAvailableMarkets(s []string) *TrackUpdateOne {
+	tuo.mutation.AppendAvailableMarkets(s)
 	return tuo
 }
 
-// SetArtistsGenres sets the "artists_genres" field.
-func (tuo *TrackUpdateOne) SetArtistsGenres(s []string) *TrackUpdateOne {
-	tuo.mutation.SetArtistsGenres(s)
+// SetDiscNumber sets the "disc_number" field.
+func (tuo *TrackUpdateOne) SetDiscNumber(i int) *TrackUpdateOne {
+	tuo.mutation.ResetDiscNumber()
+	tuo.mutation.SetDiscNumber(i)
 	return tuo
 }
 
-// AppendArtistsGenres appends s to the "artists_genres" field.
-func (tuo *TrackUpdateOne) AppendArtistsGenres(s []string) *TrackUpdateOne {
-	tuo.mutation.AppendArtistsGenres(s)
-	return tuo
-}
-
-// SetAlbumName sets the "album_name" field.
-func (tuo *TrackUpdateOne) SetAlbumName(s string) *TrackUpdateOne {
-	tuo.mutation.SetAlbumName(s)
-	return tuo
-}
-
-// SetNillableAlbumName sets the "album_name" field if the given value is not nil.
-func (tuo *TrackUpdateOne) SetNillableAlbumName(s *string) *TrackUpdateOne {
-	if s != nil {
-		tuo.SetAlbumName(*s)
+// SetNillableDiscNumber sets the "disc_number" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillableDiscNumber(i *int) *TrackUpdateOne {
+	if i != nil {
+		tuo.SetDiscNumber(*i)
 	}
 	return tuo
 }
 
-// SetAlbumImageURI sets the "album_image_uri" field.
-func (tuo *TrackUpdateOne) SetAlbumImageURI(s string) *TrackUpdateOne {
-	tuo.mutation.SetAlbumImageURI(s)
+// AddDiscNumber adds i to the "disc_number" field.
+func (tuo *TrackUpdateOne) AddDiscNumber(i int) *TrackUpdateOne {
+	tuo.mutation.AddDiscNumber(i)
 	return tuo
 }
 
-// SetNillableAlbumImageURI sets the "album_image_uri" field if the given value is not nil.
-func (tuo *TrackUpdateOne) SetNillableAlbumImageURI(s *string) *TrackUpdateOne {
-	if s != nil {
-		tuo.SetAlbumImageURI(*s)
-	}
+// ClearDiscNumber clears the value of the "disc_number" field.
+func (tuo *TrackUpdateOne) ClearDiscNumber() *TrackUpdateOne {
+	tuo.mutation.ClearDiscNumber()
 	return tuo
 }
 
@@ -391,6 +619,130 @@ func (tuo *TrackUpdateOne) AddDurationMs(i int) *TrackUpdateOne {
 	return tuo
 }
 
+// SetExplicit sets the "explicit" field.
+func (tuo *TrackUpdateOne) SetExplicit(b bool) *TrackUpdateOne {
+	tuo.mutation.SetExplicit(b)
+	return tuo
+}
+
+// SetNillableExplicit sets the "explicit" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillableExplicit(b *bool) *TrackUpdateOne {
+	if b != nil {
+		tuo.SetExplicit(*b)
+	}
+	return tuo
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (tuo *TrackUpdateOne) SetExternalUrls(sm *schema.StringMap) *TrackUpdateOne {
+	tuo.mutation.SetExternalUrls(sm)
+	return tuo
+}
+
+// SetHref sets the "href" field.
+func (tuo *TrackUpdateOne) SetHref(s string) *TrackUpdateOne {
+	tuo.mutation.SetHref(s)
+	return tuo
+}
+
+// SetNillableHref sets the "href" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillableHref(s *string) *TrackUpdateOne {
+	if s != nil {
+		tuo.SetHref(*s)
+	}
+	return tuo
+}
+
+// SetIsPlayable sets the "is_playable" field.
+func (tuo *TrackUpdateOne) SetIsPlayable(b bool) *TrackUpdateOne {
+	tuo.mutation.SetIsPlayable(b)
+	return tuo
+}
+
+// SetNillableIsPlayable sets the "is_playable" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillableIsPlayable(b *bool) *TrackUpdateOne {
+	if b != nil {
+		tuo.SetIsPlayable(*b)
+	}
+	return tuo
+}
+
+// SetName sets the "name" field.
+func (tuo *TrackUpdateOne) SetName(s string) *TrackUpdateOne {
+	tuo.mutation.SetName(s)
+	return tuo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillableName(s *string) *TrackUpdateOne {
+	if s != nil {
+		tuo.SetName(*s)
+	}
+	return tuo
+}
+
+// SetPopularity sets the "popularity" field.
+func (tuo *TrackUpdateOne) SetPopularity(i int) *TrackUpdateOne {
+	tuo.mutation.ResetPopularity()
+	tuo.mutation.SetPopularity(i)
+	return tuo
+}
+
+// SetNillablePopularity sets the "popularity" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillablePopularity(i *int) *TrackUpdateOne {
+	if i != nil {
+		tuo.SetPopularity(*i)
+	}
+	return tuo
+}
+
+// AddPopularity adds i to the "popularity" field.
+func (tuo *TrackUpdateOne) AddPopularity(i int) *TrackUpdateOne {
+	tuo.mutation.AddPopularity(i)
+	return tuo
+}
+
+// SetPreviewURL sets the "preview_url" field.
+func (tuo *TrackUpdateOne) SetPreviewURL(s string) *TrackUpdateOne {
+	tuo.mutation.SetPreviewURL(s)
+	return tuo
+}
+
+// SetNillablePreviewURL sets the "preview_url" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillablePreviewURL(s *string) *TrackUpdateOne {
+	if s != nil {
+		tuo.SetPreviewURL(*s)
+	}
+	return tuo
+}
+
+// ClearPreviewURL clears the value of the "preview_url" field.
+func (tuo *TrackUpdateOne) ClearPreviewURL() *TrackUpdateOne {
+	tuo.mutation.ClearPreviewURL()
+	return tuo
+}
+
+// SetTrackNumber sets the "track_number" field.
+func (tuo *TrackUpdateOne) SetTrackNumber(i int) *TrackUpdateOne {
+	tuo.mutation.ResetTrackNumber()
+	tuo.mutation.SetTrackNumber(i)
+	return tuo
+}
+
+// SetNillableTrackNumber sets the "track_number" field if the given value is not nil.
+func (tuo *TrackUpdateOne) SetNillableTrackNumber(i *int) *TrackUpdateOne {
+	if i != nil {
+		tuo.SetTrackNumber(*i)
+	}
+	return tuo
+}
+
+// AddTrackNumber adds i to the "track_number" field.
+func (tuo *TrackUpdateOne) AddTrackNumber(i int) *TrackUpdateOne {
+	tuo.mutation.AddTrackNumber(i)
+	return tuo
+}
+
 // SetURI sets the "uri" field.
 func (tuo *TrackUpdateOne) SetURI(s string) *TrackUpdateOne {
 	tuo.mutation.SetURI(s)
@@ -405,23 +757,24 @@ func (tuo *TrackUpdateOne) SetNillableURI(s *string) *TrackUpdateOne {
 	return tuo
 }
 
-// SetAlbumsID sets the "albums" edge to the Album entity by ID.
-func (tuo *TrackUpdateOne) SetAlbumsID(id string) *TrackUpdateOne {
-	tuo.mutation.SetAlbumsID(id)
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (tuo *TrackUpdateOne) AddArtistIDs(ids ...string) *TrackUpdateOne {
+	tuo.mutation.AddArtistIDs(ids...)
 	return tuo
 }
 
-// SetNillableAlbumsID sets the "albums" edge to the Album entity by ID if the given value is not nil.
-func (tuo *TrackUpdateOne) SetNillableAlbumsID(id *string) *TrackUpdateOne {
-	if id != nil {
-		tuo = tuo.SetAlbumsID(*id)
+// AddArtists adds the "artists" edges to the Artist entity.
+func (tuo *TrackUpdateOne) AddArtists(a ...*Artist) *TrackUpdateOne {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
 	}
-	return tuo
+	return tuo.AddArtistIDs(ids...)
 }
 
-// SetAlbums sets the "albums" edge to the Album entity.
-func (tuo *TrackUpdateOne) SetAlbums(a *Album) *TrackUpdateOne {
-	return tuo.SetAlbumsID(a.ID)
+// SetAlbum sets the "album" edge to the Album entity.
+func (tuo *TrackUpdateOne) SetAlbum(a *Album) *TrackUpdateOne {
+	return tuo.SetAlbumID(a.ID)
 }
 
 // Mutation returns the TrackMutation object of the builder.
@@ -429,9 +782,30 @@ func (tuo *TrackUpdateOne) Mutation() *TrackMutation {
 	return tuo.mutation
 }
 
-// ClearAlbums clears the "albums" edge to the Album entity.
-func (tuo *TrackUpdateOne) ClearAlbums() *TrackUpdateOne {
-	tuo.mutation.ClearAlbums()
+// ClearArtists clears all "artists" edges to the Artist entity.
+func (tuo *TrackUpdateOne) ClearArtists() *TrackUpdateOne {
+	tuo.mutation.ClearArtists()
+	return tuo
+}
+
+// RemoveArtistIDs removes the "artists" edge to Artist entities by IDs.
+func (tuo *TrackUpdateOne) RemoveArtistIDs(ids ...string) *TrackUpdateOne {
+	tuo.mutation.RemoveArtistIDs(ids...)
+	return tuo
+}
+
+// RemoveArtists removes "artists" edges to Artist entities.
+func (tuo *TrackUpdateOne) RemoveArtists(a ...*Artist) *TrackUpdateOne {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return tuo.RemoveArtistIDs(ids...)
+}
+
+// ClearAlbum clears the "album" edge to the Album entity.
+func (tuo *TrackUpdateOne) ClearAlbum() *TrackUpdateOne {
+	tuo.mutation.ClearAlbum()
 	return tuo
 }
 
@@ -484,7 +858,43 @@ func (tuo *TrackUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tuo *TrackUpdateOne) check() error {
+	if v, ok := tuo.mutation.AlbumID(); ok {
+		if err := track.AlbumIDValidator(v); err != nil {
+			return &ValidationError{Name: "album_id", err: fmt.Errorf(`ent: validator failed for field "Track.album_id": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.DurationMs(); ok {
+		if err := track.DurationMsValidator(v); err != nil {
+			return &ValidationError{Name: "duration_ms", err: fmt.Errorf(`ent: validator failed for field "Track.duration_ms": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.Href(); ok {
+		if err := track.HrefValidator(v); err != nil {
+			return &ValidationError{Name: "href", err: fmt.Errorf(`ent: validator failed for field "Track.href": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.Name(); ok {
+		if err := track.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Track.name": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.URI(); ok {
+		if err := track.URIValidator(v); err != nil {
+			return &ValidationError{Name: "uri", err: fmt.Errorf(`ent: validator failed for field "Track.uri": %w`, err)}
+		}
+	}
+	if tuo.mutation.AlbumCleared() && len(tuo.mutation.AlbumIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Track.album"`)
+	}
+	return nil
+}
+
 func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error) {
+	if err := tuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(track.Table, track.Columns, sqlgraph.NewFieldSpec(track.FieldID, field.TypeString))
 	id, ok := tuo.mutation.ID()
 	if !ok {
@@ -513,30 +923,22 @@ func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error
 	if value, ok := tuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tuo.mutation.Name(); ok {
-		_spec.SetField(track.FieldName, field.TypeString, value)
+	if value, ok := tuo.mutation.AvailableMarkets(); ok {
+		_spec.SetField(track.FieldAvailableMarkets, field.TypeJSON, value)
 	}
-	if value, ok := tuo.mutation.Artists(); ok {
-		_spec.SetField(track.FieldArtists, field.TypeJSON, value)
-	}
-	if value, ok := tuo.mutation.AppendedArtists(); ok {
+	if value, ok := tuo.mutation.AppendedAvailableMarkets(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, track.FieldArtists, value)
+			sqljson.Append(u, track.FieldAvailableMarkets, value)
 		})
 	}
-	if value, ok := tuo.mutation.ArtistsGenres(); ok {
-		_spec.SetField(track.FieldArtistsGenres, field.TypeJSON, value)
+	if value, ok := tuo.mutation.DiscNumber(); ok {
+		_spec.SetField(track.FieldDiscNumber, field.TypeInt, value)
 	}
-	if value, ok := tuo.mutation.AppendedArtistsGenres(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, track.FieldArtistsGenres, value)
-		})
+	if value, ok := tuo.mutation.AddedDiscNumber(); ok {
+		_spec.AddField(track.FieldDiscNumber, field.TypeInt, value)
 	}
-	if value, ok := tuo.mutation.AlbumName(); ok {
-		_spec.SetField(track.FieldAlbumName, field.TypeString, value)
-	}
-	if value, ok := tuo.mutation.AlbumImageURI(); ok {
-		_spec.SetField(track.FieldAlbumImageURI, field.TypeString, value)
+	if tuo.mutation.DiscNumberCleared() {
+		_spec.ClearField(track.FieldDiscNumber, field.TypeInt)
 	}
 	if value, ok := tuo.mutation.DurationMs(); ok {
 		_spec.SetField(track.FieldDurationMs, field.TypeInt, value)
@@ -544,15 +946,93 @@ func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error
 	if value, ok := tuo.mutation.AddedDurationMs(); ok {
 		_spec.AddField(track.FieldDurationMs, field.TypeInt, value)
 	}
+	if value, ok := tuo.mutation.Explicit(); ok {
+		_spec.SetField(track.FieldExplicit, field.TypeBool, value)
+	}
+	if value, ok := tuo.mutation.ExternalUrls(); ok {
+		_spec.SetField(track.FieldExternalUrls, field.TypeJSON, value)
+	}
+	if value, ok := tuo.mutation.Href(); ok {
+		_spec.SetField(track.FieldHref, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.IsPlayable(); ok {
+		_spec.SetField(track.FieldIsPlayable, field.TypeBool, value)
+	}
+	if value, ok := tuo.mutation.Name(); ok {
+		_spec.SetField(track.FieldName, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.Popularity(); ok {
+		_spec.SetField(track.FieldPopularity, field.TypeInt, value)
+	}
+	if value, ok := tuo.mutation.AddedPopularity(); ok {
+		_spec.AddField(track.FieldPopularity, field.TypeInt, value)
+	}
+	if value, ok := tuo.mutation.PreviewURL(); ok {
+		_spec.SetField(track.FieldPreviewURL, field.TypeString, value)
+	}
+	if tuo.mutation.PreviewURLCleared() {
+		_spec.ClearField(track.FieldPreviewURL, field.TypeString)
+	}
+	if value, ok := tuo.mutation.TrackNumber(); ok {
+		_spec.SetField(track.FieldTrackNumber, field.TypeInt, value)
+	}
+	if value, ok := tuo.mutation.AddedTrackNumber(); ok {
+		_spec.AddField(track.FieldTrackNumber, field.TypeInt, value)
+	}
 	if value, ok := tuo.mutation.URI(); ok {
 		_spec.SetField(track.FieldURI, field.TypeString, value)
 	}
-	if tuo.mutation.AlbumsCleared() {
+	if tuo.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   track.ArtistsTable,
+			Columns: track.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedArtistsIDs(); len(nodes) > 0 && !tuo.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   track.ArtistsTable,
+			Columns: track.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   track.ArtistsTable,
+			Columns: track.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.AlbumCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   track.AlbumsTable,
-			Columns: []string{track.AlbumsColumn},
+			Table:   track.AlbumTable,
+			Columns: []string{track.AlbumColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
@@ -560,12 +1040,12 @@ func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.AlbumsIDs(); len(nodes) > 0 {
+	if nodes := tuo.mutation.AlbumIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   track.AlbumsTable,
-			Columns: []string{track.AlbumsColumn},
+			Table:   track.AlbumTable,
+			Columns: []string{track.AlbumColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),

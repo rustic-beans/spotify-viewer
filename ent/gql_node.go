@@ -10,6 +10,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
@@ -23,6 +24,11 @@ var albumImplementors = []string{"Album", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*Album) IsNode() {}
+
+var artistImplementors = []string{"Artist", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Artist) IsNode() {}
 
 var imageImplementors = []string{"Image", "Node"}
 
@@ -97,6 +103,15 @@ func (c *Client) noder(ctx context.Context, table string, id string) (Noder, err
 			Where(album.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, albumImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case artist.Table:
+		query := c.Artist.Query().
+			Where(artist.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, artistImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -196,6 +211,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []string) ([]Node
 		query := c.Album.Query().
 			Where(album.IDIn(ids...))
 		query, err := query.CollectFields(ctx, albumImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case artist.Table:
+		query := c.Artist.Query().
+			Where(artist.IDIn(ids...))
+		query, err := query.CollectFields(ctx, artistImplementors...)
 		if err != nil {
 			return nil, err
 		}

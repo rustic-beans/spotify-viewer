@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
@@ -18,25 +19,43 @@ func init() {
 	albumFields := schema.Album{}.Fields()
 	_ = albumFields
 	// albumDescHref is the schema descriptor for href field.
-	albumDescHref := albumFields[3].Descriptor()
+	albumDescHref := albumFields[5].Descriptor()
 	// album.HrefValidator is a validator for the "href" field. It is called by the builders before save.
 	album.HrefValidator = albumDescHref.Validators[0].(func(string) error)
 	// albumDescName is the schema descriptor for name field.
-	albumDescName := albumFields[4].Descriptor()
+	albumDescName := albumFields[6].Descriptor()
 	// album.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	album.NameValidator = albumDescName.Validators[0].(func(string) error)
 	// albumDescReleaseDate is the schema descriptor for release_date field.
-	albumDescReleaseDate := albumFields[5].Descriptor()
+	albumDescReleaseDate := albumFields[7].Descriptor()
 	// album.ReleaseDateValidator is a validator for the "release_date" field. It is called by the builders before save.
 	album.ReleaseDateValidator = albumDescReleaseDate.Validators[0].(func(string) error)
 	// albumDescURI is the schema descriptor for uri field.
-	albumDescURI := albumFields[8].Descriptor()
+	albumDescURI := albumFields[10].Descriptor()
 	// album.URIValidator is a validator for the "uri" field. It is called by the builders before save.
 	album.URIValidator = albumDescURI.Validators[0].(func(string) error)
 	// albumDescID is the schema descriptor for id field.
 	albumDescID := albumFields[0].Descriptor()
 	// album.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	album.IDValidator = albumDescID.Validators[0].(func(string) error)
+	artistFields := schema.Artist{}.Fields()
+	_ = artistFields
+	// artistDescHref is the schema descriptor for href field.
+	artistDescHref := artistFields[2].Descriptor()
+	// artist.HrefValidator is a validator for the "href" field. It is called by the builders before save.
+	artist.HrefValidator = artistDescHref.Validators[0].(func(string) error)
+	// artistDescName is the schema descriptor for name field.
+	artistDescName := artistFields[3].Descriptor()
+	// artist.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	artist.NameValidator = artistDescName.Validators[0].(func(string) error)
+	// artistDescURI is the schema descriptor for uri field.
+	artistDescURI := artistFields[4].Descriptor()
+	// artist.URIValidator is a validator for the "uri" field. It is called by the builders before save.
+	artist.URIValidator = artistDescURI.Validators[0].(func(string) error)
+	// artistDescID is the schema descriptor for id field.
+	artistDescID := artistFields[0].Descriptor()
+	// artist.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	artist.IDValidator = artistDescID.Validators[0].(func(string) error)
 	imageFields := schema.Image{}.Fields()
 	_ = imageFields
 	// imageDescURL is the schema descriptor for url field.
@@ -76,6 +95,30 @@ func init() {
 	track.DefaultUpdatedAt = trackDescUpdatedAt.Default.(func() time.Time)
 	// track.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	track.UpdateDefaultUpdatedAt = trackDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// trackDescAlbumID is the schema descriptor for album_id field.
+	trackDescAlbumID := trackFields[1].Descriptor()
+	// track.AlbumIDValidator is a validator for the "album_id" field. It is called by the builders before save.
+	track.AlbumIDValidator = trackDescAlbumID.Validators[0].(func(string) error)
+	// trackDescDurationMs is the schema descriptor for duration_ms field.
+	trackDescDurationMs := trackFields[4].Descriptor()
+	// track.DurationMsValidator is a validator for the "duration_ms" field. It is called by the builders before save.
+	track.DurationMsValidator = trackDescDurationMs.Validators[0].(func(int) error)
+	// trackDescExplicit is the schema descriptor for explicit field.
+	trackDescExplicit := trackFields[5].Descriptor()
+	// track.DefaultExplicit holds the default value on creation for the explicit field.
+	track.DefaultExplicit = trackDescExplicit.Default.(bool)
+	// trackDescHref is the schema descriptor for href field.
+	trackDescHref := trackFields[7].Descriptor()
+	// track.HrefValidator is a validator for the "href" field. It is called by the builders before save.
+	track.HrefValidator = trackDescHref.Validators[0].(func(string) error)
+	// trackDescName is the schema descriptor for name field.
+	trackDescName := trackFields[9].Descriptor()
+	// track.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	track.NameValidator = trackDescName.Validators[0].(func(string) error)
+	// trackDescURI is the schema descriptor for uri field.
+	trackDescURI := trackFields[13].Descriptor()
+	// track.URIValidator is a validator for the "uri" field. It is called by the builders before save.
+	track.URIValidator = trackDescURI.Validators[0].(func(string) error)
 	// trackDescID is the schema descriptor for id field.
 	trackDescID := trackFields[0].Descriptor()
 	// track.IDValidator is a validator for the "id" field. It is called by the builders before save.

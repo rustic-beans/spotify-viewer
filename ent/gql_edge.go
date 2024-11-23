@@ -20,7 +20,43 @@ func (a *Album) Images(ctx context.Context) (result []*Image, err error) {
 	return result, err
 }
 
+func (a *Album) Artists(ctx context.Context) (result []*Artist, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = a.NamedArtists(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = a.Edges.ArtistsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = a.QueryArtists().All(ctx)
+	}
+	return result, err
+}
+
 func (a *Album) Tracks(ctx context.Context) (result []*Track, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = a.NamedTracks(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = a.Edges.TracksOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = a.QueryTracks().All(ctx)
+	}
+	return result, err
+}
+
+func (a *Artist) Albums(ctx context.Context) (result []*Album, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = a.NamedAlbums(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = a.Edges.AlbumsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = a.QueryAlbums().All(ctx)
+	}
+	return result, err
+}
+
+func (a *Artist) Tracks(ctx context.Context) (result []*Track, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = a.NamedTracks(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
@@ -44,10 +80,22 @@ func (i *Image) Albums(ctx context.Context) (result []*Album, err error) {
 	return result, err
 }
 
-func (t *Track) Albums(ctx context.Context) (*Album, error) {
-	result, err := t.Edges.AlbumsOrErr()
-	if IsNotLoaded(err) {
-		result, err = t.QueryAlbums().Only(ctx)
+func (t *Track) Artists(ctx context.Context) (result []*Artist, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = t.NamedArtists(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = t.Edges.ArtistsOrErr()
 	}
-	return result, MaskNotFound(err)
+	if IsNotLoaded(err) {
+		result, err = t.QueryArtists().All(ctx)
+	}
+	return result, err
+}
+
+func (t *Track) Album(ctx context.Context) (*Album, error) {
+	result, err := t.Edges.AlbumOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryAlbum().Only(ctx)
+	}
+	return result, err
 }

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -18,52 +19,77 @@ import (
 type Track struct {
 	config `json:"-"`
 	// ID of the ent.
+	// The Spotify ID for the track
 	ID string `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
-	// Artists holds the value of the "artists" field.
-	Artists []string `json:"artists,omitempty"`
-	// ArtistsGenres holds the value of the "artists_genres" field.
-	ArtistsGenres []string `json:"artists_genres,omitempty"`
-	// AlbumName holds the value of the "album_name" field.
-	AlbumName string `json:"album_name,omitempty"`
-	// AlbumImageURI holds the value of the "album_image_uri" field.
-	AlbumImageURI string `json:"album_image_uri,omitempty"`
-	// DurationMs holds the value of the "duration_ms" field.
+	// The album on which the track appears
+	AlbumID string `json:"album_id,omitempty"`
+	// A list of the countries in which the track can be played
+	AvailableMarkets []string `json:"available_markets,omitempty"`
+	// The disc number
+	DiscNumber int `json:"disc_number,omitempty"`
+	// The track length in milliseconds
 	DurationMs int `json:"duration_ms,omitempty"`
-	// URI holds the value of the "uri" field.
+	// Whether or not the track has explicit lyrics
+	Explicit bool `json:"explicit,omitempty"`
+	// Known external URLs for this track
+	ExternalUrls *schema.StringMap `json:"external_urls,omitempty"`
+	// A link to the Web API endpoint providing full details of the track
+	Href string `json:"href,omitempty"`
+	// If true, the track is playable in the given market
+	IsPlayable bool `json:"is_playable,omitempty"`
+	// The name of the track
+	Name string `json:"name,omitempty"`
+	// The popularity of the track
+	Popularity int `json:"popularity,omitempty"`
+	// A link to a 30 second preview of the track
+	PreviewURL string `json:"preview_url,omitempty"`
+	// The number of the track
+	TrackNumber int `json:"track_number,omitempty"`
+	// The Spotify URI for the track
 	URI string `json:"uri,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TrackQuery when eager-loading is set.
 	Edges        TrackEdges `json:"edges"`
-	album_tracks *string
 	selectValues sql.SelectValues
 }
 
 // TrackEdges holds the relations/edges for other nodes in the graph.
 type TrackEdges struct {
-	// Albums holds the value of the albums edge.
-	Albums *Album `json:"albums,omitempty"`
+	// Artists holds the value of the artists edge.
+	Artists []*Artist `json:"artists,omitempty"`
+	// Album holds the value of the album edge.
+	Album *Album `json:"album,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
+
+	namedArtists map[string][]*Artist
 }
 
-// AlbumsOrErr returns the Albums value or an error if the edge
+// ArtistsOrErr returns the Artists value or an error if the edge
+// was not loaded in eager-loading.
+func (e TrackEdges) ArtistsOrErr() ([]*Artist, error) {
+	if e.loadedTypes[0] {
+		return e.Artists, nil
+	}
+	return nil, &NotLoadedError{edge: "artists"}
+}
+
+// AlbumOrErr returns the Album value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TrackEdges) AlbumsOrErr() (*Album, error) {
-	if e.Albums != nil {
-		return e.Albums, nil
-	} else if e.loadedTypes[0] {
+func (e TrackEdges) AlbumOrErr() (*Album, error) {
+	if e.Album != nil {
+		return e.Album, nil
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: album.Label}
 	}
-	return nil, &NotLoadedError{edge: "albums"}
+	return nil, &NotLoadedError{edge: "album"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -71,16 +97,16 @@ func (*Track) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case track.FieldArtists, track.FieldArtistsGenres:
+		case track.FieldAvailableMarkets, track.FieldExternalUrls:
 			values[i] = new([]byte)
-		case track.FieldDurationMs:
+		case track.FieldExplicit, track.FieldIsPlayable:
+			values[i] = new(sql.NullBool)
+		case track.FieldDiscNumber, track.FieldDurationMs, track.FieldPopularity, track.FieldTrackNumber:
 			values[i] = new(sql.NullInt64)
-		case track.FieldID, track.FieldName, track.FieldAlbumName, track.FieldAlbumImageURI, track.FieldURI:
+		case track.FieldID, track.FieldAlbumID, track.FieldHref, track.FieldName, track.FieldPreviewURL, track.FieldURI:
 			values[i] = new(sql.NullString)
 		case track.FieldCreatedAt, track.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case track.ForeignKeys[0]: // album_tracks
-			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -114,39 +140,25 @@ func (t *Track) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.UpdatedAt = value.Time
 			}
-		case track.FieldName:
+		case track.FieldAlbumID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field album_id", values[i])
 			} else if value.Valid {
-				t.Name = value.String
+				t.AlbumID = value.String
 			}
-		case track.FieldArtists:
+		case track.FieldAvailableMarkets:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field artists", values[i])
+				return fmt.Errorf("unexpected type %T for field available_markets", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.Artists); err != nil {
-					return fmt.Errorf("unmarshal field artists: %w", err)
+				if err := json.Unmarshal(*value, &t.AvailableMarkets); err != nil {
+					return fmt.Errorf("unmarshal field available_markets: %w", err)
 				}
 			}
-		case track.FieldArtistsGenres:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field artists_genres", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.ArtistsGenres); err != nil {
-					return fmt.Errorf("unmarshal field artists_genres: %w", err)
-				}
-			}
-		case track.FieldAlbumName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field album_name", values[i])
+		case track.FieldDiscNumber:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field disc_number", values[i])
 			} else if value.Valid {
-				t.AlbumName = value.String
-			}
-		case track.FieldAlbumImageURI:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field album_image_uri", values[i])
-			} else if value.Valid {
-				t.AlbumImageURI = value.String
+				t.DiscNumber = int(value.Int64)
 			}
 		case track.FieldDurationMs:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -154,18 +166,61 @@ func (t *Track) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.DurationMs = int(value.Int64)
 			}
+		case track.FieldExplicit:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field explicit", values[i])
+			} else if value.Valid {
+				t.Explicit = value.Bool
+			}
+		case track.FieldExternalUrls:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field external_urls", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &t.ExternalUrls); err != nil {
+					return fmt.Errorf("unmarshal field external_urls: %w", err)
+				}
+			}
+		case track.FieldHref:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field href", values[i])
+			} else if value.Valid {
+				t.Href = value.String
+			}
+		case track.FieldIsPlayable:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_playable", values[i])
+			} else if value.Valid {
+				t.IsPlayable = value.Bool
+			}
+		case track.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				t.Name = value.String
+			}
+		case track.FieldPopularity:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field popularity", values[i])
+			} else if value.Valid {
+				t.Popularity = int(value.Int64)
+			}
+		case track.FieldPreviewURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field preview_url", values[i])
+			} else if value.Valid {
+				t.PreviewURL = value.String
+			}
+		case track.FieldTrackNumber:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field track_number", values[i])
+			} else if value.Valid {
+				t.TrackNumber = int(value.Int64)
+			}
 		case track.FieldURI:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field uri", values[i])
 			} else if value.Valid {
 				t.URI = value.String
-			}
-		case track.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field album_tracks", values[i])
-			} else if value.Valid {
-				t.album_tracks = new(string)
-				*t.album_tracks = value.String
 			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
@@ -180,9 +235,14 @@ func (t *Track) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
 }
 
-// QueryAlbums queries the "albums" edge of the Track entity.
-func (t *Track) QueryAlbums() *AlbumQuery {
-	return NewTrackClient(t.config).QueryAlbums(t)
+// QueryArtists queries the "artists" edge of the Track entity.
+func (t *Track) QueryArtists() *ArtistQuery {
+	return NewTrackClient(t.config).QueryArtists(t)
+}
+
+// QueryAlbum queries the "album" edge of the Track entity.
+func (t *Track) QueryAlbum() *AlbumQuery {
+	return NewTrackClient(t.config).QueryAlbum(t)
 }
 
 // Update returns a builder for updating this Track.
@@ -214,28 +274,70 @@ func (t *Track) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(t.Name)
+	builder.WriteString("album_id=")
+	builder.WriteString(t.AlbumID)
 	builder.WriteString(", ")
-	builder.WriteString("artists=")
-	builder.WriteString(fmt.Sprintf("%v", t.Artists))
+	builder.WriteString("available_markets=")
+	builder.WriteString(fmt.Sprintf("%v", t.AvailableMarkets))
 	builder.WriteString(", ")
-	builder.WriteString("artists_genres=")
-	builder.WriteString(fmt.Sprintf("%v", t.ArtistsGenres))
-	builder.WriteString(", ")
-	builder.WriteString("album_name=")
-	builder.WriteString(t.AlbumName)
-	builder.WriteString(", ")
-	builder.WriteString("album_image_uri=")
-	builder.WriteString(t.AlbumImageURI)
+	builder.WriteString("disc_number=")
+	builder.WriteString(fmt.Sprintf("%v", t.DiscNumber))
 	builder.WriteString(", ")
 	builder.WriteString("duration_ms=")
 	builder.WriteString(fmt.Sprintf("%v", t.DurationMs))
+	builder.WriteString(", ")
+	builder.WriteString("explicit=")
+	builder.WriteString(fmt.Sprintf("%v", t.Explicit))
+	builder.WriteString(", ")
+	builder.WriteString("external_urls=")
+	builder.WriteString(fmt.Sprintf("%v", t.ExternalUrls))
+	builder.WriteString(", ")
+	builder.WriteString("href=")
+	builder.WriteString(t.Href)
+	builder.WriteString(", ")
+	builder.WriteString("is_playable=")
+	builder.WriteString(fmt.Sprintf("%v", t.IsPlayable))
+	builder.WriteString(", ")
+	builder.WriteString("name=")
+	builder.WriteString(t.Name)
+	builder.WriteString(", ")
+	builder.WriteString("popularity=")
+	builder.WriteString(fmt.Sprintf("%v", t.Popularity))
+	builder.WriteString(", ")
+	builder.WriteString("preview_url=")
+	builder.WriteString(t.PreviewURL)
+	builder.WriteString(", ")
+	builder.WriteString("track_number=")
+	builder.WriteString(fmt.Sprintf("%v", t.TrackNumber))
 	builder.WriteString(", ")
 	builder.WriteString("uri=")
 	builder.WriteString(t.URI)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedArtists returns the Artists named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (t *Track) NamedArtists(name string) ([]*Artist, error) {
+	if t.Edges.namedArtists == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := t.Edges.namedArtists[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (t *Track) appendNamedArtists(name string, edges ...*Artist) {
+	if t.Edges.namedArtists == nil {
+		t.Edges.namedArtists = make(map[string][]*Artist)
+	}
+	if len(edges) == 0 {
+		t.Edges.namedArtists[name] = []*Artist{}
+	} else {
+		t.Edges.namedArtists[name] = append(t.Edges.namedArtists[name], edges...)
+	}
 }
 
 // Tracks is a parsable slice of Track.

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
@@ -75,9 +76,10 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			album.Table: album.ValidColumn,
-			image.Table: image.ValidColumn,
-			track.Table: track.ValidColumn,
+			album.Table:  album.ValidColumn,
+			artist.Table: artist.ValidColumn,
+			image.Table:  image.ValidColumn,
+			track.Table:  track.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

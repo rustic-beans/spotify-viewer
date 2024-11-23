@@ -9,10 +9,13 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -61,6 +64,24 @@ func (au *AlbumUpdate) SetNillableTotalTracks(i *int) *AlbumUpdate {
 // AddTotalTracks adds i to the "total_tracks" field.
 func (au *AlbumUpdate) AddTotalTracks(i int) *AlbumUpdate {
 	au.mutation.AddTotalTracks(i)
+	return au
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (au *AlbumUpdate) SetAvailableMarkets(s []string) *AlbumUpdate {
+	au.mutation.SetAvailableMarkets(s)
+	return au
+}
+
+// AppendAvailableMarkets appends s to the "available_markets" field.
+func (au *AlbumUpdate) AppendAvailableMarkets(s []string) *AlbumUpdate {
+	au.mutation.AppendAvailableMarkets(s)
+	return au
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (au *AlbumUpdate) SetExternalUrls(sm *schema.StringMap) *AlbumUpdate {
+	au.mutation.SetExternalUrls(sm)
 	return au
 }
 
@@ -154,17 +175,15 @@ func (au *AlbumUpdate) SetNillableURI(s *string) *AlbumUpdate {
 	return au
 }
 
-// SetExternalIds sets the "external_ids" field.
-func (au *AlbumUpdate) SetExternalIds(s string) *AlbumUpdate {
-	au.mutation.SetExternalIds(s)
+// SetGenres sets the "genres" field.
+func (au *AlbumUpdate) SetGenres(s []string) *AlbumUpdate {
+	au.mutation.SetGenres(s)
 	return au
 }
 
-// SetNillableExternalIds sets the "external_ids" field if the given value is not nil.
-func (au *AlbumUpdate) SetNillableExternalIds(s *string) *AlbumUpdate {
-	if s != nil {
-		au.SetExternalIds(*s)
-	}
+// AppendGenres appends s to the "genres" field.
+func (au *AlbumUpdate) AppendGenres(s []string) *AlbumUpdate {
+	au.mutation.AppendGenres(s)
 	return au
 }
 
@@ -218,6 +237,21 @@ func (au *AlbumUpdate) AddImages(i ...*Image) *AlbumUpdate {
 	return au.AddImageIDs(ids...)
 }
 
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (au *AlbumUpdate) AddArtistIDs(ids ...string) *AlbumUpdate {
+	au.mutation.AddArtistIDs(ids...)
+	return au
+}
+
+// AddArtists adds the "artists" edges to the Artist entity.
+func (au *AlbumUpdate) AddArtists(a ...*Artist) *AlbumUpdate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return au.AddArtistIDs(ids...)
+}
+
 // AddTrackIDs adds the "tracks" edge to the Track entity by IDs.
 func (au *AlbumUpdate) AddTrackIDs(ids ...string) *AlbumUpdate {
 	au.mutation.AddTrackIDs(ids...)
@@ -257,6 +291,27 @@ func (au *AlbumUpdate) RemoveImages(i ...*Image) *AlbumUpdate {
 		ids[j] = i[j].ID
 	}
 	return au.RemoveImageIDs(ids...)
+}
+
+// ClearArtists clears all "artists" edges to the Artist entity.
+func (au *AlbumUpdate) ClearArtists() *AlbumUpdate {
+	au.mutation.ClearArtists()
+	return au
+}
+
+// RemoveArtistIDs removes the "artists" edge to Artist entities by IDs.
+func (au *AlbumUpdate) RemoveArtistIDs(ids ...string) *AlbumUpdate {
+	au.mutation.RemoveArtistIDs(ids...)
+	return au
+}
+
+// RemoveArtists removes "artists" edges to Artist entities.
+func (au *AlbumUpdate) RemoveArtists(a ...*Artist) *AlbumUpdate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return au.RemoveArtistIDs(ids...)
 }
 
 // ClearTracks clears all "tracks" edges to the Track entity.
@@ -363,6 +418,17 @@ func (au *AlbumUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.AddedTotalTracks(); ok {
 		_spec.AddField(album.FieldTotalTracks, field.TypeInt, value)
 	}
+	if value, ok := au.mutation.AvailableMarkets(); ok {
+		_spec.SetField(album.FieldAvailableMarkets, field.TypeJSON, value)
+	}
+	if value, ok := au.mutation.AppendedAvailableMarkets(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, album.FieldAvailableMarkets, value)
+		})
+	}
+	if value, ok := au.mutation.ExternalUrls(); ok {
+		_spec.SetField(album.FieldExternalUrls, field.TypeJSON, value)
+	}
 	if value, ok := au.mutation.Href(); ok {
 		_spec.SetField(album.FieldHref, field.TypeString, value)
 	}
@@ -384,8 +450,13 @@ func (au *AlbumUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.URI(); ok {
 		_spec.SetField(album.FieldURI, field.TypeString, value)
 	}
-	if value, ok := au.mutation.ExternalIds(); ok {
-		_spec.SetField(album.FieldExternalIds, field.TypeString, value)
+	if value, ok := au.mutation.Genres(); ok {
+		_spec.SetField(album.FieldGenres, field.TypeJSON, value)
+	}
+	if value, ok := au.mutation.AppendedGenres(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, album.FieldGenres, value)
+		})
 	}
 	if value, ok := au.mutation.Label(); ok {
 		_spec.SetField(album.FieldLabel, field.TypeString, value)
@@ -434,6 +505,51 @@ func (au *AlbumUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   album.ArtistsTable,
+			Columns: album.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedArtistsIDs(); len(nodes) > 0 && !au.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   album.ArtistsTable,
+			Columns: album.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   album.ArtistsTable,
+			Columns: album.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -541,6 +657,24 @@ func (auo *AlbumUpdateOne) AddTotalTracks(i int) *AlbumUpdateOne {
 	return auo
 }
 
+// SetAvailableMarkets sets the "available_markets" field.
+func (auo *AlbumUpdateOne) SetAvailableMarkets(s []string) *AlbumUpdateOne {
+	auo.mutation.SetAvailableMarkets(s)
+	return auo
+}
+
+// AppendAvailableMarkets appends s to the "available_markets" field.
+func (auo *AlbumUpdateOne) AppendAvailableMarkets(s []string) *AlbumUpdateOne {
+	auo.mutation.AppendAvailableMarkets(s)
+	return auo
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (auo *AlbumUpdateOne) SetExternalUrls(sm *schema.StringMap) *AlbumUpdateOne {
+	auo.mutation.SetExternalUrls(sm)
+	return auo
+}
+
 // SetHref sets the "href" field.
 func (auo *AlbumUpdateOne) SetHref(s string) *AlbumUpdateOne {
 	auo.mutation.SetHref(s)
@@ -631,17 +765,15 @@ func (auo *AlbumUpdateOne) SetNillableURI(s *string) *AlbumUpdateOne {
 	return auo
 }
 
-// SetExternalIds sets the "external_ids" field.
-func (auo *AlbumUpdateOne) SetExternalIds(s string) *AlbumUpdateOne {
-	auo.mutation.SetExternalIds(s)
+// SetGenres sets the "genres" field.
+func (auo *AlbumUpdateOne) SetGenres(s []string) *AlbumUpdateOne {
+	auo.mutation.SetGenres(s)
 	return auo
 }
 
-// SetNillableExternalIds sets the "external_ids" field if the given value is not nil.
-func (auo *AlbumUpdateOne) SetNillableExternalIds(s *string) *AlbumUpdateOne {
-	if s != nil {
-		auo.SetExternalIds(*s)
-	}
+// AppendGenres appends s to the "genres" field.
+func (auo *AlbumUpdateOne) AppendGenres(s []string) *AlbumUpdateOne {
+	auo.mutation.AppendGenres(s)
 	return auo
 }
 
@@ -695,6 +827,21 @@ func (auo *AlbumUpdateOne) AddImages(i ...*Image) *AlbumUpdateOne {
 	return auo.AddImageIDs(ids...)
 }
 
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (auo *AlbumUpdateOne) AddArtistIDs(ids ...string) *AlbumUpdateOne {
+	auo.mutation.AddArtistIDs(ids...)
+	return auo
+}
+
+// AddArtists adds the "artists" edges to the Artist entity.
+func (auo *AlbumUpdateOne) AddArtists(a ...*Artist) *AlbumUpdateOne {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return auo.AddArtistIDs(ids...)
+}
+
 // AddTrackIDs adds the "tracks" edge to the Track entity by IDs.
 func (auo *AlbumUpdateOne) AddTrackIDs(ids ...string) *AlbumUpdateOne {
 	auo.mutation.AddTrackIDs(ids...)
@@ -734,6 +881,27 @@ func (auo *AlbumUpdateOne) RemoveImages(i ...*Image) *AlbumUpdateOne {
 		ids[j] = i[j].ID
 	}
 	return auo.RemoveImageIDs(ids...)
+}
+
+// ClearArtists clears all "artists" edges to the Artist entity.
+func (auo *AlbumUpdateOne) ClearArtists() *AlbumUpdateOne {
+	auo.mutation.ClearArtists()
+	return auo
+}
+
+// RemoveArtistIDs removes the "artists" edge to Artist entities by IDs.
+func (auo *AlbumUpdateOne) RemoveArtistIDs(ids ...string) *AlbumUpdateOne {
+	auo.mutation.RemoveArtistIDs(ids...)
+	return auo
+}
+
+// RemoveArtists removes "artists" edges to Artist entities.
+func (auo *AlbumUpdateOne) RemoveArtists(a ...*Artist) *AlbumUpdateOne {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return auo.RemoveArtistIDs(ids...)
 }
 
 // ClearTracks clears all "tracks" edges to the Track entity.
@@ -870,6 +1038,17 @@ func (auo *AlbumUpdateOne) sqlSave(ctx context.Context) (_node *Album, err error
 	if value, ok := auo.mutation.AddedTotalTracks(); ok {
 		_spec.AddField(album.FieldTotalTracks, field.TypeInt, value)
 	}
+	if value, ok := auo.mutation.AvailableMarkets(); ok {
+		_spec.SetField(album.FieldAvailableMarkets, field.TypeJSON, value)
+	}
+	if value, ok := auo.mutation.AppendedAvailableMarkets(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, album.FieldAvailableMarkets, value)
+		})
+	}
+	if value, ok := auo.mutation.ExternalUrls(); ok {
+		_spec.SetField(album.FieldExternalUrls, field.TypeJSON, value)
+	}
 	if value, ok := auo.mutation.Href(); ok {
 		_spec.SetField(album.FieldHref, field.TypeString, value)
 	}
@@ -891,8 +1070,13 @@ func (auo *AlbumUpdateOne) sqlSave(ctx context.Context) (_node *Album, err error
 	if value, ok := auo.mutation.URI(); ok {
 		_spec.SetField(album.FieldURI, field.TypeString, value)
 	}
-	if value, ok := auo.mutation.ExternalIds(); ok {
-		_spec.SetField(album.FieldExternalIds, field.TypeString, value)
+	if value, ok := auo.mutation.Genres(); ok {
+		_spec.SetField(album.FieldGenres, field.TypeJSON, value)
+	}
+	if value, ok := auo.mutation.AppendedGenres(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, album.FieldGenres, value)
+		})
 	}
 	if value, ok := auo.mutation.Label(); ok {
 		_spec.SetField(album.FieldLabel, field.TypeString, value)
@@ -941,6 +1125,51 @@ func (auo *AlbumUpdateOne) sqlSave(ctx context.Context) (_node *Album, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   album.ArtistsTable,
+			Columns: album.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedArtistsIDs(); len(nodes) > 0 && !auo.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   album.ArtistsTable,
+			Columns: album.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   album.ArtistsTable,
+			Columns: album.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

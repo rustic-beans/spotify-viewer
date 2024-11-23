@@ -31,7 +31,7 @@ func main() {
 
 	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*spotifyLib.PlayerState]()
 
-	graphqlServer := graphql.NewServer(spotifyClient, playerStateWebsocketHandler)
+	graphqlServer := graphql.NewServer(dbClient, spotifyClient, playerStateWebsocketHandler)
 	e := httpLib.NewServer(graphqlServer)
 
 	spotifyClient.SetupRoutes(e)

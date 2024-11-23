@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
@@ -20,14 +22,15 @@ import (
 // TrackQuery is the builder for querying Track entities.
 type TrackQuery struct {
 	config
-	ctx        *QueryContext
-	order      []track.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Track
-	withAlbums *AlbumQuery
-	withFKs    bool
-	loadTotal  []func(context.Context, []*Track) error
-	modifiers  []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []track.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Track
+	withArtists      *ArtistQuery
+	withAlbum        *AlbumQuery
+	loadTotal        []func(context.Context, []*Track) error
+	modifiers        []func(*sql.Selector)
+	withNamedArtists map[string]*ArtistQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -64,8 +67,30 @@ func (tq *TrackQuery) Order(o ...track.OrderOption) *TrackQuery {
 	return tq
 }
 
-// QueryAlbums chains the current query on the "albums" edge.
-func (tq *TrackQuery) QueryAlbums() *AlbumQuery {
+// QueryArtists chains the current query on the "artists" edge.
+func (tq *TrackQuery) QueryArtists() *ArtistQuery {
+	query := (&ArtistClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(track.Table, track.FieldID, selector),
+			sqlgraph.To(artist.Table, artist.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, track.ArtistsTable, track.ArtistsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAlbum chains the current query on the "album" edge.
+func (tq *TrackQuery) QueryAlbum() *AlbumQuery {
 	query := (&AlbumClient{config: tq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := tq.prepareQuery(ctx); err != nil {
@@ -78,7 +103,7 @@ func (tq *TrackQuery) QueryAlbums() *AlbumQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(track.Table, track.FieldID, selector),
 			sqlgraph.To(album.Table, album.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, track.AlbumsTable, track.AlbumsColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, track.AlbumTable, track.AlbumColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -273,26 +298,38 @@ func (tq *TrackQuery) Clone() *TrackQuery {
 		return nil
 	}
 	return &TrackQuery{
-		config:     tq.config,
-		ctx:        tq.ctx.Clone(),
-		order:      append([]track.OrderOption{}, tq.order...),
-		inters:     append([]Interceptor{}, tq.inters...),
-		predicates: append([]predicate.Track{}, tq.predicates...),
-		withAlbums: tq.withAlbums.Clone(),
+		config:      tq.config,
+		ctx:         tq.ctx.Clone(),
+		order:       append([]track.OrderOption{}, tq.order...),
+		inters:      append([]Interceptor{}, tq.inters...),
+		predicates:  append([]predicate.Track{}, tq.predicates...),
+		withArtists: tq.withArtists.Clone(),
+		withAlbum:   tq.withAlbum.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
 	}
 }
 
-// WithAlbums tells the query-builder to eager-load the nodes that are connected to
-// the "albums" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TrackQuery) WithAlbums(opts ...func(*AlbumQuery)) *TrackQuery {
+// WithArtists tells the query-builder to eager-load the nodes that are connected to
+// the "artists" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TrackQuery) WithArtists(opts ...func(*ArtistQuery)) *TrackQuery {
+	query := (&ArtistClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withArtists = query
+	return tq
+}
+
+// WithAlbum tells the query-builder to eager-load the nodes that are connected to
+// the "album" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TrackQuery) WithAlbum(opts ...func(*AlbumQuery)) *TrackQuery {
 	query := (&AlbumClient{config: tq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withAlbums = query
+	tq.withAlbum = query
 	return tq
 }
 
@@ -373,18 +410,12 @@ func (tq *TrackQuery) prepareQuery(ctx context.Context) error {
 func (tq *TrackQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Track, error) {
 	var (
 		nodes       = []*Track{}
-		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
-		loadedTypes = [1]bool{
-			tq.withAlbums != nil,
+		loadedTypes = [2]bool{
+			tq.withArtists != nil,
+			tq.withAlbum != nil,
 		}
 	)
-	if tq.withAlbums != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, track.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Track).scanValues(nil, columns)
 	}
@@ -406,9 +437,23 @@ func (tq *TrackQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Track,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := tq.withAlbums; query != nil {
-		if err := tq.loadAlbums(ctx, query, nodes, nil,
-			func(n *Track, e *Album) { n.Edges.Albums = e }); err != nil {
+	if query := tq.withArtists; query != nil {
+		if err := tq.loadArtists(ctx, query, nodes,
+			func(n *Track) { n.Edges.Artists = []*Artist{} },
+			func(n *Track, e *Artist) { n.Edges.Artists = append(n.Edges.Artists, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withAlbum; query != nil {
+		if err := tq.loadAlbum(ctx, query, nodes, nil,
+			func(n *Track, e *Album) { n.Edges.Album = e }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range tq.withNamedArtists {
+		if err := tq.loadArtists(ctx, query, nodes,
+			func(n *Track) { n.appendNamedArtists(name) },
+			func(n *Track, e *Artist) { n.appendNamedArtists(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -420,14 +465,72 @@ func (tq *TrackQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Track,
 	return nodes, nil
 }
 
-func (tq *TrackQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes []*Track, init func(*Track), assign func(*Track, *Album)) error {
+func (tq *TrackQuery) loadArtists(ctx context.Context, query *ArtistQuery, nodes []*Track, init func(*Track), assign func(*Track, *Artist)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[string]*Track)
+	nids := make(map[string]map[*Track]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(track.ArtistsTable)
+		s.Join(joinT).On(s.C(artist.FieldID), joinT.C(track.ArtistsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(track.ArtistsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(track.ArtistsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullString).String
+				inValue := values[1].(*sql.NullString).String
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Track]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Artist](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "artists" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (tq *TrackQuery) loadAlbum(ctx context.Context, query *AlbumQuery, nodes []*Track, init func(*Track), assign func(*Track, *Album)) error {
 	ids := make([]string, 0, len(nodes))
 	nodeids := make(map[string][]*Track)
 	for i := range nodes {
-		if nodes[i].album_tracks == nil {
-			continue
-		}
-		fk := *nodes[i].album_tracks
+		fk := nodes[i].AlbumID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -444,7 +547,7 @@ func (tq *TrackQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes [
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "album_tracks" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "album_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -480,6 +583,9 @@ func (tq *TrackQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != track.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if tq.withAlbum != nil {
+			_spec.Node.AddColumnOnce(track.FieldAlbumID)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {
@@ -563,6 +669,20 @@ func (tq *TrackQuery) ForShare(opts ...sql.LockOption) *TrackQuery {
 	tq.modifiers = append(tq.modifiers, func(s *sql.Selector) {
 		s.ForShare(opts...)
 	})
+	return tq
+}
+
+// WithNamedArtists tells the query-builder to eager-load the nodes that are connected to the "artists"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (tq *TrackQuery) WithNamedArtists(name string, opts ...func(*ArtistQuery)) *TrackQuery {
+	query := (&ArtistClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if tq.withNamedArtists == nil {
+		tq.withNamedArtists = make(map[string]*ArtistQuery)
+	}
+	tq.withNamedArtists[name] = query
 	return tq
 }
 

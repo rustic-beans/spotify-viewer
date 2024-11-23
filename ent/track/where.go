@@ -75,24 +75,54 @@ func UpdatedAt(v time.Time) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
-func Name(v string) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldName, v))
+// AlbumID applies equality check predicate on the "album_id" field. It's identical to AlbumIDEQ.
+func AlbumID(v string) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldAlbumID, v))
 }
 
-// AlbumName applies equality check predicate on the "album_name" field. It's identical to AlbumNameEQ.
-func AlbumName(v string) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldAlbumName, v))
-}
-
-// AlbumImageURI applies equality check predicate on the "album_image_uri" field. It's identical to AlbumImageURIEQ.
-func AlbumImageURI(v string) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldAlbumImageURI, v))
+// DiscNumber applies equality check predicate on the "disc_number" field. It's identical to DiscNumberEQ.
+func DiscNumber(v int) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldDiscNumber, v))
 }
 
 // DurationMs applies equality check predicate on the "duration_ms" field. It's identical to DurationMsEQ.
 func DurationMs(v int) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldDurationMs, v))
+}
+
+// Explicit applies equality check predicate on the "explicit" field. It's identical to ExplicitEQ.
+func Explicit(v bool) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldExplicit, v))
+}
+
+// Href applies equality check predicate on the "href" field. It's identical to HrefEQ.
+func Href(v string) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldHref, v))
+}
+
+// IsPlayable applies equality check predicate on the "is_playable" field. It's identical to IsPlayableEQ.
+func IsPlayable(v bool) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldIsPlayable, v))
+}
+
+// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
+func Name(v string) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldName, v))
+}
+
+// Popularity applies equality check predicate on the "popularity" field. It's identical to PopularityEQ.
+func Popularity(v int) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldPopularity, v))
+}
+
+// PreviewURL applies equality check predicate on the "preview_url" field. It's identical to PreviewURLEQ.
+func PreviewURL(v string) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldPreviewURL, v))
+}
+
+// TrackNumber applies equality check predicate on the "track_number" field. It's identical to TrackNumberEQ.
+func TrackNumber(v int) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldTrackNumber, v))
 }
 
 // URI applies equality check predicate on the "uri" field. It's identical to URIEQ.
@@ -180,6 +210,246 @@ func UpdatedAtLTE(v time.Time) predicate.Track {
 	return predicate.Track(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
+// AlbumIDEQ applies the EQ predicate on the "album_id" field.
+func AlbumIDEQ(v string) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldAlbumID, v))
+}
+
+// AlbumIDNEQ applies the NEQ predicate on the "album_id" field.
+func AlbumIDNEQ(v string) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldAlbumID, v))
+}
+
+// AlbumIDIn applies the In predicate on the "album_id" field.
+func AlbumIDIn(vs ...string) predicate.Track {
+	return predicate.Track(sql.FieldIn(FieldAlbumID, vs...))
+}
+
+// AlbumIDNotIn applies the NotIn predicate on the "album_id" field.
+func AlbumIDNotIn(vs ...string) predicate.Track {
+	return predicate.Track(sql.FieldNotIn(FieldAlbumID, vs...))
+}
+
+// AlbumIDGT applies the GT predicate on the "album_id" field.
+func AlbumIDGT(v string) predicate.Track {
+	return predicate.Track(sql.FieldGT(FieldAlbumID, v))
+}
+
+// AlbumIDGTE applies the GTE predicate on the "album_id" field.
+func AlbumIDGTE(v string) predicate.Track {
+	return predicate.Track(sql.FieldGTE(FieldAlbumID, v))
+}
+
+// AlbumIDLT applies the LT predicate on the "album_id" field.
+func AlbumIDLT(v string) predicate.Track {
+	return predicate.Track(sql.FieldLT(FieldAlbumID, v))
+}
+
+// AlbumIDLTE applies the LTE predicate on the "album_id" field.
+func AlbumIDLTE(v string) predicate.Track {
+	return predicate.Track(sql.FieldLTE(FieldAlbumID, v))
+}
+
+// AlbumIDContains applies the Contains predicate on the "album_id" field.
+func AlbumIDContains(v string) predicate.Track {
+	return predicate.Track(sql.FieldContains(FieldAlbumID, v))
+}
+
+// AlbumIDHasPrefix applies the HasPrefix predicate on the "album_id" field.
+func AlbumIDHasPrefix(v string) predicate.Track {
+	return predicate.Track(sql.FieldHasPrefix(FieldAlbumID, v))
+}
+
+// AlbumIDHasSuffix applies the HasSuffix predicate on the "album_id" field.
+func AlbumIDHasSuffix(v string) predicate.Track {
+	return predicate.Track(sql.FieldHasSuffix(FieldAlbumID, v))
+}
+
+// AlbumIDEqualFold applies the EqualFold predicate on the "album_id" field.
+func AlbumIDEqualFold(v string) predicate.Track {
+	return predicate.Track(sql.FieldEqualFold(FieldAlbumID, v))
+}
+
+// AlbumIDContainsFold applies the ContainsFold predicate on the "album_id" field.
+func AlbumIDContainsFold(v string) predicate.Track {
+	return predicate.Track(sql.FieldContainsFold(FieldAlbumID, v))
+}
+
+// DiscNumberEQ applies the EQ predicate on the "disc_number" field.
+func DiscNumberEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldDiscNumber, v))
+}
+
+// DiscNumberNEQ applies the NEQ predicate on the "disc_number" field.
+func DiscNumberNEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldDiscNumber, v))
+}
+
+// DiscNumberIn applies the In predicate on the "disc_number" field.
+func DiscNumberIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldIn(FieldDiscNumber, vs...))
+}
+
+// DiscNumberNotIn applies the NotIn predicate on the "disc_number" field.
+func DiscNumberNotIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldNotIn(FieldDiscNumber, vs...))
+}
+
+// DiscNumberGT applies the GT predicate on the "disc_number" field.
+func DiscNumberGT(v int) predicate.Track {
+	return predicate.Track(sql.FieldGT(FieldDiscNumber, v))
+}
+
+// DiscNumberGTE applies the GTE predicate on the "disc_number" field.
+func DiscNumberGTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldGTE(FieldDiscNumber, v))
+}
+
+// DiscNumberLT applies the LT predicate on the "disc_number" field.
+func DiscNumberLT(v int) predicate.Track {
+	return predicate.Track(sql.FieldLT(FieldDiscNumber, v))
+}
+
+// DiscNumberLTE applies the LTE predicate on the "disc_number" field.
+func DiscNumberLTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldLTE(FieldDiscNumber, v))
+}
+
+// DiscNumberIsNil applies the IsNil predicate on the "disc_number" field.
+func DiscNumberIsNil() predicate.Track {
+	return predicate.Track(sql.FieldIsNull(FieldDiscNumber))
+}
+
+// DiscNumberNotNil applies the NotNil predicate on the "disc_number" field.
+func DiscNumberNotNil() predicate.Track {
+	return predicate.Track(sql.FieldNotNull(FieldDiscNumber))
+}
+
+// DurationMsEQ applies the EQ predicate on the "duration_ms" field.
+func DurationMsEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldDurationMs, v))
+}
+
+// DurationMsNEQ applies the NEQ predicate on the "duration_ms" field.
+func DurationMsNEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldDurationMs, v))
+}
+
+// DurationMsIn applies the In predicate on the "duration_ms" field.
+func DurationMsIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldIn(FieldDurationMs, vs...))
+}
+
+// DurationMsNotIn applies the NotIn predicate on the "duration_ms" field.
+func DurationMsNotIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldNotIn(FieldDurationMs, vs...))
+}
+
+// DurationMsGT applies the GT predicate on the "duration_ms" field.
+func DurationMsGT(v int) predicate.Track {
+	return predicate.Track(sql.FieldGT(FieldDurationMs, v))
+}
+
+// DurationMsGTE applies the GTE predicate on the "duration_ms" field.
+func DurationMsGTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldGTE(FieldDurationMs, v))
+}
+
+// DurationMsLT applies the LT predicate on the "duration_ms" field.
+func DurationMsLT(v int) predicate.Track {
+	return predicate.Track(sql.FieldLT(FieldDurationMs, v))
+}
+
+// DurationMsLTE applies the LTE predicate on the "duration_ms" field.
+func DurationMsLTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldLTE(FieldDurationMs, v))
+}
+
+// ExplicitEQ applies the EQ predicate on the "explicit" field.
+func ExplicitEQ(v bool) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldExplicit, v))
+}
+
+// ExplicitNEQ applies the NEQ predicate on the "explicit" field.
+func ExplicitNEQ(v bool) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldExplicit, v))
+}
+
+// HrefEQ applies the EQ predicate on the "href" field.
+func HrefEQ(v string) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldHref, v))
+}
+
+// HrefNEQ applies the NEQ predicate on the "href" field.
+func HrefNEQ(v string) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldHref, v))
+}
+
+// HrefIn applies the In predicate on the "href" field.
+func HrefIn(vs ...string) predicate.Track {
+	return predicate.Track(sql.FieldIn(FieldHref, vs...))
+}
+
+// HrefNotIn applies the NotIn predicate on the "href" field.
+func HrefNotIn(vs ...string) predicate.Track {
+	return predicate.Track(sql.FieldNotIn(FieldHref, vs...))
+}
+
+// HrefGT applies the GT predicate on the "href" field.
+func HrefGT(v string) predicate.Track {
+	return predicate.Track(sql.FieldGT(FieldHref, v))
+}
+
+// HrefGTE applies the GTE predicate on the "href" field.
+func HrefGTE(v string) predicate.Track {
+	return predicate.Track(sql.FieldGTE(FieldHref, v))
+}
+
+// HrefLT applies the LT predicate on the "href" field.
+func HrefLT(v string) predicate.Track {
+	return predicate.Track(sql.FieldLT(FieldHref, v))
+}
+
+// HrefLTE applies the LTE predicate on the "href" field.
+func HrefLTE(v string) predicate.Track {
+	return predicate.Track(sql.FieldLTE(FieldHref, v))
+}
+
+// HrefContains applies the Contains predicate on the "href" field.
+func HrefContains(v string) predicate.Track {
+	return predicate.Track(sql.FieldContains(FieldHref, v))
+}
+
+// HrefHasPrefix applies the HasPrefix predicate on the "href" field.
+func HrefHasPrefix(v string) predicate.Track {
+	return predicate.Track(sql.FieldHasPrefix(FieldHref, v))
+}
+
+// HrefHasSuffix applies the HasSuffix predicate on the "href" field.
+func HrefHasSuffix(v string) predicate.Track {
+	return predicate.Track(sql.FieldHasSuffix(FieldHref, v))
+}
+
+// HrefEqualFold applies the EqualFold predicate on the "href" field.
+func HrefEqualFold(v string) predicate.Track {
+	return predicate.Track(sql.FieldEqualFold(FieldHref, v))
+}
+
+// HrefContainsFold applies the ContainsFold predicate on the "href" field.
+func HrefContainsFold(v string) predicate.Track {
+	return predicate.Track(sql.FieldContainsFold(FieldHref, v))
+}
+
+// IsPlayableEQ applies the EQ predicate on the "is_playable" field.
+func IsPlayableEQ(v bool) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldIsPlayable, v))
+}
+
+// IsPlayableNEQ applies the NEQ predicate on the "is_playable" field.
+func IsPlayableNEQ(v bool) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldIsPlayable, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldName, v))
@@ -245,174 +515,159 @@ func NameContainsFold(v string) predicate.Track {
 	return predicate.Track(sql.FieldContainsFold(FieldName, v))
 }
 
-// AlbumNameEQ applies the EQ predicate on the "album_name" field.
-func AlbumNameEQ(v string) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldAlbumName, v))
+// PopularityEQ applies the EQ predicate on the "popularity" field.
+func PopularityEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldPopularity, v))
 }
 
-// AlbumNameNEQ applies the NEQ predicate on the "album_name" field.
-func AlbumNameNEQ(v string) predicate.Track {
-	return predicate.Track(sql.FieldNEQ(FieldAlbumName, v))
+// PopularityNEQ applies the NEQ predicate on the "popularity" field.
+func PopularityNEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldPopularity, v))
 }
 
-// AlbumNameIn applies the In predicate on the "album_name" field.
-func AlbumNameIn(vs ...string) predicate.Track {
-	return predicate.Track(sql.FieldIn(FieldAlbumName, vs...))
+// PopularityIn applies the In predicate on the "popularity" field.
+func PopularityIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldIn(FieldPopularity, vs...))
 }
 
-// AlbumNameNotIn applies the NotIn predicate on the "album_name" field.
-func AlbumNameNotIn(vs ...string) predicate.Track {
-	return predicate.Track(sql.FieldNotIn(FieldAlbumName, vs...))
+// PopularityNotIn applies the NotIn predicate on the "popularity" field.
+func PopularityNotIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldNotIn(FieldPopularity, vs...))
 }
 
-// AlbumNameGT applies the GT predicate on the "album_name" field.
-func AlbumNameGT(v string) predicate.Track {
-	return predicate.Track(sql.FieldGT(FieldAlbumName, v))
+// PopularityGT applies the GT predicate on the "popularity" field.
+func PopularityGT(v int) predicate.Track {
+	return predicate.Track(sql.FieldGT(FieldPopularity, v))
 }
 
-// AlbumNameGTE applies the GTE predicate on the "album_name" field.
-func AlbumNameGTE(v string) predicate.Track {
-	return predicate.Track(sql.FieldGTE(FieldAlbumName, v))
+// PopularityGTE applies the GTE predicate on the "popularity" field.
+func PopularityGTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldGTE(FieldPopularity, v))
 }
 
-// AlbumNameLT applies the LT predicate on the "album_name" field.
-func AlbumNameLT(v string) predicate.Track {
-	return predicate.Track(sql.FieldLT(FieldAlbumName, v))
+// PopularityLT applies the LT predicate on the "popularity" field.
+func PopularityLT(v int) predicate.Track {
+	return predicate.Track(sql.FieldLT(FieldPopularity, v))
 }
 
-// AlbumNameLTE applies the LTE predicate on the "album_name" field.
-func AlbumNameLTE(v string) predicate.Track {
-	return predicate.Track(sql.FieldLTE(FieldAlbumName, v))
+// PopularityLTE applies the LTE predicate on the "popularity" field.
+func PopularityLTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldLTE(FieldPopularity, v))
 }
 
-// AlbumNameContains applies the Contains predicate on the "album_name" field.
-func AlbumNameContains(v string) predicate.Track {
-	return predicate.Track(sql.FieldContains(FieldAlbumName, v))
+// PreviewURLEQ applies the EQ predicate on the "preview_url" field.
+func PreviewURLEQ(v string) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldPreviewURL, v))
 }
 
-// AlbumNameHasPrefix applies the HasPrefix predicate on the "album_name" field.
-func AlbumNameHasPrefix(v string) predicate.Track {
-	return predicate.Track(sql.FieldHasPrefix(FieldAlbumName, v))
+// PreviewURLNEQ applies the NEQ predicate on the "preview_url" field.
+func PreviewURLNEQ(v string) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldPreviewURL, v))
 }
 
-// AlbumNameHasSuffix applies the HasSuffix predicate on the "album_name" field.
-func AlbumNameHasSuffix(v string) predicate.Track {
-	return predicate.Track(sql.FieldHasSuffix(FieldAlbumName, v))
+// PreviewURLIn applies the In predicate on the "preview_url" field.
+func PreviewURLIn(vs ...string) predicate.Track {
+	return predicate.Track(sql.FieldIn(FieldPreviewURL, vs...))
 }
 
-// AlbumNameEqualFold applies the EqualFold predicate on the "album_name" field.
-func AlbumNameEqualFold(v string) predicate.Track {
-	return predicate.Track(sql.FieldEqualFold(FieldAlbumName, v))
+// PreviewURLNotIn applies the NotIn predicate on the "preview_url" field.
+func PreviewURLNotIn(vs ...string) predicate.Track {
+	return predicate.Track(sql.FieldNotIn(FieldPreviewURL, vs...))
 }
 
-// AlbumNameContainsFold applies the ContainsFold predicate on the "album_name" field.
-func AlbumNameContainsFold(v string) predicate.Track {
-	return predicate.Track(sql.FieldContainsFold(FieldAlbumName, v))
+// PreviewURLGT applies the GT predicate on the "preview_url" field.
+func PreviewURLGT(v string) predicate.Track {
+	return predicate.Track(sql.FieldGT(FieldPreviewURL, v))
 }
 
-// AlbumImageURIEQ applies the EQ predicate on the "album_image_uri" field.
-func AlbumImageURIEQ(v string) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldAlbumImageURI, v))
+// PreviewURLGTE applies the GTE predicate on the "preview_url" field.
+func PreviewURLGTE(v string) predicate.Track {
+	return predicate.Track(sql.FieldGTE(FieldPreviewURL, v))
 }
 
-// AlbumImageURINEQ applies the NEQ predicate on the "album_image_uri" field.
-func AlbumImageURINEQ(v string) predicate.Track {
-	return predicate.Track(sql.FieldNEQ(FieldAlbumImageURI, v))
+// PreviewURLLT applies the LT predicate on the "preview_url" field.
+func PreviewURLLT(v string) predicate.Track {
+	return predicate.Track(sql.FieldLT(FieldPreviewURL, v))
 }
 
-// AlbumImageURIIn applies the In predicate on the "album_image_uri" field.
-func AlbumImageURIIn(vs ...string) predicate.Track {
-	return predicate.Track(sql.FieldIn(FieldAlbumImageURI, vs...))
+// PreviewURLLTE applies the LTE predicate on the "preview_url" field.
+func PreviewURLLTE(v string) predicate.Track {
+	return predicate.Track(sql.FieldLTE(FieldPreviewURL, v))
 }
 
-// AlbumImageURINotIn applies the NotIn predicate on the "album_image_uri" field.
-func AlbumImageURINotIn(vs ...string) predicate.Track {
-	return predicate.Track(sql.FieldNotIn(FieldAlbumImageURI, vs...))
+// PreviewURLContains applies the Contains predicate on the "preview_url" field.
+func PreviewURLContains(v string) predicate.Track {
+	return predicate.Track(sql.FieldContains(FieldPreviewURL, v))
 }
 
-// AlbumImageURIGT applies the GT predicate on the "album_image_uri" field.
-func AlbumImageURIGT(v string) predicate.Track {
-	return predicate.Track(sql.FieldGT(FieldAlbumImageURI, v))
+// PreviewURLHasPrefix applies the HasPrefix predicate on the "preview_url" field.
+func PreviewURLHasPrefix(v string) predicate.Track {
+	return predicate.Track(sql.FieldHasPrefix(FieldPreviewURL, v))
 }
 
-// AlbumImageURIGTE applies the GTE predicate on the "album_image_uri" field.
-func AlbumImageURIGTE(v string) predicate.Track {
-	return predicate.Track(sql.FieldGTE(FieldAlbumImageURI, v))
+// PreviewURLHasSuffix applies the HasSuffix predicate on the "preview_url" field.
+func PreviewURLHasSuffix(v string) predicate.Track {
+	return predicate.Track(sql.FieldHasSuffix(FieldPreviewURL, v))
 }
 
-// AlbumImageURILT applies the LT predicate on the "album_image_uri" field.
-func AlbumImageURILT(v string) predicate.Track {
-	return predicate.Track(sql.FieldLT(FieldAlbumImageURI, v))
+// PreviewURLIsNil applies the IsNil predicate on the "preview_url" field.
+func PreviewURLIsNil() predicate.Track {
+	return predicate.Track(sql.FieldIsNull(FieldPreviewURL))
 }
 
-// AlbumImageURILTE applies the LTE predicate on the "album_image_uri" field.
-func AlbumImageURILTE(v string) predicate.Track {
-	return predicate.Track(sql.FieldLTE(FieldAlbumImageURI, v))
+// PreviewURLNotNil applies the NotNil predicate on the "preview_url" field.
+func PreviewURLNotNil() predicate.Track {
+	return predicate.Track(sql.FieldNotNull(FieldPreviewURL))
 }
 
-// AlbumImageURIContains applies the Contains predicate on the "album_image_uri" field.
-func AlbumImageURIContains(v string) predicate.Track {
-	return predicate.Track(sql.FieldContains(FieldAlbumImageURI, v))
+// PreviewURLEqualFold applies the EqualFold predicate on the "preview_url" field.
+func PreviewURLEqualFold(v string) predicate.Track {
+	return predicate.Track(sql.FieldEqualFold(FieldPreviewURL, v))
 }
 
-// AlbumImageURIHasPrefix applies the HasPrefix predicate on the "album_image_uri" field.
-func AlbumImageURIHasPrefix(v string) predicate.Track {
-	return predicate.Track(sql.FieldHasPrefix(FieldAlbumImageURI, v))
+// PreviewURLContainsFold applies the ContainsFold predicate on the "preview_url" field.
+func PreviewURLContainsFold(v string) predicate.Track {
+	return predicate.Track(sql.FieldContainsFold(FieldPreviewURL, v))
 }
 
-// AlbumImageURIHasSuffix applies the HasSuffix predicate on the "album_image_uri" field.
-func AlbumImageURIHasSuffix(v string) predicate.Track {
-	return predicate.Track(sql.FieldHasSuffix(FieldAlbumImageURI, v))
+// TrackNumberEQ applies the EQ predicate on the "track_number" field.
+func TrackNumberEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldEQ(FieldTrackNumber, v))
 }
 
-// AlbumImageURIEqualFold applies the EqualFold predicate on the "album_image_uri" field.
-func AlbumImageURIEqualFold(v string) predicate.Track {
-	return predicate.Track(sql.FieldEqualFold(FieldAlbumImageURI, v))
+// TrackNumberNEQ applies the NEQ predicate on the "track_number" field.
+func TrackNumberNEQ(v int) predicate.Track {
+	return predicate.Track(sql.FieldNEQ(FieldTrackNumber, v))
 }
 
-// AlbumImageURIContainsFold applies the ContainsFold predicate on the "album_image_uri" field.
-func AlbumImageURIContainsFold(v string) predicate.Track {
-	return predicate.Track(sql.FieldContainsFold(FieldAlbumImageURI, v))
+// TrackNumberIn applies the In predicate on the "track_number" field.
+func TrackNumberIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldIn(FieldTrackNumber, vs...))
 }
 
-// DurationMsEQ applies the EQ predicate on the "duration_ms" field.
-func DurationMsEQ(v int) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldDurationMs, v))
+// TrackNumberNotIn applies the NotIn predicate on the "track_number" field.
+func TrackNumberNotIn(vs ...int) predicate.Track {
+	return predicate.Track(sql.FieldNotIn(FieldTrackNumber, vs...))
 }
 
-// DurationMsNEQ applies the NEQ predicate on the "duration_ms" field.
-func DurationMsNEQ(v int) predicate.Track {
-	return predicate.Track(sql.FieldNEQ(FieldDurationMs, v))
+// TrackNumberGT applies the GT predicate on the "track_number" field.
+func TrackNumberGT(v int) predicate.Track {
+	return predicate.Track(sql.FieldGT(FieldTrackNumber, v))
 }
 
-// DurationMsIn applies the In predicate on the "duration_ms" field.
-func DurationMsIn(vs ...int) predicate.Track {
-	return predicate.Track(sql.FieldIn(FieldDurationMs, vs...))
+// TrackNumberGTE applies the GTE predicate on the "track_number" field.
+func TrackNumberGTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldGTE(FieldTrackNumber, v))
 }
 
-// DurationMsNotIn applies the NotIn predicate on the "duration_ms" field.
-func DurationMsNotIn(vs ...int) predicate.Track {
-	return predicate.Track(sql.FieldNotIn(FieldDurationMs, vs...))
+// TrackNumberLT applies the LT predicate on the "track_number" field.
+func TrackNumberLT(v int) predicate.Track {
+	return predicate.Track(sql.FieldLT(FieldTrackNumber, v))
 }
 
-// DurationMsGT applies the GT predicate on the "duration_ms" field.
-func DurationMsGT(v int) predicate.Track {
-	return predicate.Track(sql.FieldGT(FieldDurationMs, v))
-}
-
-// DurationMsGTE applies the GTE predicate on the "duration_ms" field.
-func DurationMsGTE(v int) predicate.Track {
-	return predicate.Track(sql.FieldGTE(FieldDurationMs, v))
-}
-
-// DurationMsLT applies the LT predicate on the "duration_ms" field.
-func DurationMsLT(v int) predicate.Track {
-	return predicate.Track(sql.FieldLT(FieldDurationMs, v))
-}
-
-// DurationMsLTE applies the LTE predicate on the "duration_ms" field.
-func DurationMsLTE(v int) predicate.Track {
-	return predicate.Track(sql.FieldLTE(FieldDurationMs, v))
+// TrackNumberLTE applies the LTE predicate on the "track_number" field.
+func TrackNumberLTE(v int) predicate.Track {
+	return predicate.Track(sql.FieldLTE(FieldTrackNumber, v))
 }
 
 // URIEQ applies the EQ predicate on the "uri" field.
@@ -480,21 +735,44 @@ func URIContainsFold(v string) predicate.Track {
 	return predicate.Track(sql.FieldContainsFold(FieldURI, v))
 }
 
-// HasAlbums applies the HasEdge predicate on the "albums" edge.
-func HasAlbums() predicate.Track {
+// HasArtists applies the HasEdge predicate on the "artists" edge.
+func HasArtists() predicate.Track {
 	return predicate.Track(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, AlbumsTable, AlbumsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, ArtistsTable, ArtistsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAlbumsWith applies the HasEdge predicate on the "albums" edge with a given conditions (other predicates).
-func HasAlbumsWith(preds ...predicate.Album) predicate.Track {
+// HasArtistsWith applies the HasEdge predicate on the "artists" edge with a given conditions (other predicates).
+func HasArtistsWith(preds ...predicate.Artist) predicate.Track {
 	return predicate.Track(func(s *sql.Selector) {
-		step := newAlbumsStep()
+		step := newArtistsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAlbum applies the HasEdge predicate on the "album" edge.
+func HasAlbum() predicate.Track {
+	return predicate.Track(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, AlbumTable, AlbumColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAlbumWith applies the HasEdge predicate on the "album" edge with a given conditions (other predicates).
+func HasAlbumWith(preds ...predicate.Album) predicate.Track {
+	return predicate.Track(func(s *sql.Selector) {
+		step := newAlbumStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

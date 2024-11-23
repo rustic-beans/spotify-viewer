@@ -6,22 +6,26 @@ import (
 	"time"
 
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 )
 
 // CreateAlbumInput represents a mutation input for creating albums.
 type CreateAlbumInput struct {
 	AlbumType            album.AlbumType
 	TotalTracks          int
+	AvailableMarkets     []string
+	ExternalUrls         *schema.StringMap
 	Href                 string
 	Name                 string
 	ReleaseDate          string
 	ReleaseDatePrecision album.ReleaseDatePrecision
 	Restrictions         *string
 	URI                  string
-	ExternalIds          string
+	Genres               []string
 	Label                string
 	Popularity           int
 	ImageIDs             []string
+	ArtistIDs            []string
 	TrackIDs             []string
 }
 
@@ -29,6 +33,12 @@ type CreateAlbumInput struct {
 func (i *CreateAlbumInput) Mutate(m *AlbumMutation) {
 	m.SetAlbumType(i.AlbumType)
 	m.SetTotalTracks(i.TotalTracks)
+	if v := i.AvailableMarkets; v != nil {
+		m.SetAvailableMarkets(v)
+	}
+	if v := i.ExternalUrls; v != nil {
+		m.SetExternalUrls(v)
+	}
 	m.SetHref(i.Href)
 	m.SetName(i.Name)
 	m.SetReleaseDate(i.ReleaseDate)
@@ -37,11 +47,16 @@ func (i *CreateAlbumInput) Mutate(m *AlbumMutation) {
 		m.SetRestrictions(*v)
 	}
 	m.SetURI(i.URI)
-	m.SetExternalIds(i.ExternalIds)
+	if v := i.Genres; v != nil {
+		m.SetGenres(v)
+	}
 	m.SetLabel(i.Label)
 	m.SetPopularity(i.Popularity)
 	if v := i.ImageIDs; len(v) > 0 {
 		m.AddImageIDs(v...)
+	}
+	if v := i.ArtistIDs; len(v) > 0 {
+		m.AddArtistIDs(v...)
 	}
 	if v := i.TrackIDs; len(v) > 0 {
 		m.AddTrackIDs(v...)
@@ -82,16 +97,22 @@ func (c *ImageCreate) SetInput(i CreateImageInput) *ImageCreate {
 
 // CreateTrackInput represents a mutation input for creating tracks.
 type CreateTrackInput struct {
-	CreatedAt     *time.Time
-	UpdatedAt     *time.Time
-	Name          string
-	Artists       []string
-	ArtistsGenres []string
-	AlbumName     string
-	AlbumImageURI string
-	DurationMs    int
-	URI           string
-	AlbumsID      *string
+	CreatedAt        *time.Time
+	UpdatedAt        *time.Time
+	AvailableMarkets []string
+	DiscNumber       *int
+	DurationMs       int
+	Explicit         *bool
+	ExternalUrls     *schema.StringMap
+	Href             string
+	IsPlayable       bool
+	Name             string
+	Popularity       int
+	PreviewURL       *string
+	TrackNumber      int
+	URI              string
+	ArtistIDs        []string
+	AlbumID          string
 }
 
 // Mutate applies the CreateTrackInput on the TrackMutation builder.
@@ -102,20 +123,32 @@ func (i *CreateTrackInput) Mutate(m *TrackMutation) {
 	if v := i.UpdatedAt; v != nil {
 		m.SetUpdatedAt(*v)
 	}
-	m.SetName(i.Name)
-	if v := i.Artists; v != nil {
-		m.SetArtists(v)
+	if v := i.AvailableMarkets; v != nil {
+		m.SetAvailableMarkets(v)
 	}
-	if v := i.ArtistsGenres; v != nil {
-		m.SetArtistsGenres(v)
+	if v := i.DiscNumber; v != nil {
+		m.SetDiscNumber(*v)
 	}
-	m.SetAlbumName(i.AlbumName)
-	m.SetAlbumImageURI(i.AlbumImageURI)
 	m.SetDurationMs(i.DurationMs)
-	m.SetURI(i.URI)
-	if v := i.AlbumsID; v != nil {
-		m.SetAlbumsID(*v)
+	if v := i.Explicit; v != nil {
+		m.SetExplicit(*v)
 	}
+	if v := i.ExternalUrls; v != nil {
+		m.SetExternalUrls(v)
+	}
+	m.SetHref(i.Href)
+	m.SetIsPlayable(i.IsPlayable)
+	m.SetName(i.Name)
+	m.SetPopularity(i.Popularity)
+	if v := i.PreviewURL; v != nil {
+		m.SetPreviewURL(*v)
+	}
+	m.SetTrackNumber(i.TrackNumber)
+	m.SetURI(i.URI)
+	if v := i.ArtistIDs; len(v) > 0 {
+		m.AddArtistIDs(v...)
+	}
+	m.SetAlbumID(i.AlbumID)
 }
 
 // SetInput applies the change-set in the CreateTrackInput on the TrackCreate builder.

@@ -6,6 +6,7 @@ import (
 
 	"github.com/rustic-beans/spotify-viewer/ent"
 	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/http"
+	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
 
@@ -26,7 +27,7 @@ type PlayerStateWebsocketHandler = http.WebsocketHandler[*spotifyLib.PlayerState
 type LastPlayerState struct {
 	*spotifyLib.PlayerState
 
-	Track *ent.Track // This the track struct from the DB schema
+	Track *models.Track // This the track struct from the DB schema
 }
 
 func PlayerStateLoop(sa *Spotify, dbClient *ent.Client, wsHandler *PlayerStateWebsocketHandler) {
@@ -92,22 +93,14 @@ func makeTrack(player *spotifyLib.PlayerState) *ent.Track {
 		artists[i] = artist.Name
 	}
 
-	track := &ent.Track{
-		Name:          player.Item.Name,
-		Artists:       artists,
-		ArtistsGenres: nil,
-		AlbumName:     player.Item.Album.Name,
-		AlbumImageURI: player.Item.Album.Images[0].URL,
-		DurationMs:    int(player.Item.Duration),
-		URI:           string(player.Item.URI),
-	}
+	track := FullTrackToModel(player.Item)
 
 	// Return a pointer to a track
 	return track
 }
 
 // since playerstate is a public variable we can just update the values inside the pointer instead of returning
-func updatePlayerState(playerState *spotifyLib.PlayerState, track *ent.Track) {
+func updatePlayerState(playerState *spotifyLib.PlayerState, track *models.Track) {
 	if track.Name == "" {
 		return
 	}
@@ -120,10 +113,11 @@ func updatePlayerState(playerState *spotifyLib.PlayerState, track *ent.Track) {
 	lastPlayerState.Track = track
 }
 
-func dbCheckUpdate(ctx context.Context, dbClient *ent.Client, track *ent.Track, progress int) bool {
+func dbCheckUpdate(ctx context.Context, dbClient *ent.Client, track *models.Track, progress int) bool {
 	// Check if the track has just changed and if so add it to the db
 	if lastPlayerState.Track.Name != track.Name {
 		addTrack(ctx, dbClient, track)
+		println("Track has changed")
 		return true
 	}
 
@@ -140,17 +134,23 @@ func dbCheckUpdate(ctx context.Context, dbClient *ent.Client, track *ent.Track, 
 	return false
 }
 
-func addTrack(ctx context.Context, dbClient *ent.Client, track *ent.Track) {
+func addTrack(ctx context.Context, dbClient *ent.Client, track *models.Track) {
 	// NOTE: AritstGenres is not implemented yet so it will be nil see makeTrack function for more info
+	// TODO: This does not work lol
 	_, err := dbClient.Track.Create().
-		SetName(track.Name).
-		SetArtists(track.Artists).
-		SetArtistsGenres(track.ArtistsGenres).
-		SetAlbumName(track.AlbumName).
-		SetAlbumImageURI(track.AlbumImageURI).
+		SetID(track.ID).
+		SetAlbumID(track.AlbumID).
+		SetAvailableMarkets(track.AvailableMarkets).
+		SetDiscNumber(track.DiscNumber).
 		SetDurationMs(track.DurationMs).
+		SetExternalUrls(track.ExternalUrls).
+		SetHref(track.Href).
+		SetIsPlayable(track.IsPlayable).
+		SetName(track.Name).
+		SetPopularity(track.Popularity).
+		SetPreviewURL(track.PreviewURL).
+		SetTrackNumber(track.TrackNumber).
 		SetURI(track.URI).
-		SetCreatedAt(time.Now()).
 		Save(ctx)
 
 	if err != nil {

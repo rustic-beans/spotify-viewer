@@ -13,13 +13,15 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "album_type", Type: field.TypeEnum, Enums: []string{"album", "single", "compilation"}},
 		{Name: "total_tracks", Type: field.TypeInt},
+		{Name: "available_markets", Type: field.TypeJSON},
+		{Name: "external_urls", Type: field.TypeJSON},
 		{Name: "href", Type: field.TypeString, Size: 2147483647},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "release_date", Type: field.TypeString, Size: 2147483647},
 		{Name: "release_date_precision", Type: field.TypeEnum, Enums: []string{"year", "month", "day"}},
 		{Name: "restrictions", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "uri", Type: field.TypeString, Size: 2147483647},
-		{Name: "external_ids", Type: field.TypeString, Size: 2147483647},
+		{Name: "genres", Type: field.TypeJSON},
 		{Name: "label", Type: field.TypeString, Size: 2147483647},
 		{Name: "popularity", Type: field.TypeInt},
 	}
@@ -28,6 +30,20 @@ var (
 		Name:       "albums",
 		Columns:    AlbumsColumns,
 		PrimaryKey: []*schema.Column{AlbumsColumns[0]},
+	}
+	// ArtistsColumns holds the columns for the "artists" table.
+	ArtistsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "external_urls", Type: field.TypeJSON},
+		{Name: "href", Type: field.TypeString, Size: 2147483647},
+		{Name: "name", Type: field.TypeString, Size: 2147483647},
+		{Name: "uri", Type: field.TypeString, Size: 2147483647},
+	}
+	// ArtistsTable holds the schema information for the "artists" table.
+	ArtistsTable = &schema.Table{
+		Name:       "artists",
+		Columns:    ArtistsColumns,
+		PrimaryKey: []*schema.Column{ArtistsColumns[0]},
 	}
 	// ImagesColumns holds the columns for the "images" table.
 	ImagesColumns = []*schema.Column{
@@ -48,14 +64,19 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "name", Type: field.TypeString},
-		{Name: "artists", Type: field.TypeJSON},
-		{Name: "artists_genres", Type: field.TypeJSON},
-		{Name: "album_name", Type: field.TypeString},
-		{Name: "album_image_uri", Type: field.TypeString},
+		{Name: "available_markets", Type: field.TypeJSON},
+		{Name: "disc_number", Type: field.TypeInt, Nullable: true},
 		{Name: "duration_ms", Type: field.TypeInt},
-		{Name: "uri", Type: field.TypeString},
-		{Name: "album_tracks", Type: field.TypeString, Nullable: true},
+		{Name: "explicit", Type: field.TypeBool, Default: false},
+		{Name: "external_urls", Type: field.TypeJSON},
+		{Name: "href", Type: field.TypeString, Size: 2147483647},
+		{Name: "is_playable", Type: field.TypeBool},
+		{Name: "name", Type: field.TypeString, Size: 2147483647},
+		{Name: "popularity", Type: field.TypeInt},
+		{Name: "preview_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "track_number", Type: field.TypeInt},
+		{Name: "uri", Type: field.TypeString, Size: 2147483647},
+		{Name: "album_id", Type: field.TypeString},
 	}
 	// TracksTable holds the schema information for the "tracks" table.
 	TracksTable = &schema.Table{
@@ -65,9 +86,9 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "tracks_albums_tracks",
-				Columns:    []*schema.Column{TracksColumns[10]},
+				Columns:    []*schema.Column{TracksColumns[15]},
 				RefColumns: []*schema.Column{AlbumsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -96,12 +117,65 @@ var (
 			},
 		},
 	}
+	// ArtistAlbumsColumns holds the columns for the "artist_albums" table.
+	ArtistAlbumsColumns = []*schema.Column{
+		{Name: "artist_id", Type: field.TypeString},
+		{Name: "album_id", Type: field.TypeString},
+	}
+	// ArtistAlbumsTable holds the schema information for the "artist_albums" table.
+	ArtistAlbumsTable = &schema.Table{
+		Name:       "artist_albums",
+		Columns:    ArtistAlbumsColumns,
+		PrimaryKey: []*schema.Column{ArtistAlbumsColumns[0], ArtistAlbumsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "artist_albums_artist_id",
+				Columns:    []*schema.Column{ArtistAlbumsColumns[0]},
+				RefColumns: []*schema.Column{ArtistsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "artist_albums_album_id",
+				Columns:    []*schema.Column{ArtistAlbumsColumns[1]},
+				RefColumns: []*schema.Column{AlbumsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// ArtistTracksColumns holds the columns for the "artist_tracks" table.
+	ArtistTracksColumns = []*schema.Column{
+		{Name: "artist_id", Type: field.TypeString},
+		{Name: "track_id", Type: field.TypeString},
+	}
+	// ArtistTracksTable holds the schema information for the "artist_tracks" table.
+	ArtistTracksTable = &schema.Table{
+		Name:       "artist_tracks",
+		Columns:    ArtistTracksColumns,
+		PrimaryKey: []*schema.Column{ArtistTracksColumns[0], ArtistTracksColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "artist_tracks_artist_id",
+				Columns:    []*schema.Column{ArtistTracksColumns[0]},
+				RefColumns: []*schema.Column{ArtistsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "artist_tracks_track_id",
+				Columns:    []*schema.Column{ArtistTracksColumns[1]},
+				RefColumns: []*schema.Column{TracksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlbumsTable,
+		ArtistsTable,
 		ImagesTable,
 		TracksTable,
 		AlbumImagesTable,
+		ArtistAlbumsTable,
+		ArtistTracksTable,
 	}
 )
 
@@ -109,4 +183,8 @@ func init() {
 	TracksTable.ForeignKeys[0].RefTable = AlbumsTable
 	AlbumImagesTable.ForeignKeys[0].RefTable = AlbumsTable
 	AlbumImagesTable.ForeignKeys[1].RefTable = ImagesTable
+	ArtistAlbumsTable.ForeignKeys[0].RefTable = ArtistsTable
+	ArtistAlbumsTable.ForeignKeys[1].RefTable = AlbumsTable
+	ArtistTracksTable.ForeignKeys[0].RefTable = ArtistsTable
+	ArtistTracksTable.ForeignKeys[1].RefTable = TracksTable
 }

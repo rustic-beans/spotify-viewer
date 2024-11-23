@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -341,6 +342,255 @@ func (a *Album) ToEdge(order *AlbumOrder) *AlbumEdge {
 		order = DefaultAlbumOrder
 	}
 	return &AlbumEdge{
+		Node:   a,
+		Cursor: order.Field.toCursor(a),
+	}
+}
+
+// ArtistEdge is the edge representation of Artist.
+type ArtistEdge struct {
+	Node   *Artist `json:"node"`
+	Cursor Cursor  `json:"cursor"`
+}
+
+// ArtistConnection is the connection containing edges to Artist.
+type ArtistConnection struct {
+	Edges      []*ArtistEdge `json:"edges"`
+	PageInfo   PageInfo      `json:"pageInfo"`
+	TotalCount int           `json:"totalCount"`
+}
+
+func (c *ArtistConnection) build(nodes []*Artist, pager *artistPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Artist
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Artist {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Artist {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ArtistEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ArtistEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ArtistPaginateOption enables pagination customization.
+type ArtistPaginateOption func(*artistPager) error
+
+// WithArtistOrder configures pagination ordering.
+func WithArtistOrder(order *ArtistOrder) ArtistPaginateOption {
+	if order == nil {
+		order = DefaultArtistOrder
+	}
+	o := *order
+	return func(pager *artistPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultArtistOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithArtistFilter configures pagination filter.
+func WithArtistFilter(filter func(*ArtistQuery) (*ArtistQuery, error)) ArtistPaginateOption {
+	return func(pager *artistPager) error {
+		if filter == nil {
+			return errors.New("ArtistQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type artistPager struct {
+	reverse bool
+	order   *ArtistOrder
+	filter  func(*ArtistQuery) (*ArtistQuery, error)
+}
+
+func newArtistPager(opts []ArtistPaginateOption, reverse bool) (*artistPager, error) {
+	pager := &artistPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultArtistOrder
+	}
+	return pager, nil
+}
+
+func (p *artistPager) applyFilter(query *ArtistQuery) (*ArtistQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *artistPager) toCursor(a *Artist) Cursor {
+	return p.order.Field.toCursor(a)
+}
+
+func (p *artistPager) applyCursors(query *ArtistQuery, after, before *Cursor) (*ArtistQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultArtistOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *artistPager) applyOrder(query *ArtistQuery) *ArtistQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultArtistOrder.Field {
+		query = query.Order(DefaultArtistOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *artistPager) orderExpr(query *ArtistQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultArtistOrder.Field {
+			b.Comma().Ident(DefaultArtistOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Artist.
+func (a *ArtistQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ArtistPaginateOption,
+) (*ArtistConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newArtistPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if a, err = pager.applyFilter(a); err != nil {
+		return nil, err
+	}
+	conn := &ArtistConnection{Edges: []*ArtistEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := a.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if a, err = pager.applyCursors(a, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		a.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := a.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	a = pager.applyOrder(a)
+	nodes, err := a.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ArtistOrderField defines the ordering field of Artist.
+type ArtistOrderField struct {
+	// Value extracts the ordering value from the given Artist.
+	Value    func(*Artist) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) artist.OrderOption
+	toCursor func(*Artist) Cursor
+}
+
+// ArtistOrder defines the ordering of Artist.
+type ArtistOrder struct {
+	Direction OrderDirection    `json:"direction"`
+	Field     *ArtistOrderField `json:"field"`
+}
+
+// DefaultArtistOrder is the default ordering of Artist.
+var DefaultArtistOrder = &ArtistOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ArtistOrderField{
+		Value: func(a *Artist) (ent.Value, error) {
+			return a.ID, nil
+		},
+		column: artist.FieldID,
+		toTerm: artist.ByID,
+		toCursor: func(a *Artist) Cursor {
+			return Cursor{ID: a.ID}
+		},
+	},
+}
+
+// ToEdge converts Artist into ArtistEdge.
+func (a *Artist) ToEdge(order *ArtistOrder) *ArtistEdge {
+	if order == nil {
+		order = DefaultArtistOrder
+	}
+	return &ArtistEdge{
 		Node:   a,
 		Cursor: order.Field.toCursor(a),
 	}

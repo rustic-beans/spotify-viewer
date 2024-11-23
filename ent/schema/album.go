@@ -47,8 +47,6 @@ func (Album) Fields() []ent.Field {
 		field.Text("uri").
 			NotEmpty().
 			Comment("The Spotify URI for the album"),
-		field.Text("external_ids").
-			Comment("Known external IDs for the album"),
 		field.JSON("genres", []string{}).
 			Comment("A list of the genres the album is associated with"),
 		field.Text("label").

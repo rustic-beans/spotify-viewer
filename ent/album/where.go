@@ -93,11 +93,6 @@ func URI(v string) predicate.Album {
 	return predicate.Album(sql.FieldEQ(FieldURI, v))
 }
 
-// ExternalIds applies equality check predicate on the "external_ids" field. It's identical to ExternalIdsEQ.
-func ExternalIds(v string) predicate.Album {
-	return predicate.Album(sql.FieldEQ(FieldExternalIds, v))
-}
-
 // Popularity applies equality check predicate on the "popularity" field. It's identical to PopularityEQ.
 func Popularity(v int) predicate.Album {
 	return predicate.Album(sql.FieldEQ(FieldPopularity, v))
@@ -518,71 +513,6 @@ func URIContainsFold(v string) predicate.Album {
 	return predicate.Album(sql.FieldContainsFold(FieldURI, v))
 }
 
-// ExternalIdsEQ applies the EQ predicate on the "external_ids" field.
-func ExternalIdsEQ(v string) predicate.Album {
-	return predicate.Album(sql.FieldEQ(FieldExternalIds, v))
-}
-
-// ExternalIdsNEQ applies the NEQ predicate on the "external_ids" field.
-func ExternalIdsNEQ(v string) predicate.Album {
-	return predicate.Album(sql.FieldNEQ(FieldExternalIds, v))
-}
-
-// ExternalIdsIn applies the In predicate on the "external_ids" field.
-func ExternalIdsIn(vs ...string) predicate.Album {
-	return predicate.Album(sql.FieldIn(FieldExternalIds, vs...))
-}
-
-// ExternalIdsNotIn applies the NotIn predicate on the "external_ids" field.
-func ExternalIdsNotIn(vs ...string) predicate.Album {
-	return predicate.Album(sql.FieldNotIn(FieldExternalIds, vs...))
-}
-
-// ExternalIdsGT applies the GT predicate on the "external_ids" field.
-func ExternalIdsGT(v string) predicate.Album {
-	return predicate.Album(sql.FieldGT(FieldExternalIds, v))
-}
-
-// ExternalIdsGTE applies the GTE predicate on the "external_ids" field.
-func ExternalIdsGTE(v string) predicate.Album {
-	return predicate.Album(sql.FieldGTE(FieldExternalIds, v))
-}
-
-// ExternalIdsLT applies the LT predicate on the "external_ids" field.
-func ExternalIdsLT(v string) predicate.Album {
-	return predicate.Album(sql.FieldLT(FieldExternalIds, v))
-}
-
-// ExternalIdsLTE applies the LTE predicate on the "external_ids" field.
-func ExternalIdsLTE(v string) predicate.Album {
-	return predicate.Album(sql.FieldLTE(FieldExternalIds, v))
-}
-
-// ExternalIdsContains applies the Contains predicate on the "external_ids" field.
-func ExternalIdsContains(v string) predicate.Album {
-	return predicate.Album(sql.FieldContains(FieldExternalIds, v))
-}
-
-// ExternalIdsHasPrefix applies the HasPrefix predicate on the "external_ids" field.
-func ExternalIdsHasPrefix(v string) predicate.Album {
-	return predicate.Album(sql.FieldHasPrefix(FieldExternalIds, v))
-}
-
-// ExternalIdsHasSuffix applies the HasSuffix predicate on the "external_ids" field.
-func ExternalIdsHasSuffix(v string) predicate.Album {
-	return predicate.Album(sql.FieldHasSuffix(FieldExternalIds, v))
-}
-
-// ExternalIdsEqualFold applies the EqualFold predicate on the "external_ids" field.
-func ExternalIdsEqualFold(v string) predicate.Album {
-	return predicate.Album(sql.FieldEqualFold(FieldExternalIds, v))
-}
-
-// ExternalIdsContainsFold applies the ContainsFold predicate on the "external_ids" field.
-func ExternalIdsContainsFold(v string) predicate.Album {
-	return predicate.Album(sql.FieldContainsFold(FieldExternalIds, v))
-}
-
 // LabelEQ applies the EQ predicate on the "label" field.
 func LabelEQ(v string) predicate.Album {
 	return predicate.Album(sql.FieldEQ(FieldLabel, v))
@@ -703,6 +633,29 @@ func HasImages() predicate.Album {
 func HasImagesWith(preds ...predicate.Image) predicate.Album {
 	return predicate.Album(func(s *sql.Selector) {
 		step := newImagesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasArtists applies the HasEdge predicate on the "artists" edge.
+func HasArtists() predicate.Album {
+	return predicate.Album(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ArtistsTable, ArtistsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasArtistsWith applies the HasEdge predicate on the "artists" edge with a given conditions (other predicates).
+func HasArtistsWith(preds ...predicate.Artist) predicate.Album {
+	return predicate.Album(func(s *sql.Selector) {
+		step := newArtistsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

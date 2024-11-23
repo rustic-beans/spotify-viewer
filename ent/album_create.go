@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -30,6 +32,18 @@ func (ac *AlbumCreate) SetAlbumType(at album.AlbumType) *AlbumCreate {
 // SetTotalTracks sets the "total_tracks" field.
 func (ac *AlbumCreate) SetTotalTracks(i int) *AlbumCreate {
 	ac.mutation.SetTotalTracks(i)
+	return ac
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (ac *AlbumCreate) SetAvailableMarkets(s []string) *AlbumCreate {
+	ac.mutation.SetAvailableMarkets(s)
+	return ac
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (ac *AlbumCreate) SetExternalUrls(sm *schema.StringMap) *AlbumCreate {
+	ac.mutation.SetExternalUrls(sm)
 	return ac
 }
 
@@ -77,9 +91,9 @@ func (ac *AlbumCreate) SetURI(s string) *AlbumCreate {
 	return ac
 }
 
-// SetExternalIds sets the "external_ids" field.
-func (ac *AlbumCreate) SetExternalIds(s string) *AlbumCreate {
-	ac.mutation.SetExternalIds(s)
+// SetGenres sets the "genres" field.
+func (ac *AlbumCreate) SetGenres(s []string) *AlbumCreate {
+	ac.mutation.SetGenres(s)
 	return ac
 }
 
@@ -114,6 +128,21 @@ func (ac *AlbumCreate) AddImages(i ...*Image) *AlbumCreate {
 		ids[j] = i[j].ID
 	}
 	return ac.AddImageIDs(ids...)
+}
+
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (ac *AlbumCreate) AddArtistIDs(ids ...string) *AlbumCreate {
+	ac.mutation.AddArtistIDs(ids...)
+	return ac
+}
+
+// AddArtists adds the "artists" edges to the Artist entity.
+func (ac *AlbumCreate) AddArtists(a ...*Artist) *AlbumCreate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ac.AddArtistIDs(ids...)
 }
 
 // AddTrackIDs adds the "tracks" edge to the Track entity by IDs.
@@ -176,6 +205,12 @@ func (ac *AlbumCreate) check() error {
 	if _, ok := ac.mutation.TotalTracks(); !ok {
 		return &ValidationError{Name: "total_tracks", err: errors.New(`ent: missing required field "Album.total_tracks"`)}
 	}
+	if _, ok := ac.mutation.AvailableMarkets(); !ok {
+		return &ValidationError{Name: "available_markets", err: errors.New(`ent: missing required field "Album.available_markets"`)}
+	}
+	if _, ok := ac.mutation.ExternalUrls(); !ok {
+		return &ValidationError{Name: "external_urls", err: errors.New(`ent: missing required field "Album.external_urls"`)}
+	}
 	if _, ok := ac.mutation.Href(); !ok {
 		return &ValidationError{Name: "href", err: errors.New(`ent: missing required field "Album.href"`)}
 	}
@@ -216,8 +251,8 @@ func (ac *AlbumCreate) check() error {
 			return &ValidationError{Name: "uri", err: fmt.Errorf(`ent: validator failed for field "Album.uri": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.ExternalIds(); !ok {
-		return &ValidationError{Name: "external_ids", err: errors.New(`ent: missing required field "Album.external_ids"`)}
+	if _, ok := ac.mutation.Genres(); !ok {
+		return &ValidationError{Name: "genres", err: errors.New(`ent: missing required field "Album.genres"`)}
 	}
 	if _, ok := ac.mutation.Label(); !ok {
 		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "Album.label"`)}
@@ -276,6 +311,14 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 		_spec.SetField(album.FieldTotalTracks, field.TypeInt, value)
 		_node.TotalTracks = value
 	}
+	if value, ok := ac.mutation.AvailableMarkets(); ok {
+		_spec.SetField(album.FieldAvailableMarkets, field.TypeJSON, value)
+		_node.AvailableMarkets = value
+	}
+	if value, ok := ac.mutation.ExternalUrls(); ok {
+		_spec.SetField(album.FieldExternalUrls, field.TypeJSON, value)
+		_node.ExternalUrls = value
+	}
 	if value, ok := ac.mutation.Href(); ok {
 		_spec.SetField(album.FieldHref, field.TypeString, value)
 		_node.Href = value
@@ -300,9 +343,9 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 		_spec.SetField(album.FieldURI, field.TypeString, value)
 		_node.URI = value
 	}
-	if value, ok := ac.mutation.ExternalIds(); ok {
-		_spec.SetField(album.FieldExternalIds, field.TypeString, value)
-		_node.ExternalIds = value
+	if value, ok := ac.mutation.Genres(); ok {
+		_spec.SetField(album.FieldGenres, field.TypeJSON, value)
+		_node.Genres = value
 	}
 	if value, ok := ac.mutation.Label(); ok {
 		_spec.SetField(album.FieldLabel, field.TypeString, value)
@@ -321,6 +364,22 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   album.ArtistsTable,
+			Columns: album.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

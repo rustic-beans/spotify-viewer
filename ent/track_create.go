@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -49,39 +51,99 @@ func (tc *TrackCreate) SetNillableUpdatedAt(t *time.Time) *TrackCreate {
 	return tc
 }
 
-// SetName sets the "name" field.
-func (tc *TrackCreate) SetName(s string) *TrackCreate {
-	tc.mutation.SetName(s)
+// SetAlbumID sets the "album_id" field.
+func (tc *TrackCreate) SetAlbumID(s string) *TrackCreate {
+	tc.mutation.SetAlbumID(s)
 	return tc
 }
 
-// SetArtists sets the "artists" field.
-func (tc *TrackCreate) SetArtists(s []string) *TrackCreate {
-	tc.mutation.SetArtists(s)
+// SetAvailableMarkets sets the "available_markets" field.
+func (tc *TrackCreate) SetAvailableMarkets(s []string) *TrackCreate {
+	tc.mutation.SetAvailableMarkets(s)
 	return tc
 }
 
-// SetArtistsGenres sets the "artists_genres" field.
-func (tc *TrackCreate) SetArtistsGenres(s []string) *TrackCreate {
-	tc.mutation.SetArtistsGenres(s)
+// SetDiscNumber sets the "disc_number" field.
+func (tc *TrackCreate) SetDiscNumber(i int) *TrackCreate {
+	tc.mutation.SetDiscNumber(i)
 	return tc
 }
 
-// SetAlbumName sets the "album_name" field.
-func (tc *TrackCreate) SetAlbumName(s string) *TrackCreate {
-	tc.mutation.SetAlbumName(s)
-	return tc
-}
-
-// SetAlbumImageURI sets the "album_image_uri" field.
-func (tc *TrackCreate) SetAlbumImageURI(s string) *TrackCreate {
-	tc.mutation.SetAlbumImageURI(s)
+// SetNillableDiscNumber sets the "disc_number" field if the given value is not nil.
+func (tc *TrackCreate) SetNillableDiscNumber(i *int) *TrackCreate {
+	if i != nil {
+		tc.SetDiscNumber(*i)
+	}
 	return tc
 }
 
 // SetDurationMs sets the "duration_ms" field.
 func (tc *TrackCreate) SetDurationMs(i int) *TrackCreate {
 	tc.mutation.SetDurationMs(i)
+	return tc
+}
+
+// SetExplicit sets the "explicit" field.
+func (tc *TrackCreate) SetExplicit(b bool) *TrackCreate {
+	tc.mutation.SetExplicit(b)
+	return tc
+}
+
+// SetNillableExplicit sets the "explicit" field if the given value is not nil.
+func (tc *TrackCreate) SetNillableExplicit(b *bool) *TrackCreate {
+	if b != nil {
+		tc.SetExplicit(*b)
+	}
+	return tc
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (tc *TrackCreate) SetExternalUrls(sm *schema.StringMap) *TrackCreate {
+	tc.mutation.SetExternalUrls(sm)
+	return tc
+}
+
+// SetHref sets the "href" field.
+func (tc *TrackCreate) SetHref(s string) *TrackCreate {
+	tc.mutation.SetHref(s)
+	return tc
+}
+
+// SetIsPlayable sets the "is_playable" field.
+func (tc *TrackCreate) SetIsPlayable(b bool) *TrackCreate {
+	tc.mutation.SetIsPlayable(b)
+	return tc
+}
+
+// SetName sets the "name" field.
+func (tc *TrackCreate) SetName(s string) *TrackCreate {
+	tc.mutation.SetName(s)
+	return tc
+}
+
+// SetPopularity sets the "popularity" field.
+func (tc *TrackCreate) SetPopularity(i int) *TrackCreate {
+	tc.mutation.SetPopularity(i)
+	return tc
+}
+
+// SetPreviewURL sets the "preview_url" field.
+func (tc *TrackCreate) SetPreviewURL(s string) *TrackCreate {
+	tc.mutation.SetPreviewURL(s)
+	return tc
+}
+
+// SetNillablePreviewURL sets the "preview_url" field if the given value is not nil.
+func (tc *TrackCreate) SetNillablePreviewURL(s *string) *TrackCreate {
+	if s != nil {
+		tc.SetPreviewURL(*s)
+	}
+	return tc
+}
+
+// SetTrackNumber sets the "track_number" field.
+func (tc *TrackCreate) SetTrackNumber(i int) *TrackCreate {
+	tc.mutation.SetTrackNumber(i)
 	return tc
 }
 
@@ -97,23 +159,24 @@ func (tc *TrackCreate) SetID(s string) *TrackCreate {
 	return tc
 }
 
-// SetAlbumsID sets the "albums" edge to the Album entity by ID.
-func (tc *TrackCreate) SetAlbumsID(id string) *TrackCreate {
-	tc.mutation.SetAlbumsID(id)
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (tc *TrackCreate) AddArtistIDs(ids ...string) *TrackCreate {
+	tc.mutation.AddArtistIDs(ids...)
 	return tc
 }
 
-// SetNillableAlbumsID sets the "albums" edge to the Album entity by ID if the given value is not nil.
-func (tc *TrackCreate) SetNillableAlbumsID(id *string) *TrackCreate {
-	if id != nil {
-		tc = tc.SetAlbumsID(*id)
+// AddArtists adds the "artists" edges to the Artist entity.
+func (tc *TrackCreate) AddArtists(a ...*Artist) *TrackCreate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
 	}
-	return tc
+	return tc.AddArtistIDs(ids...)
 }
 
-// SetAlbums sets the "albums" edge to the Album entity.
-func (tc *TrackCreate) SetAlbums(a *Album) *TrackCreate {
-	return tc.SetAlbumsID(a.ID)
+// SetAlbum sets the "album" edge to the Album entity.
+func (tc *TrackCreate) SetAlbum(a *Album) *TrackCreate {
+	return tc.SetAlbumID(a.ID)
 }
 
 // Mutation returns the TrackMutation object of the builder.
@@ -159,6 +222,10 @@ func (tc *TrackCreate) defaults() {
 		v := track.DefaultUpdatedAt()
 		tc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := tc.mutation.Explicit(); !ok {
+		v := track.DefaultExplicit
+		tc.mutation.SetExplicit(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -169,31 +236,74 @@ func (tc *TrackCreate) check() error {
 	if _, ok := tc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Track.updated_at"`)}
 	}
-	if _, ok := tc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Track.name"`)}
+	if _, ok := tc.mutation.AlbumID(); !ok {
+		return &ValidationError{Name: "album_id", err: errors.New(`ent: missing required field "Track.album_id"`)}
 	}
-	if _, ok := tc.mutation.Artists(); !ok {
-		return &ValidationError{Name: "artists", err: errors.New(`ent: missing required field "Track.artists"`)}
+	if v, ok := tc.mutation.AlbumID(); ok {
+		if err := track.AlbumIDValidator(v); err != nil {
+			return &ValidationError{Name: "album_id", err: fmt.Errorf(`ent: validator failed for field "Track.album_id": %w`, err)}
+		}
 	}
-	if _, ok := tc.mutation.ArtistsGenres(); !ok {
-		return &ValidationError{Name: "artists_genres", err: errors.New(`ent: missing required field "Track.artists_genres"`)}
-	}
-	if _, ok := tc.mutation.AlbumName(); !ok {
-		return &ValidationError{Name: "album_name", err: errors.New(`ent: missing required field "Track.album_name"`)}
-	}
-	if _, ok := tc.mutation.AlbumImageURI(); !ok {
-		return &ValidationError{Name: "album_image_uri", err: errors.New(`ent: missing required field "Track.album_image_uri"`)}
+	if _, ok := tc.mutation.AvailableMarkets(); !ok {
+		return &ValidationError{Name: "available_markets", err: errors.New(`ent: missing required field "Track.available_markets"`)}
 	}
 	if _, ok := tc.mutation.DurationMs(); !ok {
 		return &ValidationError{Name: "duration_ms", err: errors.New(`ent: missing required field "Track.duration_ms"`)}
 	}
+	if v, ok := tc.mutation.DurationMs(); ok {
+		if err := track.DurationMsValidator(v); err != nil {
+			return &ValidationError{Name: "duration_ms", err: fmt.Errorf(`ent: validator failed for field "Track.duration_ms": %w`, err)}
+		}
+	}
+	if _, ok := tc.mutation.Explicit(); !ok {
+		return &ValidationError{Name: "explicit", err: errors.New(`ent: missing required field "Track.explicit"`)}
+	}
+	if _, ok := tc.mutation.ExternalUrls(); !ok {
+		return &ValidationError{Name: "external_urls", err: errors.New(`ent: missing required field "Track.external_urls"`)}
+	}
+	if _, ok := tc.mutation.Href(); !ok {
+		return &ValidationError{Name: "href", err: errors.New(`ent: missing required field "Track.href"`)}
+	}
+	if v, ok := tc.mutation.Href(); ok {
+		if err := track.HrefValidator(v); err != nil {
+			return &ValidationError{Name: "href", err: fmt.Errorf(`ent: validator failed for field "Track.href": %w`, err)}
+		}
+	}
+	if _, ok := tc.mutation.IsPlayable(); !ok {
+		return &ValidationError{Name: "is_playable", err: errors.New(`ent: missing required field "Track.is_playable"`)}
+	}
+	if _, ok := tc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Track.name"`)}
+	}
+	if v, ok := tc.mutation.Name(); ok {
+		if err := track.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Track.name": %w`, err)}
+		}
+	}
+	if _, ok := tc.mutation.Popularity(); !ok {
+		return &ValidationError{Name: "popularity", err: errors.New(`ent: missing required field "Track.popularity"`)}
+	}
+	if _, ok := tc.mutation.TrackNumber(); !ok {
+		return &ValidationError{Name: "track_number", err: errors.New(`ent: missing required field "Track.track_number"`)}
+	}
 	if _, ok := tc.mutation.URI(); !ok {
 		return &ValidationError{Name: "uri", err: errors.New(`ent: missing required field "Track.uri"`)}
+	}
+	if v, ok := tc.mutation.URI(); ok {
+		if err := track.URIValidator(v); err != nil {
+			return &ValidationError{Name: "uri", err: fmt.Errorf(`ent: validator failed for field "Track.uri": %w`, err)}
+		}
 	}
 	if v, ok := tc.mutation.ID(); ok {
 		if err := track.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Track.id": %w`, err)}
 		}
+	}
+	if len(tc.mutation.ArtistsIDs()) == 0 {
+		return &ValidationError{Name: "artists", err: errors.New(`ent: missing required edge "Track.artists"`)}
+	}
+	if len(tc.mutation.AlbumIDs()) == 0 {
+		return &ValidationError{Name: "album", err: errors.New(`ent: missing required edge "Track.album"`)}
 	}
 	return nil
 }
@@ -238,40 +348,76 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := tc.mutation.Name(); ok {
-		_spec.SetField(track.FieldName, field.TypeString, value)
-		_node.Name = value
+	if value, ok := tc.mutation.AvailableMarkets(); ok {
+		_spec.SetField(track.FieldAvailableMarkets, field.TypeJSON, value)
+		_node.AvailableMarkets = value
 	}
-	if value, ok := tc.mutation.Artists(); ok {
-		_spec.SetField(track.FieldArtists, field.TypeJSON, value)
-		_node.Artists = value
-	}
-	if value, ok := tc.mutation.ArtistsGenres(); ok {
-		_spec.SetField(track.FieldArtistsGenres, field.TypeJSON, value)
-		_node.ArtistsGenres = value
-	}
-	if value, ok := tc.mutation.AlbumName(); ok {
-		_spec.SetField(track.FieldAlbumName, field.TypeString, value)
-		_node.AlbumName = value
-	}
-	if value, ok := tc.mutation.AlbumImageURI(); ok {
-		_spec.SetField(track.FieldAlbumImageURI, field.TypeString, value)
-		_node.AlbumImageURI = value
+	if value, ok := tc.mutation.DiscNumber(); ok {
+		_spec.SetField(track.FieldDiscNumber, field.TypeInt, value)
+		_node.DiscNumber = value
 	}
 	if value, ok := tc.mutation.DurationMs(); ok {
 		_spec.SetField(track.FieldDurationMs, field.TypeInt, value)
 		_node.DurationMs = value
 	}
+	if value, ok := tc.mutation.Explicit(); ok {
+		_spec.SetField(track.FieldExplicit, field.TypeBool, value)
+		_node.Explicit = value
+	}
+	if value, ok := tc.mutation.ExternalUrls(); ok {
+		_spec.SetField(track.FieldExternalUrls, field.TypeJSON, value)
+		_node.ExternalUrls = value
+	}
+	if value, ok := tc.mutation.Href(); ok {
+		_spec.SetField(track.FieldHref, field.TypeString, value)
+		_node.Href = value
+	}
+	if value, ok := tc.mutation.IsPlayable(); ok {
+		_spec.SetField(track.FieldIsPlayable, field.TypeBool, value)
+		_node.IsPlayable = value
+	}
+	if value, ok := tc.mutation.Name(); ok {
+		_spec.SetField(track.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
+	if value, ok := tc.mutation.Popularity(); ok {
+		_spec.SetField(track.FieldPopularity, field.TypeInt, value)
+		_node.Popularity = value
+	}
+	if value, ok := tc.mutation.PreviewURL(); ok {
+		_spec.SetField(track.FieldPreviewURL, field.TypeString, value)
+		_node.PreviewURL = value
+	}
+	if value, ok := tc.mutation.TrackNumber(); ok {
+		_spec.SetField(track.FieldTrackNumber, field.TypeInt, value)
+		_node.TrackNumber = value
+	}
 	if value, ok := tc.mutation.URI(); ok {
 		_spec.SetField(track.FieldURI, field.TypeString, value)
 		_node.URI = value
 	}
-	if nodes := tc.mutation.AlbumsIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   track.ArtistsTable,
+			Columns: track.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.AlbumIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   track.AlbumsTable,
-			Columns: []string{track.AlbumsColumn},
+			Table:   track.AlbumTable,
+			Columns: []string{track.AlbumColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
@@ -280,7 +426,7 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.album_tracks = &nodes[0]
+		_node.AlbumID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

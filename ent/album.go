@@ -3,12 +3,14 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 )
 
 // Album is the model entity for the Album schema.
@@ -20,6 +22,10 @@ type Album struct {
 	AlbumType album.AlbumType `json:"album_type,omitempty"`
 	// The number of tracks in the album
 	TotalTracks int `json:"total_tracks,omitempty"`
+	// The markets in which the album is available
+	AvailableMarkets []string `json:"available_markets,omitempty"`
+	// Known external URLs for this artist
+	ExternalUrls *schema.StringMap `json:"external_urls,omitempty"`
 	// A link to the Web API endpoint providing full details of the album
 	Href string `json:"href,omitempty"`
 	// The name of the album
@@ -32,8 +38,8 @@ type Album struct {
 	Restrictions string `json:"restrictions,omitempty"`
 	// The Spotify URI for the album
 	URI string `json:"uri,omitempty"`
-	// Known external IDs for the album
-	ExternalIds string `json:"external_ids,omitempty"`
+	// A list of the genres the album is associated with
+	Genres []string `json:"genres,omitempty"`
 	// The label associated with the album
 	Label string `json:"label,omitempty"`
 	// The popularity of the album
@@ -48,16 +54,19 @@ type Album struct {
 type AlbumEdges struct {
 	// Images holds the value of the images edge.
 	Images []*Image `json:"images,omitempty"`
+	// Artists holds the value of the artists edge.
+	Artists []*Artist `json:"artists,omitempty"`
 	// Tracks holds the value of the tracks edge.
 	Tracks []*Track `json:"tracks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [3]map[string]int
 
-	namedImages map[string][]*Image
-	namedTracks map[string][]*Track
+	namedImages  map[string][]*Image
+	namedArtists map[string][]*Artist
+	namedTracks  map[string][]*Track
 }
 
 // ImagesOrErr returns the Images value or an error if the edge
@@ -69,10 +78,19 @@ func (e AlbumEdges) ImagesOrErr() ([]*Image, error) {
 	return nil, &NotLoadedError{edge: "images"}
 }
 
+// ArtistsOrErr returns the Artists value or an error if the edge
+// was not loaded in eager-loading.
+func (e AlbumEdges) ArtistsOrErr() ([]*Artist, error) {
+	if e.loadedTypes[1] {
+		return e.Artists, nil
+	}
+	return nil, &NotLoadedError{edge: "artists"}
+}
+
 // TracksOrErr returns the Tracks value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlbumEdges) TracksOrErr() ([]*Track, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Tracks, nil
 	}
 	return nil, &NotLoadedError{edge: "tracks"}
@@ -83,9 +101,11 @@ func (*Album) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case album.FieldAvailableMarkets, album.FieldExternalUrls, album.FieldGenres:
+			values[i] = new([]byte)
 		case album.FieldTotalTracks, album.FieldPopularity:
 			values[i] = new(sql.NullInt64)
-		case album.FieldID, album.FieldAlbumType, album.FieldHref, album.FieldName, album.FieldReleaseDate, album.FieldReleaseDatePrecision, album.FieldRestrictions, album.FieldURI, album.FieldExternalIds, album.FieldLabel:
+		case album.FieldID, album.FieldAlbumType, album.FieldHref, album.FieldName, album.FieldReleaseDate, album.FieldReleaseDatePrecision, album.FieldRestrictions, album.FieldURI, album.FieldLabel:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -119,6 +139,22 @@ func (a *Album) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field total_tracks", values[i])
 			} else if value.Valid {
 				a.TotalTracks = int(value.Int64)
+			}
+		case album.FieldAvailableMarkets:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field available_markets", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &a.AvailableMarkets); err != nil {
+					return fmt.Errorf("unmarshal field available_markets: %w", err)
+				}
+			}
+		case album.FieldExternalUrls:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field external_urls", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &a.ExternalUrls); err != nil {
+					return fmt.Errorf("unmarshal field external_urls: %w", err)
+				}
 			}
 		case album.FieldHref:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -156,11 +192,13 @@ func (a *Album) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.URI = value.String
 			}
-		case album.FieldExternalIds:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_ids", values[i])
-			} else if value.Valid {
-				a.ExternalIds = value.String
+		case album.FieldGenres:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field genres", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &a.Genres); err != nil {
+					return fmt.Errorf("unmarshal field genres: %w", err)
+				}
 			}
 		case album.FieldLabel:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -190,6 +228,11 @@ func (a *Album) Value(name string) (ent.Value, error) {
 // QueryImages queries the "images" edge of the Album entity.
 func (a *Album) QueryImages() *ImageQuery {
 	return NewAlbumClient(a.config).QueryImages(a)
+}
+
+// QueryArtists queries the "artists" edge of the Album entity.
+func (a *Album) QueryArtists() *ArtistQuery {
+	return NewAlbumClient(a.config).QueryArtists(a)
 }
 
 // QueryTracks queries the "tracks" edge of the Album entity.
@@ -226,6 +269,12 @@ func (a *Album) String() string {
 	builder.WriteString("total_tracks=")
 	builder.WriteString(fmt.Sprintf("%v", a.TotalTracks))
 	builder.WriteString(", ")
+	builder.WriteString("available_markets=")
+	builder.WriteString(fmt.Sprintf("%v", a.AvailableMarkets))
+	builder.WriteString(", ")
+	builder.WriteString("external_urls=")
+	builder.WriteString(fmt.Sprintf("%v", a.ExternalUrls))
+	builder.WriteString(", ")
 	builder.WriteString("href=")
 	builder.WriteString(a.Href)
 	builder.WriteString(", ")
@@ -244,8 +293,8 @@ func (a *Album) String() string {
 	builder.WriteString("uri=")
 	builder.WriteString(a.URI)
 	builder.WriteString(", ")
-	builder.WriteString("external_ids=")
-	builder.WriteString(a.ExternalIds)
+	builder.WriteString("genres=")
+	builder.WriteString(fmt.Sprintf("%v", a.Genres))
 	builder.WriteString(", ")
 	builder.WriteString("label=")
 	builder.WriteString(a.Label)
@@ -277,6 +326,30 @@ func (a *Album) appendNamedImages(name string, edges ...*Image) {
 		a.Edges.namedImages[name] = []*Image{}
 	} else {
 		a.Edges.namedImages[name] = append(a.Edges.namedImages[name], edges...)
+	}
+}
+
+// NamedArtists returns the Artists named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (a *Album) NamedArtists(name string) ([]*Artist, error) {
+	if a.Edges.namedArtists == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := a.Edges.namedArtists[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (a *Album) appendNamedArtists(name string, edges ...*Artist) {
+	if a.Edges.namedArtists == nil {
+		a.Edges.namedArtists = make(map[string][]*Artist)
+	}
+	if len(edges) == 0 {
+		a.Edges.namedArtists[name] = []*Artist{}
+	} else {
+		a.Edges.namedArtists[name] = append(a.Edges.namedArtists[name], edges...)
 	}
 }
 

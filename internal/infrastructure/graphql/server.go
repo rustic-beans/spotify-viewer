@@ -9,6 +9,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/gorilla/websocket"
+	"github.com/rustic-beans/spotify-viewer/ent"
 	"github.com/rustic-beans/spotify-viewer/generated"
 	"github.com/rustic-beans/spotify-viewer/internal/resolver"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
@@ -16,12 +17,14 @@ import (
 )
 
 func NewServer(
+	entClient *ent.Client,
 	spotifyClient *spotify.Spotify,
 	playerStateWebsocketHandler *spotify.PlayerStateWebsocketHandler,
 ) *handler.Server {
 	server := handler.New(
 		generated.NewExecutableSchema(
 			generated.Config{Resolvers: &resolver.Resolver{
+				EntClient:                   entClient,
 				SpotifyClient:               spotifyClient,
 				PlayerStateWebsocketHandler: playerStateWebsocketHandler,
 			}},

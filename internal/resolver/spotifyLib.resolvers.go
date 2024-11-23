@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/rustic-beans/spotify-viewer/ent"
+	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/generated"
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	lspotify "github.com/rustic-beans/spotify-viewer/internal/spotify"
@@ -25,12 +26,12 @@ func (r *fullTrackResolver) DurationMs(ctx context.Context, obj *spotify.FullTra
 }
 
 // ExternalIds is the resolver for the external_ids field.
-func (r *fullTrackResolver) ExternalIds(ctx context.Context, obj *spotify.FullTrack) (models.StringMap, error) {
+func (r *fullTrackResolver) ExternalIds(ctx context.Context, obj *spotify.FullTrack) (schema.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *fullTrackResolver) ExternalUrls(ctx context.Context, obj *spotify.FullTrack) (models.StringMap, error) {
+func (r *fullTrackResolver) ExternalUrls(ctx context.Context, obj *spotify.FullTrack) (schema.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
@@ -65,7 +66,7 @@ func (r *playbackContextResolver) Href(ctx context.Context, obj *spotify.Playbac
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *playbackContextResolver) ExternalUrls(ctx context.Context, obj *spotify.PlaybackContext) (models.StringMap, error) {
+func (r *playbackContextResolver) ExternalUrls(ctx context.Context, obj *spotify.PlaybackContext) (schema.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
@@ -110,7 +111,7 @@ func (r *playerStateResolver) IsPlaying(ctx context.Context, obj *spotify.Player
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *simpleAlbumResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleAlbum) (models.StringMap, error) {
+func (r *simpleAlbumResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleAlbum) (schema.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
@@ -140,7 +141,7 @@ func (r *simpleAlbumResolver) URI(ctx context.Context, obj *spotify.SimpleAlbum)
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *simpleArtistResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleArtist) (models.StringMap, error) {
+func (r *simpleArtistResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleArtist) (schema.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
