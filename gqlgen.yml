@@ -1,6 +1,6 @@
 # schema tells gqlgen where the GraphQL schema is located.
 schema:
-  - ./graph/*.graphql
+  - ./api/*.graphql
 
 # Where should the generated server code go?
 exec:
