@@ -6,16 +6,17 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/rustic-beans/spotify-viewer/ent"
 	"github.com/rustic-beans/spotify-viewer/generated"
-	graphql1 "github.com/rustic-beans/spotify-viewer/internal/models"
+	"github.com/rustic-beans/spotify-viewer/internal/models"
+	lspotify "github.com/rustic-beans/spotify-viewer/internal/spotify"
 	spotify "github.com/zmb3/spotify/v2"
 )
 
 // DiscNumber is the resolver for the disc_number field.
 func (r *fullTrackResolver) DiscNumber(ctx context.Context, obj *spotify.FullTrack) (int, error) {
-	panic(fmt.Errorf("not implemented: DiscNumber - disc_number"))
+	return int(obj.DiscNumber), nil
 }
 
 // DurationMs is the resolver for the duration_ms field.
@@ -24,12 +25,12 @@ func (r *fullTrackResolver) DurationMs(ctx context.Context, obj *spotify.FullTra
 }
 
 // ExternalIds is the resolver for the external_ids field.
-func (r *fullTrackResolver) ExternalIds(ctx context.Context, obj *spotify.FullTrack) (graphql1.StringMap, error) {
+func (r *fullTrackResolver) ExternalIds(ctx context.Context, obj *spotify.FullTrack) (models.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *fullTrackResolver) ExternalUrls(ctx context.Context, obj *spotify.FullTrack) (graphql1.StringMap, error) {
+func (r *fullTrackResolver) ExternalUrls(ctx context.Context, obj *spotify.FullTrack) (models.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
@@ -45,27 +46,17 @@ func (r *fullTrackResolver) ID(ctx context.Context, obj *spotify.FullTrack) (str
 
 // Popularity is the resolver for the popularity field.
 func (r *fullTrackResolver) Popularity(ctx context.Context, obj *spotify.FullTrack) (int, error) {
-	panic(fmt.Errorf("not implemented: Popularity - popularity"))
+	return int(obj.Popularity), nil
 }
 
 // TrackNumber is the resolver for the track_number field.
 func (r *fullTrackResolver) TrackNumber(ctx context.Context, obj *spotify.FullTrack) (int, error) {
-	panic(fmt.Errorf("not implemented: TrackNumber - track_number"))
+	return int(obj.TrackNumber), nil
 }
 
 // URI is the resolver for the uri field.
 func (r *fullTrackResolver) URI(ctx context.Context, obj *spotify.FullTrack) (string, error) {
 	return string(obj.URI), nil
-}
-
-// Height is the resolver for the height field.
-func (r *imageResolver) Height(ctx context.Context, obj *spotify.Image) (int, error) {
-	panic(fmt.Errorf("not implemented: Height - height"))
-}
-
-// Width is the resolver for the width field.
-func (r *imageResolver) Width(ctx context.Context, obj *spotify.Image) (int, error) {
-	panic(fmt.Errorf("not implemented: Width - width"))
 }
 
 // Href is the resolver for the href field.
@@ -74,7 +65,7 @@ func (r *playbackContextResolver) Href(ctx context.Context, obj *spotify.Playbac
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *playbackContextResolver) ExternalUrls(ctx context.Context, obj *spotify.PlaybackContext) (graphql1.StringMap, error) {
+func (r *playbackContextResolver) ExternalUrls(ctx context.Context, obj *spotify.PlaybackContext) (models.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
@@ -119,7 +110,7 @@ func (r *playerStateResolver) IsPlaying(ctx context.Context, obj *spotify.Player
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *simpleAlbumResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleAlbum) (graphql1.StringMap, error) {
+func (r *simpleAlbumResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleAlbum) (models.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
@@ -133,13 +124,23 @@ func (r *simpleAlbumResolver) ID(ctx context.Context, obj *spotify.SimpleAlbum) 
 	return string(obj.ID), nil
 }
 
+// Images is the resolver for the images field.
+func (r *simpleAlbumResolver) Images(ctx context.Context, obj *spotify.SimpleAlbum) ([]*ent.Image, error) {
+	models := make([]*models.Image, len(obj.Images))
+	for i, image := range obj.Images {
+		models[i] = lspotify.ImageToModel(&image)
+	}
+
+	return models, nil
+}
+
 // URI is the resolver for the uri field.
 func (r *simpleAlbumResolver) URI(ctx context.Context, obj *spotify.SimpleAlbum) (string, error) {
 	return string(obj.URI), nil
 }
 
 // ExternalUrls is the resolver for the external_urls field.
-func (r *simpleArtistResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleArtist) (graphql1.StringMap, error) {
+func (r *simpleArtistResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleArtist) (models.StringMap, error) {
 	return obj.ExternalURLs, nil
 }
 
@@ -161,9 +162,6 @@ func (r *simpleArtistResolver) URI(ctx context.Context, obj *spotify.SimpleArtis
 // FullTrack returns generated.FullTrackResolver implementation.
 func (r *Resolver) FullTrack() generated.FullTrackResolver { return &fullTrackResolver{r} }
 
-// Image returns generated.ImageResolver implementation.
-func (r *Resolver) Image() generated.ImageResolver { return &imageResolver{r} }
-
 // PlaybackContext returns generated.PlaybackContextResolver implementation.
 func (r *Resolver) PlaybackContext() generated.PlaybackContextResolver {
 	return &playbackContextResolver{r}
@@ -182,7 +180,6 @@ func (r *Resolver) SimpleAlbum() generated.SimpleAlbumResolver { return &simpleA
 func (r *Resolver) SimpleArtist() generated.SimpleArtistResolver { return &simpleArtistResolver{r} }
 
 type fullTrackResolver struct{ *Resolver }
-type imageResolver struct{ *Resolver }
 type playbackContextResolver struct{ *Resolver }
 type playerDeviceResolver struct{ *Resolver }
 type playerStateResolver struct{ *Resolver }

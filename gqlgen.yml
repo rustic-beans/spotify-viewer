@@ -12,11 +12,12 @@ model:
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: resolver
+  dir: internal/resolver
   package: resolver
   filename_template: "{name}.resolvers.go"
 
 autobind:
+  - github.com/rustic-beans/spotify-viewer/internal/models
   - github.com/rustic-beans/spotify-viewer/ent
   - github.com/zmb3/spotify/v2
 
