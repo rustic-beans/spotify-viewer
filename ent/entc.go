@@ -25,6 +25,7 @@ func main() {
 
 	opts := []entc.Option{
 		entc.FeatureNames("sql/lock"),
+		entc.FeatureNames("sql/upsert"),
 		entc.Extensions(ex),
 	}
 

@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
@@ -21,6 +23,7 @@ type AlbumCreate struct {
 	config
 	mutation *AlbumMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetAlbumType sets the "album_type" field.
@@ -299,6 +302,7 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 		_node = &Album{config: ac.config}
 		_spec = sqlgraph.NewCreateSpec(album.Table, sqlgraph.NewFieldSpec(album.FieldID, field.TypeString))
 	)
+	_spec.OnConflict = ac.conflict
 	if id, ok := ac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -406,11 +410,524 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Album.Create().
+//		SetAlbumType(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AlbumUpsert) {
+//			SetAlbumType(v+v).
+//		}).
+//		Exec(ctx)
+func (ac *AlbumCreate) OnConflict(opts ...sql.ConflictOption) *AlbumUpsertOne {
+	ac.conflict = opts
+	return &AlbumUpsertOne{
+		create: ac,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Album.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ac *AlbumCreate) OnConflictColumns(columns ...string) *AlbumUpsertOne {
+	ac.conflict = append(ac.conflict, sql.ConflictColumns(columns...))
+	return &AlbumUpsertOne{
+		create: ac,
+	}
+}
+
+type (
+	// AlbumUpsertOne is the builder for "upsert"-ing
+	//  one Album node.
+	AlbumUpsertOne struct {
+		create *AlbumCreate
+	}
+
+	// AlbumUpsert is the "OnConflict" setter.
+	AlbumUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetAlbumType sets the "album_type" field.
+func (u *AlbumUpsert) SetAlbumType(v album.AlbumType) *AlbumUpsert {
+	u.Set(album.FieldAlbumType, v)
+	return u
+}
+
+// UpdateAlbumType sets the "album_type" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateAlbumType() *AlbumUpsert {
+	u.SetExcluded(album.FieldAlbumType)
+	return u
+}
+
+// SetTotalTracks sets the "total_tracks" field.
+func (u *AlbumUpsert) SetTotalTracks(v int) *AlbumUpsert {
+	u.Set(album.FieldTotalTracks, v)
+	return u
+}
+
+// UpdateTotalTracks sets the "total_tracks" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateTotalTracks() *AlbumUpsert {
+	u.SetExcluded(album.FieldTotalTracks)
+	return u
+}
+
+// AddTotalTracks adds v to the "total_tracks" field.
+func (u *AlbumUpsert) AddTotalTracks(v int) *AlbumUpsert {
+	u.Add(album.FieldTotalTracks, v)
+	return u
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (u *AlbumUpsert) SetAvailableMarkets(v []string) *AlbumUpsert {
+	u.Set(album.FieldAvailableMarkets, v)
+	return u
+}
+
+// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateAvailableMarkets() *AlbumUpsert {
+	u.SetExcluded(album.FieldAvailableMarkets)
+	return u
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (u *AlbumUpsert) SetExternalUrls(v *schema.StringMap) *AlbumUpsert {
+	u.Set(album.FieldExternalUrls, v)
+	return u
+}
+
+// UpdateExternalUrls sets the "external_urls" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateExternalUrls() *AlbumUpsert {
+	u.SetExcluded(album.FieldExternalUrls)
+	return u
+}
+
+// SetHref sets the "href" field.
+func (u *AlbumUpsert) SetHref(v string) *AlbumUpsert {
+	u.Set(album.FieldHref, v)
+	return u
+}
+
+// UpdateHref sets the "href" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateHref() *AlbumUpsert {
+	u.SetExcluded(album.FieldHref)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *AlbumUpsert) SetName(v string) *AlbumUpsert {
+	u.Set(album.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateName() *AlbumUpsert {
+	u.SetExcluded(album.FieldName)
+	return u
+}
+
+// SetReleaseDate sets the "release_date" field.
+func (u *AlbumUpsert) SetReleaseDate(v string) *AlbumUpsert {
+	u.Set(album.FieldReleaseDate, v)
+	return u
+}
+
+// UpdateReleaseDate sets the "release_date" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateReleaseDate() *AlbumUpsert {
+	u.SetExcluded(album.FieldReleaseDate)
+	return u
+}
+
+// SetReleaseDatePrecision sets the "release_date_precision" field.
+func (u *AlbumUpsert) SetReleaseDatePrecision(v album.ReleaseDatePrecision) *AlbumUpsert {
+	u.Set(album.FieldReleaseDatePrecision, v)
+	return u
+}
+
+// UpdateReleaseDatePrecision sets the "release_date_precision" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateReleaseDatePrecision() *AlbumUpsert {
+	u.SetExcluded(album.FieldReleaseDatePrecision)
+	return u
+}
+
+// SetRestrictions sets the "restrictions" field.
+func (u *AlbumUpsert) SetRestrictions(v string) *AlbumUpsert {
+	u.Set(album.FieldRestrictions, v)
+	return u
+}
+
+// UpdateRestrictions sets the "restrictions" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateRestrictions() *AlbumUpsert {
+	u.SetExcluded(album.FieldRestrictions)
+	return u
+}
+
+// ClearRestrictions clears the value of the "restrictions" field.
+func (u *AlbumUpsert) ClearRestrictions() *AlbumUpsert {
+	u.SetNull(album.FieldRestrictions)
+	return u
+}
+
+// SetURI sets the "uri" field.
+func (u *AlbumUpsert) SetURI(v string) *AlbumUpsert {
+	u.Set(album.FieldURI, v)
+	return u
+}
+
+// UpdateURI sets the "uri" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateURI() *AlbumUpsert {
+	u.SetExcluded(album.FieldURI)
+	return u
+}
+
+// SetGenres sets the "genres" field.
+func (u *AlbumUpsert) SetGenres(v []string) *AlbumUpsert {
+	u.Set(album.FieldGenres, v)
+	return u
+}
+
+// UpdateGenres sets the "genres" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateGenres() *AlbumUpsert {
+	u.SetExcluded(album.FieldGenres)
+	return u
+}
+
+// SetLabel sets the "label" field.
+func (u *AlbumUpsert) SetLabel(v string) *AlbumUpsert {
+	u.Set(album.FieldLabel, v)
+	return u
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdateLabel() *AlbumUpsert {
+	u.SetExcluded(album.FieldLabel)
+	return u
+}
+
+// SetPopularity sets the "popularity" field.
+func (u *AlbumUpsert) SetPopularity(v int) *AlbumUpsert {
+	u.Set(album.FieldPopularity, v)
+	return u
+}
+
+// UpdatePopularity sets the "popularity" field to the value that was provided on create.
+func (u *AlbumUpsert) UpdatePopularity() *AlbumUpsert {
+	u.SetExcluded(album.FieldPopularity)
+	return u
+}
+
+// AddPopularity adds v to the "popularity" field.
+func (u *AlbumUpsert) AddPopularity(v int) *AlbumUpsert {
+	u.Add(album.FieldPopularity, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Album.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(album.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AlbumUpsertOne) UpdateNewValues() *AlbumUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(album.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Album.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *AlbumUpsertOne) Ignore() *AlbumUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AlbumUpsertOne) DoNothing() *AlbumUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AlbumCreate.OnConflict
+// documentation for more info.
+func (u *AlbumUpsertOne) Update(set func(*AlbumUpsert)) *AlbumUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AlbumUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetAlbumType sets the "album_type" field.
+func (u *AlbumUpsertOne) SetAlbumType(v album.AlbumType) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetAlbumType(v)
+	})
+}
+
+// UpdateAlbumType sets the "album_type" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateAlbumType() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateAlbumType()
+	})
+}
+
+// SetTotalTracks sets the "total_tracks" field.
+func (u *AlbumUpsertOne) SetTotalTracks(v int) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetTotalTracks(v)
+	})
+}
+
+// AddTotalTracks adds v to the "total_tracks" field.
+func (u *AlbumUpsertOne) AddTotalTracks(v int) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.AddTotalTracks(v)
+	})
+}
+
+// UpdateTotalTracks sets the "total_tracks" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateTotalTracks() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateTotalTracks()
+	})
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (u *AlbumUpsertOne) SetAvailableMarkets(v []string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetAvailableMarkets(v)
+	})
+}
+
+// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateAvailableMarkets() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateAvailableMarkets()
+	})
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (u *AlbumUpsertOne) SetExternalUrls(v *schema.StringMap) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetExternalUrls(v)
+	})
+}
+
+// UpdateExternalUrls sets the "external_urls" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateExternalUrls() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateExternalUrls()
+	})
+}
+
+// SetHref sets the "href" field.
+func (u *AlbumUpsertOne) SetHref(v string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetHref(v)
+	})
+}
+
+// UpdateHref sets the "href" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateHref() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateHref()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *AlbumUpsertOne) SetName(v string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateName() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetReleaseDate sets the "release_date" field.
+func (u *AlbumUpsertOne) SetReleaseDate(v string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetReleaseDate(v)
+	})
+}
+
+// UpdateReleaseDate sets the "release_date" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateReleaseDate() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateReleaseDate()
+	})
+}
+
+// SetReleaseDatePrecision sets the "release_date_precision" field.
+func (u *AlbumUpsertOne) SetReleaseDatePrecision(v album.ReleaseDatePrecision) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetReleaseDatePrecision(v)
+	})
+}
+
+// UpdateReleaseDatePrecision sets the "release_date_precision" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateReleaseDatePrecision() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateReleaseDatePrecision()
+	})
+}
+
+// SetRestrictions sets the "restrictions" field.
+func (u *AlbumUpsertOne) SetRestrictions(v string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetRestrictions(v)
+	})
+}
+
+// UpdateRestrictions sets the "restrictions" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateRestrictions() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateRestrictions()
+	})
+}
+
+// ClearRestrictions clears the value of the "restrictions" field.
+func (u *AlbumUpsertOne) ClearRestrictions() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.ClearRestrictions()
+	})
+}
+
+// SetURI sets the "uri" field.
+func (u *AlbumUpsertOne) SetURI(v string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetURI(v)
+	})
+}
+
+// UpdateURI sets the "uri" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateURI() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateURI()
+	})
+}
+
+// SetGenres sets the "genres" field.
+func (u *AlbumUpsertOne) SetGenres(v []string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetGenres(v)
+	})
+}
+
+// UpdateGenres sets the "genres" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateGenres() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateGenres()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *AlbumUpsertOne) SetLabel(v string) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdateLabel() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateLabel()
+	})
+}
+
+// SetPopularity sets the "popularity" field.
+func (u *AlbumUpsertOne) SetPopularity(v int) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetPopularity(v)
+	})
+}
+
+// AddPopularity adds v to the "popularity" field.
+func (u *AlbumUpsertOne) AddPopularity(v int) *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.AddPopularity(v)
+	})
+}
+
+// UpdatePopularity sets the "popularity" field to the value that was provided on create.
+func (u *AlbumUpsertOne) UpdatePopularity() *AlbumUpsertOne {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdatePopularity()
+	})
+}
+
+// Exec executes the query.
+func (u *AlbumUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AlbumCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AlbumUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *AlbumUpsertOne) ID(ctx context.Context) (id string, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: AlbumUpsertOne.ID is not supported by MySQL driver. Use AlbumUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *AlbumUpsertOne) IDX(ctx context.Context) string {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // AlbumCreateBulk is the builder for creating many Album entities in bulk.
 type AlbumCreateBulk struct {
 	config
 	err      error
 	builders []*AlbumCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Album entities in the database.
@@ -439,6 +956,7 @@ func (acb *AlbumCreateBulk) Save(ctx context.Context) ([]*Album, error) {
 					_, err = mutators[i+1].Mutate(root, acb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = acb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, acb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -485,6 +1003,323 @@ func (acb *AlbumCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (acb *AlbumCreateBulk) ExecX(ctx context.Context) {
 	if err := acb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Album.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AlbumUpsert) {
+//			SetAlbumType(v+v).
+//		}).
+//		Exec(ctx)
+func (acb *AlbumCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlbumUpsertBulk {
+	acb.conflict = opts
+	return &AlbumUpsertBulk{
+		create: acb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Album.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (acb *AlbumCreateBulk) OnConflictColumns(columns ...string) *AlbumUpsertBulk {
+	acb.conflict = append(acb.conflict, sql.ConflictColumns(columns...))
+	return &AlbumUpsertBulk{
+		create: acb,
+	}
+}
+
+// AlbumUpsertBulk is the builder for "upsert"-ing
+// a bulk of Album nodes.
+type AlbumUpsertBulk struct {
+	create *AlbumCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Album.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(album.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AlbumUpsertBulk) UpdateNewValues() *AlbumUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(album.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Album.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *AlbumUpsertBulk) Ignore() *AlbumUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AlbumUpsertBulk) DoNothing() *AlbumUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AlbumCreateBulk.OnConflict
+// documentation for more info.
+func (u *AlbumUpsertBulk) Update(set func(*AlbumUpsert)) *AlbumUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AlbumUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetAlbumType sets the "album_type" field.
+func (u *AlbumUpsertBulk) SetAlbumType(v album.AlbumType) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetAlbumType(v)
+	})
+}
+
+// UpdateAlbumType sets the "album_type" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateAlbumType() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateAlbumType()
+	})
+}
+
+// SetTotalTracks sets the "total_tracks" field.
+func (u *AlbumUpsertBulk) SetTotalTracks(v int) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetTotalTracks(v)
+	})
+}
+
+// AddTotalTracks adds v to the "total_tracks" field.
+func (u *AlbumUpsertBulk) AddTotalTracks(v int) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.AddTotalTracks(v)
+	})
+}
+
+// UpdateTotalTracks sets the "total_tracks" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateTotalTracks() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateTotalTracks()
+	})
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (u *AlbumUpsertBulk) SetAvailableMarkets(v []string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetAvailableMarkets(v)
+	})
+}
+
+// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateAvailableMarkets() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateAvailableMarkets()
+	})
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (u *AlbumUpsertBulk) SetExternalUrls(v *schema.StringMap) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetExternalUrls(v)
+	})
+}
+
+// UpdateExternalUrls sets the "external_urls" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateExternalUrls() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateExternalUrls()
+	})
+}
+
+// SetHref sets the "href" field.
+func (u *AlbumUpsertBulk) SetHref(v string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetHref(v)
+	})
+}
+
+// UpdateHref sets the "href" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateHref() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateHref()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *AlbumUpsertBulk) SetName(v string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateName() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetReleaseDate sets the "release_date" field.
+func (u *AlbumUpsertBulk) SetReleaseDate(v string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetReleaseDate(v)
+	})
+}
+
+// UpdateReleaseDate sets the "release_date" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateReleaseDate() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateReleaseDate()
+	})
+}
+
+// SetReleaseDatePrecision sets the "release_date_precision" field.
+func (u *AlbumUpsertBulk) SetReleaseDatePrecision(v album.ReleaseDatePrecision) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetReleaseDatePrecision(v)
+	})
+}
+
+// UpdateReleaseDatePrecision sets the "release_date_precision" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateReleaseDatePrecision() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateReleaseDatePrecision()
+	})
+}
+
+// SetRestrictions sets the "restrictions" field.
+func (u *AlbumUpsertBulk) SetRestrictions(v string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetRestrictions(v)
+	})
+}
+
+// UpdateRestrictions sets the "restrictions" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateRestrictions() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateRestrictions()
+	})
+}
+
+// ClearRestrictions clears the value of the "restrictions" field.
+func (u *AlbumUpsertBulk) ClearRestrictions() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.ClearRestrictions()
+	})
+}
+
+// SetURI sets the "uri" field.
+func (u *AlbumUpsertBulk) SetURI(v string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetURI(v)
+	})
+}
+
+// UpdateURI sets the "uri" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateURI() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateURI()
+	})
+}
+
+// SetGenres sets the "genres" field.
+func (u *AlbumUpsertBulk) SetGenres(v []string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetGenres(v)
+	})
+}
+
+// UpdateGenres sets the "genres" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateGenres() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateGenres()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *AlbumUpsertBulk) SetLabel(v string) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdateLabel() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdateLabel()
+	})
+}
+
+// SetPopularity sets the "popularity" field.
+func (u *AlbumUpsertBulk) SetPopularity(v int) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.SetPopularity(v)
+	})
+}
+
+// AddPopularity adds v to the "popularity" field.
+func (u *AlbumUpsertBulk) AddPopularity(v int) *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.AddPopularity(v)
+	})
+}
+
+// UpdatePopularity sets the "popularity" field to the value that was provided on create.
+func (u *AlbumUpsertBulk) UpdatePopularity() *AlbumUpsertBulk {
+	return u.Update(func(s *AlbumUpsert) {
+		s.UpdatePopularity()
+	})
+}
+
+// Exec executes the query.
+func (u *AlbumUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AlbumCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AlbumCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AlbumUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

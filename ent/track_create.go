@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
@@ -21,6 +23,7 @@ type TrackCreate struct {
 	config
 	mutation *TrackMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -336,6 +339,7 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 		_node = &Track{config: tc.config}
 		_spec = sqlgraph.NewCreateSpec(track.Table, sqlgraph.NewFieldSpec(track.FieldID, field.TypeString))
 	)
+	_spec.OnConflict = tc.conflict
 	if id, ok := tc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -432,11 +436,592 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Track.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TrackUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (tc *TrackCreate) OnConflict(opts ...sql.ConflictOption) *TrackUpsertOne {
+	tc.conflict = opts
+	return &TrackUpsertOne{
+		create: tc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Track.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tc *TrackCreate) OnConflictColumns(columns ...string) *TrackUpsertOne {
+	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
+	return &TrackUpsertOne{
+		create: tc,
+	}
+}
+
+type (
+	// TrackUpsertOne is the builder for "upsert"-ing
+	//  one Track node.
+	TrackUpsertOne struct {
+		create *TrackCreate
+	}
+
+	// TrackUpsert is the "OnConflict" setter.
+	TrackUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TrackUpsert) SetUpdatedAt(v time.Time) *TrackUpsert {
+	u.Set(track.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateUpdatedAt() *TrackUpsert {
+	u.SetExcluded(track.FieldUpdatedAt)
+	return u
+}
+
+// SetAlbumID sets the "album_id" field.
+func (u *TrackUpsert) SetAlbumID(v string) *TrackUpsert {
+	u.Set(track.FieldAlbumID, v)
+	return u
+}
+
+// UpdateAlbumID sets the "album_id" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateAlbumID() *TrackUpsert {
+	u.SetExcluded(track.FieldAlbumID)
+	return u
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (u *TrackUpsert) SetAvailableMarkets(v []string) *TrackUpsert {
+	u.Set(track.FieldAvailableMarkets, v)
+	return u
+}
+
+// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateAvailableMarkets() *TrackUpsert {
+	u.SetExcluded(track.FieldAvailableMarkets)
+	return u
+}
+
+// SetDiscNumber sets the "disc_number" field.
+func (u *TrackUpsert) SetDiscNumber(v int) *TrackUpsert {
+	u.Set(track.FieldDiscNumber, v)
+	return u
+}
+
+// UpdateDiscNumber sets the "disc_number" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateDiscNumber() *TrackUpsert {
+	u.SetExcluded(track.FieldDiscNumber)
+	return u
+}
+
+// AddDiscNumber adds v to the "disc_number" field.
+func (u *TrackUpsert) AddDiscNumber(v int) *TrackUpsert {
+	u.Add(track.FieldDiscNumber, v)
+	return u
+}
+
+// ClearDiscNumber clears the value of the "disc_number" field.
+func (u *TrackUpsert) ClearDiscNumber() *TrackUpsert {
+	u.SetNull(track.FieldDiscNumber)
+	return u
+}
+
+// SetDurationMs sets the "duration_ms" field.
+func (u *TrackUpsert) SetDurationMs(v int) *TrackUpsert {
+	u.Set(track.FieldDurationMs, v)
+	return u
+}
+
+// UpdateDurationMs sets the "duration_ms" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateDurationMs() *TrackUpsert {
+	u.SetExcluded(track.FieldDurationMs)
+	return u
+}
+
+// AddDurationMs adds v to the "duration_ms" field.
+func (u *TrackUpsert) AddDurationMs(v int) *TrackUpsert {
+	u.Add(track.FieldDurationMs, v)
+	return u
+}
+
+// SetExplicit sets the "explicit" field.
+func (u *TrackUpsert) SetExplicit(v bool) *TrackUpsert {
+	u.Set(track.FieldExplicit, v)
+	return u
+}
+
+// UpdateExplicit sets the "explicit" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateExplicit() *TrackUpsert {
+	u.SetExcluded(track.FieldExplicit)
+	return u
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (u *TrackUpsert) SetExternalUrls(v *schema.StringMap) *TrackUpsert {
+	u.Set(track.FieldExternalUrls, v)
+	return u
+}
+
+// UpdateExternalUrls sets the "external_urls" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateExternalUrls() *TrackUpsert {
+	u.SetExcluded(track.FieldExternalUrls)
+	return u
+}
+
+// SetHref sets the "href" field.
+func (u *TrackUpsert) SetHref(v string) *TrackUpsert {
+	u.Set(track.FieldHref, v)
+	return u
+}
+
+// UpdateHref sets the "href" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateHref() *TrackUpsert {
+	u.SetExcluded(track.FieldHref)
+	return u
+}
+
+// SetIsPlayable sets the "is_playable" field.
+func (u *TrackUpsert) SetIsPlayable(v bool) *TrackUpsert {
+	u.Set(track.FieldIsPlayable, v)
+	return u
+}
+
+// UpdateIsPlayable sets the "is_playable" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateIsPlayable() *TrackUpsert {
+	u.SetExcluded(track.FieldIsPlayable)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *TrackUpsert) SetName(v string) *TrackUpsert {
+	u.Set(track.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateName() *TrackUpsert {
+	u.SetExcluded(track.FieldName)
+	return u
+}
+
+// SetPopularity sets the "popularity" field.
+func (u *TrackUpsert) SetPopularity(v int) *TrackUpsert {
+	u.Set(track.FieldPopularity, v)
+	return u
+}
+
+// UpdatePopularity sets the "popularity" field to the value that was provided on create.
+func (u *TrackUpsert) UpdatePopularity() *TrackUpsert {
+	u.SetExcluded(track.FieldPopularity)
+	return u
+}
+
+// AddPopularity adds v to the "popularity" field.
+func (u *TrackUpsert) AddPopularity(v int) *TrackUpsert {
+	u.Add(track.FieldPopularity, v)
+	return u
+}
+
+// SetPreviewURL sets the "preview_url" field.
+func (u *TrackUpsert) SetPreviewURL(v string) *TrackUpsert {
+	u.Set(track.FieldPreviewURL, v)
+	return u
+}
+
+// UpdatePreviewURL sets the "preview_url" field to the value that was provided on create.
+func (u *TrackUpsert) UpdatePreviewURL() *TrackUpsert {
+	u.SetExcluded(track.FieldPreviewURL)
+	return u
+}
+
+// ClearPreviewURL clears the value of the "preview_url" field.
+func (u *TrackUpsert) ClearPreviewURL() *TrackUpsert {
+	u.SetNull(track.FieldPreviewURL)
+	return u
+}
+
+// SetTrackNumber sets the "track_number" field.
+func (u *TrackUpsert) SetTrackNumber(v int) *TrackUpsert {
+	u.Set(track.FieldTrackNumber, v)
+	return u
+}
+
+// UpdateTrackNumber sets the "track_number" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateTrackNumber() *TrackUpsert {
+	u.SetExcluded(track.FieldTrackNumber)
+	return u
+}
+
+// AddTrackNumber adds v to the "track_number" field.
+func (u *TrackUpsert) AddTrackNumber(v int) *TrackUpsert {
+	u.Add(track.FieldTrackNumber, v)
+	return u
+}
+
+// SetURI sets the "uri" field.
+func (u *TrackUpsert) SetURI(v string) *TrackUpsert {
+	u.Set(track.FieldURI, v)
+	return u
+}
+
+// UpdateURI sets the "uri" field to the value that was provided on create.
+func (u *TrackUpsert) UpdateURI() *TrackUpsert {
+	u.SetExcluded(track.FieldURI)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Track.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(track.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TrackUpsertOne) UpdateNewValues() *TrackUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(track.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(track.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Track.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *TrackUpsertOne) Ignore() *TrackUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TrackUpsertOne) DoNothing() *TrackUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TrackCreate.OnConflict
+// documentation for more info.
+func (u *TrackUpsertOne) Update(set func(*TrackUpsert)) *TrackUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TrackUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TrackUpsertOne) SetUpdatedAt(v time.Time) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateUpdatedAt() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetAlbumID sets the "album_id" field.
+func (u *TrackUpsertOne) SetAlbumID(v string) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetAlbumID(v)
+	})
+}
+
+// UpdateAlbumID sets the "album_id" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateAlbumID() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateAlbumID()
+	})
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (u *TrackUpsertOne) SetAvailableMarkets(v []string) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetAvailableMarkets(v)
+	})
+}
+
+// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateAvailableMarkets() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateAvailableMarkets()
+	})
+}
+
+// SetDiscNumber sets the "disc_number" field.
+func (u *TrackUpsertOne) SetDiscNumber(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetDiscNumber(v)
+	})
+}
+
+// AddDiscNumber adds v to the "disc_number" field.
+func (u *TrackUpsertOne) AddDiscNumber(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddDiscNumber(v)
+	})
+}
+
+// UpdateDiscNumber sets the "disc_number" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateDiscNumber() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateDiscNumber()
+	})
+}
+
+// ClearDiscNumber clears the value of the "disc_number" field.
+func (u *TrackUpsertOne) ClearDiscNumber() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.ClearDiscNumber()
+	})
+}
+
+// SetDurationMs sets the "duration_ms" field.
+func (u *TrackUpsertOne) SetDurationMs(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetDurationMs(v)
+	})
+}
+
+// AddDurationMs adds v to the "duration_ms" field.
+func (u *TrackUpsertOne) AddDurationMs(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddDurationMs(v)
+	})
+}
+
+// UpdateDurationMs sets the "duration_ms" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateDurationMs() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateDurationMs()
+	})
+}
+
+// SetExplicit sets the "explicit" field.
+func (u *TrackUpsertOne) SetExplicit(v bool) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetExplicit(v)
+	})
+}
+
+// UpdateExplicit sets the "explicit" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateExplicit() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateExplicit()
+	})
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (u *TrackUpsertOne) SetExternalUrls(v *schema.StringMap) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetExternalUrls(v)
+	})
+}
+
+// UpdateExternalUrls sets the "external_urls" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateExternalUrls() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateExternalUrls()
+	})
+}
+
+// SetHref sets the "href" field.
+func (u *TrackUpsertOne) SetHref(v string) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetHref(v)
+	})
+}
+
+// UpdateHref sets the "href" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateHref() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateHref()
+	})
+}
+
+// SetIsPlayable sets the "is_playable" field.
+func (u *TrackUpsertOne) SetIsPlayable(v bool) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetIsPlayable(v)
+	})
+}
+
+// UpdateIsPlayable sets the "is_playable" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateIsPlayable() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateIsPlayable()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TrackUpsertOne) SetName(v string) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateName() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetPopularity sets the "popularity" field.
+func (u *TrackUpsertOne) SetPopularity(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetPopularity(v)
+	})
+}
+
+// AddPopularity adds v to the "popularity" field.
+func (u *TrackUpsertOne) AddPopularity(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddPopularity(v)
+	})
+}
+
+// UpdatePopularity sets the "popularity" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdatePopularity() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdatePopularity()
+	})
+}
+
+// SetPreviewURL sets the "preview_url" field.
+func (u *TrackUpsertOne) SetPreviewURL(v string) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetPreviewURL(v)
+	})
+}
+
+// UpdatePreviewURL sets the "preview_url" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdatePreviewURL() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdatePreviewURL()
+	})
+}
+
+// ClearPreviewURL clears the value of the "preview_url" field.
+func (u *TrackUpsertOne) ClearPreviewURL() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.ClearPreviewURL()
+	})
+}
+
+// SetTrackNumber sets the "track_number" field.
+func (u *TrackUpsertOne) SetTrackNumber(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetTrackNumber(v)
+	})
+}
+
+// AddTrackNumber adds v to the "track_number" field.
+func (u *TrackUpsertOne) AddTrackNumber(v int) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddTrackNumber(v)
+	})
+}
+
+// UpdateTrackNumber sets the "track_number" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateTrackNumber() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateTrackNumber()
+	})
+}
+
+// SetURI sets the "uri" field.
+func (u *TrackUpsertOne) SetURI(v string) *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetURI(v)
+	})
+}
+
+// UpdateURI sets the "uri" field to the value that was provided on create.
+func (u *TrackUpsertOne) UpdateURI() *TrackUpsertOne {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateURI()
+	})
+}
+
+// Exec executes the query.
+func (u *TrackUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TrackCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TrackUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *TrackUpsertOne) ID(ctx context.Context) (id string, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: TrackUpsertOne.ID is not supported by MySQL driver. Use TrackUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *TrackUpsertOne) IDX(ctx context.Context) string {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // TrackCreateBulk is the builder for creating many Track entities in bulk.
 type TrackCreateBulk struct {
 	config
 	err      error
 	builders []*TrackCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Track entities in the database.
@@ -466,6 +1051,7 @@ func (tcb *TrackCreateBulk) Save(ctx context.Context) ([]*Track, error) {
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = tcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -512,6 +1098,361 @@ func (tcb *TrackCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (tcb *TrackCreateBulk) ExecX(ctx context.Context) {
 	if err := tcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Track.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TrackUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (tcb *TrackCreateBulk) OnConflict(opts ...sql.ConflictOption) *TrackUpsertBulk {
+	tcb.conflict = opts
+	return &TrackUpsertBulk{
+		create: tcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Track.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tcb *TrackCreateBulk) OnConflictColumns(columns ...string) *TrackUpsertBulk {
+	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
+	return &TrackUpsertBulk{
+		create: tcb,
+	}
+}
+
+// TrackUpsertBulk is the builder for "upsert"-ing
+// a bulk of Track nodes.
+type TrackUpsertBulk struct {
+	create *TrackCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Track.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(track.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TrackUpsertBulk) UpdateNewValues() *TrackUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(track.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(track.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Track.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *TrackUpsertBulk) Ignore() *TrackUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TrackUpsertBulk) DoNothing() *TrackUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TrackCreateBulk.OnConflict
+// documentation for more info.
+func (u *TrackUpsertBulk) Update(set func(*TrackUpsert)) *TrackUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TrackUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TrackUpsertBulk) SetUpdatedAt(v time.Time) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateUpdatedAt() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetAlbumID sets the "album_id" field.
+func (u *TrackUpsertBulk) SetAlbumID(v string) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetAlbumID(v)
+	})
+}
+
+// UpdateAlbumID sets the "album_id" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateAlbumID() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateAlbumID()
+	})
+}
+
+// SetAvailableMarkets sets the "available_markets" field.
+func (u *TrackUpsertBulk) SetAvailableMarkets(v []string) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetAvailableMarkets(v)
+	})
+}
+
+// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateAvailableMarkets() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateAvailableMarkets()
+	})
+}
+
+// SetDiscNumber sets the "disc_number" field.
+func (u *TrackUpsertBulk) SetDiscNumber(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetDiscNumber(v)
+	})
+}
+
+// AddDiscNumber adds v to the "disc_number" field.
+func (u *TrackUpsertBulk) AddDiscNumber(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddDiscNumber(v)
+	})
+}
+
+// UpdateDiscNumber sets the "disc_number" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateDiscNumber() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateDiscNumber()
+	})
+}
+
+// ClearDiscNumber clears the value of the "disc_number" field.
+func (u *TrackUpsertBulk) ClearDiscNumber() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.ClearDiscNumber()
+	})
+}
+
+// SetDurationMs sets the "duration_ms" field.
+func (u *TrackUpsertBulk) SetDurationMs(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetDurationMs(v)
+	})
+}
+
+// AddDurationMs adds v to the "duration_ms" field.
+func (u *TrackUpsertBulk) AddDurationMs(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddDurationMs(v)
+	})
+}
+
+// UpdateDurationMs sets the "duration_ms" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateDurationMs() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateDurationMs()
+	})
+}
+
+// SetExplicit sets the "explicit" field.
+func (u *TrackUpsertBulk) SetExplicit(v bool) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetExplicit(v)
+	})
+}
+
+// UpdateExplicit sets the "explicit" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateExplicit() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateExplicit()
+	})
+}
+
+// SetExternalUrls sets the "external_urls" field.
+func (u *TrackUpsertBulk) SetExternalUrls(v *schema.StringMap) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetExternalUrls(v)
+	})
+}
+
+// UpdateExternalUrls sets the "external_urls" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateExternalUrls() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateExternalUrls()
+	})
+}
+
+// SetHref sets the "href" field.
+func (u *TrackUpsertBulk) SetHref(v string) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetHref(v)
+	})
+}
+
+// UpdateHref sets the "href" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateHref() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateHref()
+	})
+}
+
+// SetIsPlayable sets the "is_playable" field.
+func (u *TrackUpsertBulk) SetIsPlayable(v bool) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetIsPlayable(v)
+	})
+}
+
+// UpdateIsPlayable sets the "is_playable" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateIsPlayable() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateIsPlayable()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TrackUpsertBulk) SetName(v string) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateName() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetPopularity sets the "popularity" field.
+func (u *TrackUpsertBulk) SetPopularity(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetPopularity(v)
+	})
+}
+
+// AddPopularity adds v to the "popularity" field.
+func (u *TrackUpsertBulk) AddPopularity(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddPopularity(v)
+	})
+}
+
+// UpdatePopularity sets the "popularity" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdatePopularity() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdatePopularity()
+	})
+}
+
+// SetPreviewURL sets the "preview_url" field.
+func (u *TrackUpsertBulk) SetPreviewURL(v string) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetPreviewURL(v)
+	})
+}
+
+// UpdatePreviewURL sets the "preview_url" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdatePreviewURL() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdatePreviewURL()
+	})
+}
+
+// ClearPreviewURL clears the value of the "preview_url" field.
+func (u *TrackUpsertBulk) ClearPreviewURL() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.ClearPreviewURL()
+	})
+}
+
+// SetTrackNumber sets the "track_number" field.
+func (u *TrackUpsertBulk) SetTrackNumber(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetTrackNumber(v)
+	})
+}
+
+// AddTrackNumber adds v to the "track_number" field.
+func (u *TrackUpsertBulk) AddTrackNumber(v int) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.AddTrackNumber(v)
+	})
+}
+
+// UpdateTrackNumber sets the "track_number" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateTrackNumber() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateTrackNumber()
+	})
+}
+
+// SetURI sets the "uri" field.
+func (u *TrackUpsertBulk) SetURI(v string) *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.SetURI(v)
+	})
+}
+
+// UpdateURI sets the "uri" field to the value that was provided on create.
+func (u *TrackUpsertBulk) UpdateURI() *TrackUpsertBulk {
+	return u.Update(func(s *TrackUpsert) {
+		s.UpdateURI()
+	})
+}
+
+// Exec executes the query.
+func (u *TrackUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TrackCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TrackCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TrackUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
