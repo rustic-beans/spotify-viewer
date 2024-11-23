@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/rustic-beans/spotify-viewer/ent"
-	"github.com/rustic-beans/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
 
 	_ "github.com/mattn/go-sqlite3" // sqlite driver
 )

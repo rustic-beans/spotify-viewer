@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/rustic-beans/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
 
-	"github.com/rustic-beans/spotify-viewer/lib/infrastructure/database"
-	"github.com/rustic-beans/spotify-viewer/lib/infrastructure/graphql"
-	httpLib "github.com/rustic-beans/spotify-viewer/lib/infrastructure/http"
-	"github.com/rustic-beans/spotify-viewer/lib/spotify"
+	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/database"
+	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/graphql"
+	httpLib "github.com/rustic-beans/spotify-viewer/internal/infrastructure/http"
+	"github.com/rustic-beans/spotify-viewer/internal/spotify"
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 

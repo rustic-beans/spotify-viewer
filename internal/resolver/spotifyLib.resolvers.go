@@ -20,27 +20,27 @@ func (r *fullTrackResolver) DiscNumber(ctx context.Context, obj *spotify.FullTra
 
 // DurationMs is the resolver for the duration_ms field.
 func (r *fullTrackResolver) DurationMs(ctx context.Context, obj *spotify.FullTrack) (int, error) {
-	panic(fmt.Errorf("not implemented: DurationMs - duration_ms"))
+	return int(obj.Duration), nil
 }
 
 // ExternalIds is the resolver for the external_ids field.
 func (r *fullTrackResolver) ExternalIds(ctx context.Context, obj *spotify.FullTrack) (graphql1.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalIds - external_ids"))
+	return obj.ExternalURLs, nil
 }
 
 // ExternalUrls is the resolver for the external_urls field.
 func (r *fullTrackResolver) ExternalUrls(ctx context.Context, obj *spotify.FullTrack) (graphql1.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalUrls - external_urls"))
+	return obj.ExternalURLs, nil
 }
 
 // Href is the resolver for the href field.
 func (r *fullTrackResolver) Href(ctx context.Context, obj *spotify.FullTrack) (string, error) {
-	panic(fmt.Errorf("not implemented: Href - href"))
+	return obj.Endpoint, nil
 }
 
 // ID is the resolver for the id field.
 func (r *fullTrackResolver) ID(ctx context.Context, obj *spotify.FullTrack) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	return string(obj.ID), nil
 }
 
 // Popularity is the resolver for the popularity field.
@@ -55,7 +55,7 @@ func (r *fullTrackResolver) TrackNumber(ctx context.Context, obj *spotify.FullTr
 
 // URI is the resolver for the uri field.
 func (r *fullTrackResolver) URI(ctx context.Context, obj *spotify.FullTrack) (string, error) {
-	panic(fmt.Errorf("not implemented: URI - uri"))
+	return string(obj.URI), nil
 }
 
 // Height is the resolver for the height field.
@@ -70,92 +70,92 @@ func (r *imageResolver) Width(ctx context.Context, obj *spotify.Image) (int, err
 
 // Href is the resolver for the href field.
 func (r *playbackContextResolver) Href(ctx context.Context, obj *spotify.PlaybackContext) (string, error) {
-	panic(fmt.Errorf("not implemented: Href - href"))
+	return obj.Endpoint, nil
 }
 
 // ExternalUrls is the resolver for the external_urls field.
 func (r *playbackContextResolver) ExternalUrls(ctx context.Context, obj *spotify.PlaybackContext) (graphql1.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalUrls - external_urls"))
+	return obj.ExternalURLs, nil
 }
 
 // URI is the resolver for the uri field.
 func (r *playbackContextResolver) URI(ctx context.Context, obj *spotify.PlaybackContext) (string, error) {
-	panic(fmt.Errorf("not implemented: URI - uri"))
+	return string(obj.URI), nil
 }
 
 // ID is the resolver for the id field.
 func (r *playerDeviceResolver) ID(ctx context.Context, obj *spotify.PlayerDevice) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	return string(obj.ID), nil
 }
 
 // IsActive is the resolver for the is_active field.
 func (r *playerDeviceResolver) IsActive(ctx context.Context, obj *spotify.PlayerDevice) (bool, error) {
-	panic(fmt.Errorf("not implemented: IsActive - is_active"))
+	return obj.Active, nil
 }
 
 // IsRestricted is the resolver for the is_restricted field.
 func (r *playerDeviceResolver) IsRestricted(ctx context.Context, obj *spotify.PlayerDevice) (bool, error) {
-	panic(fmt.Errorf("not implemented: IsRestricted - is_restricted"))
+	return obj.Restricted, nil
 }
 
 // VolumePercent is the resolver for the volume_percent field.
 func (r *playerDeviceResolver) VolumePercent(ctx context.Context, obj *spotify.PlayerDevice) (int, error) {
-	panic(fmt.Errorf("not implemented: VolumePercent - volume_percent"))
+	return int(obj.Volume), nil
 }
 
 // Context is the resolver for the context field.
 func (r *playerStateResolver) Context(ctx context.Context, obj *spotify.PlayerState) (*spotify.PlaybackContext, error) {
-	panic(fmt.Errorf("not implemented: Context - context"))
+	return &obj.PlaybackContext, nil
 }
 
 // ProgressMs is the resolver for the progress_ms field.
 func (r *playerStateResolver) ProgressMs(ctx context.Context, obj *spotify.PlayerState) (int, error) {
-	panic(fmt.Errorf("not implemented: ProgressMs - progress_ms"))
+	return int(obj.Progress), nil
 }
 
 // IsPlaying is the resolver for the is_playing field.
 func (r *playerStateResolver) IsPlaying(ctx context.Context, obj *spotify.PlayerState) (bool, error) {
-	panic(fmt.Errorf("not implemented: IsPlaying - is_playing"))
+	return obj.Playing, nil
 }
 
 // ExternalUrls is the resolver for the external_urls field.
 func (r *simpleAlbumResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleAlbum) (graphql1.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalUrls - external_urls"))
+	return obj.ExternalURLs, nil
 }
 
 // Href is the resolver for the href field.
 func (r *simpleAlbumResolver) Href(ctx context.Context, obj *spotify.SimpleAlbum) (string, error) {
-	panic(fmt.Errorf("not implemented: Href - href"))
+	return obj.Endpoint, nil
 }
 
 // ID is the resolver for the id field.
 func (r *simpleAlbumResolver) ID(ctx context.Context, obj *spotify.SimpleAlbum) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	return string(obj.ID), nil
 }
 
 // URI is the resolver for the uri field.
 func (r *simpleAlbumResolver) URI(ctx context.Context, obj *spotify.SimpleAlbum) (string, error) {
-	panic(fmt.Errorf("not implemented: URI - uri"))
+	return string(obj.URI), nil
 }
 
 // ExternalUrls is the resolver for the external_urls field.
 func (r *simpleArtistResolver) ExternalUrls(ctx context.Context, obj *spotify.SimpleArtist) (graphql1.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalUrls - external_urls"))
+	return obj.ExternalURLs, nil
 }
 
 // Href is the resolver for the href field.
 func (r *simpleArtistResolver) Href(ctx context.Context, obj *spotify.SimpleArtist) (string, error) {
-	panic(fmt.Errorf("not implemented: Href - href"))
+	return obj.Endpoint, nil
 }
 
 // ID is the resolver for the id field.
 func (r *simpleArtistResolver) ID(ctx context.Context, obj *spotify.SimpleArtist) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	return string(obj.ID), nil
 }
 
 // URI is the resolver for the uri field.
 func (r *simpleArtistResolver) URI(ctx context.Context, obj *spotify.SimpleArtist) (string, error) {
-	panic(fmt.Errorf("not implemented: URI - uri"))
+	return string(obj.URI), nil
 }
 
 // FullTrack returns generated.FullTrackResolver implementation.

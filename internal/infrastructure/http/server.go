@@ -7,7 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/rustic-beans/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
 )
 

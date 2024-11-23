@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/rustic-beans/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 

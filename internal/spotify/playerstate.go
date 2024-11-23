@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/rustic-beans/spotify-viewer/ent"
-	"github.com/rustic-beans/spotify-viewer/lib/infrastructure/http"
-	"github.com/rustic-beans/spotify-viewer/utils"
+	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/http"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
 
 	spotifyLib "github.com/zmb3/spotify/v2"

@@ -13,10 +13,25 @@ import (
 
 // PlayerState is the resolver for the playerState field.
 func (r *queryResolver) PlayerState(ctx context.Context) (*spotify.PlayerState, error) {
-	panic(fmt.Errorf("not implemented: PlayerState - playerState"))
+	return r.SpotifyClient.GetPlayerState(ctx)
 }
 
 // PlayerState is the resolver for the playerState field.
 func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *spotify.PlayerState, error) {
-	panic(fmt.Errorf("not implemented: PlayerState - playerState"))
+	ch := make(chan *spotify.PlayerState, 1)
+	id := r.PlayerStateWebsocketHandler.AddConnection(ch)
+
+	go func() {
+		<-ctx.Done()
+		r.PlayerStateWebsocketHandler.RemoveConnection(id)
+		close(ch)
+	}()
+	state, err := r.SpotifyClient.GetPlayerState(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get player state: %w", err)
+	}
+
+	ch <- state
+
+	return ch, nil
 }

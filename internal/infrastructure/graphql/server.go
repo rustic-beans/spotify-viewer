@@ -10,8 +10,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/gorilla/websocket"
 	"github.com/rustic-beans/spotify-viewer/generated"
-	"github.com/rustic-beans/spotify-viewer/lib/spotify"
-	"github.com/rustic-beans/spotify-viewer/resolver"
+	"github.com/rustic-beans/spotify-viewer/internal/resolver"
+	"github.com/rustic-beans/spotify-viewer/internal/spotify"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 

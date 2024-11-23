@@ -35,4 +35,4 @@ models:
     model:
       - github.com/rustic-beans/spotify-viewer/ent.Noder
   StringMap:
-    model: github.com/rustic-beans/spotify-viewer/lib/graphql.StringMap
+    model: github.com/rustic-beans/spotify-viewer/internal/models.StringMap
