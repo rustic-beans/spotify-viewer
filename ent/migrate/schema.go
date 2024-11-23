@@ -8,6 +8,41 @@ import (
 )
 
 var (
+	// AlbumsColumns holds the columns for the "albums" table.
+	AlbumsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "album_type", Type: field.TypeEnum, Enums: []string{"album", "single", "compilation"}},
+		{Name: "total_tracks", Type: field.TypeInt},
+		{Name: "href", Type: field.TypeString, Size: 2147483647},
+		{Name: "name", Type: field.TypeString, Size: 2147483647},
+		{Name: "release_date", Type: field.TypeString, Size: 2147483647},
+		{Name: "release_date_precision", Type: field.TypeEnum, Enums: []string{"year", "month", "day"}},
+		{Name: "restrictions", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "uri", Type: field.TypeString, Size: 2147483647},
+		{Name: "external_ids", Type: field.TypeString, Size: 2147483647},
+		{Name: "label", Type: field.TypeString, Size: 2147483647},
+		{Name: "popularity", Type: field.TypeInt},
+	}
+	// AlbumsTable holds the schema information for the "albums" table.
+	AlbumsTable = &schema.Table{
+		Name:       "albums",
+		Columns:    AlbumsColumns,
+		PrimaryKey: []*schema.Column{AlbumsColumns[0]},
+	}
+	// ImagesColumns holds the columns for the "images" table.
+	ImagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "width", Type: field.TypeInt},
+		{Name: "height", Type: field.TypeInt},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
+	}
+	// ImagesTable holds the schema information for the "images" table.
+	ImagesTable = &schema.Table{
+		Name:       "images",
+		Columns:    ImagesColumns,
+		PrimaryKey: []*schema.Column{ImagesColumns[0]},
+	}
 	// TracksColumns holds the columns for the "tracks" table.
 	TracksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
@@ -20,18 +55,58 @@ var (
 		{Name: "album_image_uri", Type: field.TypeString},
 		{Name: "duration_ms", Type: field.TypeInt},
 		{Name: "uri", Type: field.TypeString},
+		{Name: "album_tracks", Type: field.TypeString, Nullable: true},
 	}
 	// TracksTable holds the schema information for the "tracks" table.
 	TracksTable = &schema.Table{
 		Name:       "tracks",
 		Columns:    TracksColumns,
 		PrimaryKey: []*schema.Column{TracksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tracks_albums_tracks",
+				Columns:    []*schema.Column{TracksColumns[10]},
+				RefColumns: []*schema.Column{AlbumsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// AlbumImagesColumns holds the columns for the "album_images" table.
+	AlbumImagesColumns = []*schema.Column{
+		{Name: "album_id", Type: field.TypeString},
+		{Name: "image_id", Type: field.TypeString},
+	}
+	// AlbumImagesTable holds the schema information for the "album_images" table.
+	AlbumImagesTable = &schema.Table{
+		Name:       "album_images",
+		Columns:    AlbumImagesColumns,
+		PrimaryKey: []*schema.Column{AlbumImagesColumns[0], AlbumImagesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "album_images_album_id",
+				Columns:    []*schema.Column{AlbumImagesColumns[0]},
+				RefColumns: []*schema.Column{AlbumsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "album_images_image_id",
+				Columns:    []*schema.Column{AlbumImagesColumns[1]},
+				RefColumns: []*schema.Column{ImagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AlbumsTable,
+		ImagesTable,
 		TracksTable,
+		AlbumImagesTable,
 	}
 )
 
 func init() {
+	TracksTable.ForeignKeys[0].RefTable = AlbumsTable
+	AlbumImagesTable.ForeignKeys[0].RefTable = AlbumsTable
+	AlbumImagesTable.ForeignKeys[1].RefTable = ImagesTable
 }

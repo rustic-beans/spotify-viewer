@@ -6,5 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Album is the predicate function for album builders.
+type Album func(*sql.Selector)
+
+// Image is the predicate function for image builders.
+type Image func(*sql.Selector)
+
 // Track is the predicate function for track builders.
 type Track func(*sql.Selector)

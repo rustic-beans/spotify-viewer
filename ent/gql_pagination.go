@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
+	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -93,6 +95,504 @@ func paginateLimit(first, last *int) int {
 		limit = *last + 1
 	}
 	return limit
+}
+
+// AlbumEdge is the edge representation of Album.
+type AlbumEdge struct {
+	Node   *Album `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// AlbumConnection is the connection containing edges to Album.
+type AlbumConnection struct {
+	Edges      []*AlbumEdge `json:"edges"`
+	PageInfo   PageInfo     `json:"pageInfo"`
+	TotalCount int          `json:"totalCount"`
+}
+
+func (c *AlbumConnection) build(nodes []*Album, pager *albumPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Album
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Album {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Album {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*AlbumEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &AlbumEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// AlbumPaginateOption enables pagination customization.
+type AlbumPaginateOption func(*albumPager) error
+
+// WithAlbumOrder configures pagination ordering.
+func WithAlbumOrder(order *AlbumOrder) AlbumPaginateOption {
+	if order == nil {
+		order = DefaultAlbumOrder
+	}
+	o := *order
+	return func(pager *albumPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultAlbumOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithAlbumFilter configures pagination filter.
+func WithAlbumFilter(filter func(*AlbumQuery) (*AlbumQuery, error)) AlbumPaginateOption {
+	return func(pager *albumPager) error {
+		if filter == nil {
+			return errors.New("AlbumQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type albumPager struct {
+	reverse bool
+	order   *AlbumOrder
+	filter  func(*AlbumQuery) (*AlbumQuery, error)
+}
+
+func newAlbumPager(opts []AlbumPaginateOption, reverse bool) (*albumPager, error) {
+	pager := &albumPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultAlbumOrder
+	}
+	return pager, nil
+}
+
+func (p *albumPager) applyFilter(query *AlbumQuery) (*AlbumQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *albumPager) toCursor(a *Album) Cursor {
+	return p.order.Field.toCursor(a)
+}
+
+func (p *albumPager) applyCursors(query *AlbumQuery, after, before *Cursor) (*AlbumQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultAlbumOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *albumPager) applyOrder(query *AlbumQuery) *AlbumQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultAlbumOrder.Field {
+		query = query.Order(DefaultAlbumOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *albumPager) orderExpr(query *AlbumQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultAlbumOrder.Field {
+			b.Comma().Ident(DefaultAlbumOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Album.
+func (a *AlbumQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...AlbumPaginateOption,
+) (*AlbumConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newAlbumPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if a, err = pager.applyFilter(a); err != nil {
+		return nil, err
+	}
+	conn := &AlbumConnection{Edges: []*AlbumEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := a.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if a, err = pager.applyCursors(a, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		a.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := a.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	a = pager.applyOrder(a)
+	nodes, err := a.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// AlbumOrderField defines the ordering field of Album.
+type AlbumOrderField struct {
+	// Value extracts the ordering value from the given Album.
+	Value    func(*Album) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) album.OrderOption
+	toCursor func(*Album) Cursor
+}
+
+// AlbumOrder defines the ordering of Album.
+type AlbumOrder struct {
+	Direction OrderDirection   `json:"direction"`
+	Field     *AlbumOrderField `json:"field"`
+}
+
+// DefaultAlbumOrder is the default ordering of Album.
+var DefaultAlbumOrder = &AlbumOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &AlbumOrderField{
+		Value: func(a *Album) (ent.Value, error) {
+			return a.ID, nil
+		},
+		column: album.FieldID,
+		toTerm: album.ByID,
+		toCursor: func(a *Album) Cursor {
+			return Cursor{ID: a.ID}
+		},
+	},
+}
+
+// ToEdge converts Album into AlbumEdge.
+func (a *Album) ToEdge(order *AlbumOrder) *AlbumEdge {
+	if order == nil {
+		order = DefaultAlbumOrder
+	}
+	return &AlbumEdge{
+		Node:   a,
+		Cursor: order.Field.toCursor(a),
+	}
+}
+
+// ImageEdge is the edge representation of Image.
+type ImageEdge struct {
+	Node   *Image `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// ImageConnection is the connection containing edges to Image.
+type ImageConnection struct {
+	Edges      []*ImageEdge `json:"edges"`
+	PageInfo   PageInfo     `json:"pageInfo"`
+	TotalCount int          `json:"totalCount"`
+}
+
+func (c *ImageConnection) build(nodes []*Image, pager *imagePager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Image
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Image {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Image {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ImageEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ImageEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ImagePaginateOption enables pagination customization.
+type ImagePaginateOption func(*imagePager) error
+
+// WithImageOrder configures pagination ordering.
+func WithImageOrder(order *ImageOrder) ImagePaginateOption {
+	if order == nil {
+		order = DefaultImageOrder
+	}
+	o := *order
+	return func(pager *imagePager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultImageOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithImageFilter configures pagination filter.
+func WithImageFilter(filter func(*ImageQuery) (*ImageQuery, error)) ImagePaginateOption {
+	return func(pager *imagePager) error {
+		if filter == nil {
+			return errors.New("ImageQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type imagePager struct {
+	reverse bool
+	order   *ImageOrder
+	filter  func(*ImageQuery) (*ImageQuery, error)
+}
+
+func newImagePager(opts []ImagePaginateOption, reverse bool) (*imagePager, error) {
+	pager := &imagePager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultImageOrder
+	}
+	return pager, nil
+}
+
+func (p *imagePager) applyFilter(query *ImageQuery) (*ImageQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *imagePager) toCursor(i *Image) Cursor {
+	return p.order.Field.toCursor(i)
+}
+
+func (p *imagePager) applyCursors(query *ImageQuery, after, before *Cursor) (*ImageQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultImageOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *imagePager) applyOrder(query *ImageQuery) *ImageQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultImageOrder.Field {
+		query = query.Order(DefaultImageOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *imagePager) orderExpr(query *ImageQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultImageOrder.Field {
+			b.Comma().Ident(DefaultImageOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Image.
+func (i *ImageQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ImagePaginateOption,
+) (*ImageConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newImagePager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if i, err = pager.applyFilter(i); err != nil {
+		return nil, err
+	}
+	conn := &ImageConnection{Edges: []*ImageEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := i.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if i, err = pager.applyCursors(i, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		i.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := i.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	i = pager.applyOrder(i)
+	nodes, err := i.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ImageOrderField defines the ordering field of Image.
+type ImageOrderField struct {
+	// Value extracts the ordering value from the given Image.
+	Value    func(*Image) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) image.OrderOption
+	toCursor func(*Image) Cursor
+}
+
+// ImageOrder defines the ordering of Image.
+type ImageOrder struct {
+	Direction OrderDirection   `json:"direction"`
+	Field     *ImageOrderField `json:"field"`
+}
+
+// DefaultImageOrder is the default ordering of Image.
+var DefaultImageOrder = &ImageOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ImageOrderField{
+		Value: func(i *Image) (ent.Value, error) {
+			return i.ID, nil
+		},
+		column: image.FieldID,
+		toTerm: image.ByID,
+		toCursor: func(i *Image) Cursor {
+			return Cursor{ID: i.ID}
+		},
+	},
+}
+
+// ToEdge converts Image into ImageEdge.
+func (i *Image) ToEdge(order *ImageOrder) *ImageEdge {
+	if order == nil {
+		order = DefaultImageOrder
+	}
+	return &ImageEdge{
+		Node:   i,
+		Cursor: order.Field.toCursor(i),
+	}
 }
 
 // TrackEdge is the edge representation of Track.

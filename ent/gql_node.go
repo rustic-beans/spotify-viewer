@@ -9,6 +9,8 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
+	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -16,6 +18,16 @@ import (
 type Noder interface {
 	IsNode()
 }
+
+var albumImplementors = []string{"Album", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Album) IsNode() {}
+
+var imageImplementors = []string{"Image", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Image) IsNode() {}
 
 var trackImplementors = []string{"Track", "Node"}
 
@@ -80,6 +92,24 @@ func (c *Client) Noder(ctx context.Context, id string, opts ...NodeOption) (_ No
 
 func (c *Client) noder(ctx context.Context, table string, id string) (Noder, error) {
 	switch table {
+	case album.Table:
+		query := c.Album.Query().
+			Where(album.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, albumImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case image.Table:
+		query := c.Image.Query().
+			Where(image.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, imageImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
 	case track.Table:
 		query := c.Track.Query().
 			Where(track.ID(id))
@@ -162,6 +192,38 @@ func (c *Client) noders(ctx context.Context, table string, ids []string) ([]Node
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case album.Table:
+		query := c.Album.Query().
+			Where(album.IDIn(ids...))
+		query, err := query.CollectFields(ctx, albumImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case image.Table:
+		query := c.Image.Query().
+			Where(image.IDIn(ids...))
+		query, err := query.CollectFields(ctx, imageImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case track.Table:
 		query := c.Track.Query().
 			Where(track.IDIn(ids...))

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
 )
 
@@ -477,6 +478,29 @@ func URIEqualFold(v string) predicate.Track {
 // URIContainsFold applies the ContainsFold predicate on the "uri" field.
 func URIContainsFold(v string) predicate.Track {
 	return predicate.Track(sql.FieldContainsFold(FieldURI, v))
+}
+
+// HasAlbums applies the HasEdge predicate on the "albums" edge.
+func HasAlbums() predicate.Track {
+	return predicate.Track(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, AlbumsTable, AlbumsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAlbumsWith applies the HasEdge predicate on the "albums" edge with a given conditions (other predicates).
+func HasAlbumsWith(preds ...predicate.Album) predicate.Track {
+	return predicate.Track(func(s *sql.Selector) {
+		step := newAlbumsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

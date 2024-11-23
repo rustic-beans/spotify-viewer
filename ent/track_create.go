@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/rustic-beans/spotify-viewer/ent/album"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -94,6 +95,25 @@ func (tc *TrackCreate) SetURI(s string) *TrackCreate {
 func (tc *TrackCreate) SetID(s string) *TrackCreate {
 	tc.mutation.SetID(s)
 	return tc
+}
+
+// SetAlbumsID sets the "albums" edge to the Album entity by ID.
+func (tc *TrackCreate) SetAlbumsID(id string) *TrackCreate {
+	tc.mutation.SetAlbumsID(id)
+	return tc
+}
+
+// SetNillableAlbumsID sets the "albums" edge to the Album entity by ID if the given value is not nil.
+func (tc *TrackCreate) SetNillableAlbumsID(id *string) *TrackCreate {
+	if id != nil {
+		tc = tc.SetAlbumsID(*id)
+	}
+	return tc
+}
+
+// SetAlbums sets the "albums" edge to the Album entity.
+func (tc *TrackCreate) SetAlbums(a *Album) *TrackCreate {
+	return tc.SetAlbumsID(a.ID)
 }
 
 // Mutation returns the TrackMutation object of the builder.
@@ -245,6 +265,23 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.URI(); ok {
 		_spec.SetField(track.FieldURI, field.TypeString, value)
 		_node.URI = value
+	}
+	if nodes := tc.mutation.AlbumsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   track.AlbumsTable,
+			Columns: []string{track.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.album_tracks = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/rustic-beans/spotify-viewer/ent/album"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -35,8 +36,34 @@ type Track struct {
 	// DurationMs holds the value of the "duration_ms" field.
 	DurationMs int `json:"duration_ms,omitempty"`
 	// URI holds the value of the "uri" field.
-	URI          string `json:"uri,omitempty"`
+	URI string `json:"uri,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TrackQuery when eager-loading is set.
+	Edges        TrackEdges `json:"edges"`
+	album_tracks *string
 	selectValues sql.SelectValues
+}
+
+// TrackEdges holds the relations/edges for other nodes in the graph.
+type TrackEdges struct {
+	// Albums holds the value of the albums edge.
+	Albums *Album `json:"albums,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+	// totalCount holds the count of the edges above.
+	totalCount [1]map[string]int
+}
+
+// AlbumsOrErr returns the Albums value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TrackEdges) AlbumsOrErr() (*Album, error) {
+	if e.Albums != nil {
+		return e.Albums, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: album.Label}
+	}
+	return nil, &NotLoadedError{edge: "albums"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -52,6 +79,8 @@ func (*Track) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case track.FieldCreatedAt, track.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case track.ForeignKeys[0]: // album_tracks
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -131,6 +160,13 @@ func (t *Track) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.URI = value.String
 			}
+		case track.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field album_tracks", values[i])
+			} else if value.Valid {
+				t.album_tracks = new(string)
+				*t.album_tracks = value.String
+			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
 		}
@@ -142,6 +178,11 @@ func (t *Track) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (t *Track) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
+}
+
+// QueryAlbums queries the "albums" edge of the Track entity.
+func (t *Track) QueryAlbums() *AlbumQuery {
+	return NewTrackClient(t.config).QueryAlbums(t)
 }
 
 // Update returns a builder for updating this Track.

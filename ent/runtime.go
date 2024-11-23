@@ -5,6 +5,8 @@ package ent
 import (
 	"time"
 
+	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
@@ -13,6 +15,52 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	albumFields := schema.Album{}.Fields()
+	_ = albumFields
+	// albumDescHref is the schema descriptor for href field.
+	albumDescHref := albumFields[3].Descriptor()
+	// album.HrefValidator is a validator for the "href" field. It is called by the builders before save.
+	album.HrefValidator = albumDescHref.Validators[0].(func(string) error)
+	// albumDescName is the schema descriptor for name field.
+	albumDescName := albumFields[4].Descriptor()
+	// album.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	album.NameValidator = albumDescName.Validators[0].(func(string) error)
+	// albumDescReleaseDate is the schema descriptor for release_date field.
+	albumDescReleaseDate := albumFields[5].Descriptor()
+	// album.ReleaseDateValidator is a validator for the "release_date" field. It is called by the builders before save.
+	album.ReleaseDateValidator = albumDescReleaseDate.Validators[0].(func(string) error)
+	// albumDescURI is the schema descriptor for uri field.
+	albumDescURI := albumFields[8].Descriptor()
+	// album.URIValidator is a validator for the "uri" field. It is called by the builders before save.
+	album.URIValidator = albumDescURI.Validators[0].(func(string) error)
+	// albumDescID is the schema descriptor for id field.
+	albumDescID := albumFields[0].Descriptor()
+	// album.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	album.IDValidator = albumDescID.Validators[0].(func(string) error)
+	imageFields := schema.Image{}.Fields()
+	_ = imageFields
+	// imageDescURL is the schema descriptor for url field.
+	imageDescURL := imageFields[1].Descriptor()
+	// image.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	image.URLValidator = imageDescURL.Validators[0].(func(string) error)
+	// imageDescWidth is the schema descriptor for width field.
+	imageDescWidth := imageFields[2].Descriptor()
+	// image.WidthValidator is a validator for the "width" field. It is called by the builders before save.
+	image.WidthValidator = imageDescWidth.Validators[0].(func(int) error)
+	// imageDescHeight is the schema descriptor for height field.
+	imageDescHeight := imageFields[3].Descriptor()
+	// image.HeightValidator is a validator for the "height" field. It is called by the builders before save.
+	image.HeightValidator = imageDescHeight.Validators[0].(func(int) error)
+	// imageDescText is the schema descriptor for text field.
+	imageDescText := imageFields[4].Descriptor()
+	// image.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	image.TextValidator = imageDescText.Validators[0].(func(string) error)
+	// imageDescID is the schema descriptor for id field.
+	imageDescID := imageFields[0].Descriptor()
+	// image.DefaultID holds the default value on creation for the id field.
+	image.DefaultID = imageDescID.Default.(func() string)
+	// image.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	image.IDValidator = imageDescID.Validators[0].(func(string) error)
 	trackMixin := schema.Track{}.Mixin()
 	trackMixinFields0 := trackMixin[0].Fields()
 	_ = trackMixinFields0

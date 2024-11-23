@@ -4,7 +4,81 @@ package ent
 
 import (
 	"time"
+
+	"github.com/rustic-beans/spotify-viewer/ent/album"
 )
+
+// CreateAlbumInput represents a mutation input for creating albums.
+type CreateAlbumInput struct {
+	AlbumType            album.AlbumType
+	TotalTracks          int
+	Href                 string
+	Name                 string
+	ReleaseDate          string
+	ReleaseDatePrecision album.ReleaseDatePrecision
+	Restrictions         *string
+	URI                  string
+	ExternalIds          string
+	Label                string
+	Popularity           int
+	ImageIDs             []string
+	TrackIDs             []string
+}
+
+// Mutate applies the CreateAlbumInput on the AlbumMutation builder.
+func (i *CreateAlbumInput) Mutate(m *AlbumMutation) {
+	m.SetAlbumType(i.AlbumType)
+	m.SetTotalTracks(i.TotalTracks)
+	m.SetHref(i.Href)
+	m.SetName(i.Name)
+	m.SetReleaseDate(i.ReleaseDate)
+	m.SetReleaseDatePrecision(i.ReleaseDatePrecision)
+	if v := i.Restrictions; v != nil {
+		m.SetRestrictions(*v)
+	}
+	m.SetURI(i.URI)
+	m.SetExternalIds(i.ExternalIds)
+	m.SetLabel(i.Label)
+	m.SetPopularity(i.Popularity)
+	if v := i.ImageIDs; len(v) > 0 {
+		m.AddImageIDs(v...)
+	}
+	if v := i.TrackIDs; len(v) > 0 {
+		m.AddTrackIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateAlbumInput on the AlbumCreate builder.
+func (c *AlbumCreate) SetInput(i CreateAlbumInput) *AlbumCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateImageInput represents a mutation input for creating images.
+type CreateImageInput struct {
+	URL      string
+	Width    int
+	Height   int
+	Text     string
+	AlbumIDs []string
+}
+
+// Mutate applies the CreateImageInput on the ImageMutation builder.
+func (i *CreateImageInput) Mutate(m *ImageMutation) {
+	m.SetURL(i.URL)
+	m.SetWidth(i.Width)
+	m.SetHeight(i.Height)
+	m.SetText(i.Text)
+	if v := i.AlbumIDs; len(v) > 0 {
+		m.AddAlbumIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateImageInput on the ImageCreate builder.
+func (c *ImageCreate) SetInput(i CreateImageInput) *ImageCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
 
 // CreateTrackInput represents a mutation input for creating tracks.
 type CreateTrackInput struct {
@@ -17,6 +91,7 @@ type CreateTrackInput struct {
 	AlbumImageURI string
 	DurationMs    int
 	URI           string
+	AlbumsID      *string
 }
 
 // Mutate applies the CreateTrackInput on the TrackMutation builder.
@@ -38,6 +113,9 @@ func (i *CreateTrackInput) Mutate(m *TrackMutation) {
 	m.SetAlbumImageURI(i.AlbumImageURI)
 	m.SetDurationMs(i.DurationMs)
 	m.SetURI(i.URI)
+	if v := i.AlbumsID; v != nil {
+		m.SetAlbumsID(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateTrackInput on the TrackCreate builder.

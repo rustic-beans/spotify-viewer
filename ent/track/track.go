@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -31,8 +32,17 @@ const (
 	FieldDurationMs = "duration_ms"
 	// FieldURI holds the string denoting the uri field in the database.
 	FieldURI = "uri"
+	// EdgeAlbums holds the string denoting the albums edge name in mutations.
+	EdgeAlbums = "albums"
 	// Table holds the table name of the track in the database.
 	Table = "tracks"
+	// AlbumsTable is the table that holds the albums relation/edge.
+	AlbumsTable = "tracks"
+	// AlbumsInverseTable is the table name for the Album entity.
+	// It exists in this package in order to avoid circular dependency with the "album" package.
+	AlbumsInverseTable = "albums"
+	// AlbumsColumn is the table column denoting the albums relation/edge.
+	AlbumsColumn = "album_tracks"
 )
 
 // Columns holds all SQL columns for track fields.
@@ -49,10 +59,21 @@ var Columns = []string{
 	FieldURI,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "tracks"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"album_tracks",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -111,4 +132,18 @@ func ByDurationMs(opts ...sql.OrderTermOption) OrderOption {
 // ByURI orders the results by the uri field.
 func ByURI(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURI, opts...).ToFunc()
+}
+
+// ByAlbumsField orders the results by albums field.
+func ByAlbumsField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlbumsStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newAlbumsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlbumsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, AlbumsTable, AlbumsColumn),
+	)
 }

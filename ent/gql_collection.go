@@ -6,8 +6,242 @@ import (
 	"context"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (a *AlbumQuery) CollectFields(ctx context.Context, satisfies ...string) (*AlbumQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return a, nil
+	}
+	if err := a.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+func (a *AlbumQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(album.Columns))
+		selectedFields = []string{album.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "images":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ImageClient{config: a.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, imageImplementors)...); err != nil {
+				return err
+			}
+			a.WithNamedImages(alias, func(wq *ImageQuery) {
+				*wq = *query
+			})
+
+		case "tracks":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&TrackClient{config: a.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, trackImplementors)...); err != nil {
+				return err
+			}
+			a.WithNamedTracks(alias, func(wq *TrackQuery) {
+				*wq = *query
+			})
+		case "albumType":
+			if _, ok := fieldSeen[album.FieldAlbumType]; !ok {
+				selectedFields = append(selectedFields, album.FieldAlbumType)
+				fieldSeen[album.FieldAlbumType] = struct{}{}
+			}
+		case "totalTracks":
+			if _, ok := fieldSeen[album.FieldTotalTracks]; !ok {
+				selectedFields = append(selectedFields, album.FieldTotalTracks)
+				fieldSeen[album.FieldTotalTracks] = struct{}{}
+			}
+		case "href":
+			if _, ok := fieldSeen[album.FieldHref]; !ok {
+				selectedFields = append(selectedFields, album.FieldHref)
+				fieldSeen[album.FieldHref] = struct{}{}
+			}
+		case "name":
+			if _, ok := fieldSeen[album.FieldName]; !ok {
+				selectedFields = append(selectedFields, album.FieldName)
+				fieldSeen[album.FieldName] = struct{}{}
+			}
+		case "releaseDate":
+			if _, ok := fieldSeen[album.FieldReleaseDate]; !ok {
+				selectedFields = append(selectedFields, album.FieldReleaseDate)
+				fieldSeen[album.FieldReleaseDate] = struct{}{}
+			}
+		case "releaseDatePrecision":
+			if _, ok := fieldSeen[album.FieldReleaseDatePrecision]; !ok {
+				selectedFields = append(selectedFields, album.FieldReleaseDatePrecision)
+				fieldSeen[album.FieldReleaseDatePrecision] = struct{}{}
+			}
+		case "restrictions":
+			if _, ok := fieldSeen[album.FieldRestrictions]; !ok {
+				selectedFields = append(selectedFields, album.FieldRestrictions)
+				fieldSeen[album.FieldRestrictions] = struct{}{}
+			}
+		case "uri":
+			if _, ok := fieldSeen[album.FieldURI]; !ok {
+				selectedFields = append(selectedFields, album.FieldURI)
+				fieldSeen[album.FieldURI] = struct{}{}
+			}
+		case "externalIds":
+			if _, ok := fieldSeen[album.FieldExternalIds]; !ok {
+				selectedFields = append(selectedFields, album.FieldExternalIds)
+				fieldSeen[album.FieldExternalIds] = struct{}{}
+			}
+		case "label":
+			if _, ok := fieldSeen[album.FieldLabel]; !ok {
+				selectedFields = append(selectedFields, album.FieldLabel)
+				fieldSeen[album.FieldLabel] = struct{}{}
+			}
+		case "popularity":
+			if _, ok := fieldSeen[album.FieldPopularity]; !ok {
+				selectedFields = append(selectedFields, album.FieldPopularity)
+				fieldSeen[album.FieldPopularity] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		a.Select(selectedFields...)
+	}
+	return nil
+}
+
+type albumPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []AlbumPaginateOption
+}
+
+func newAlbumPaginateArgs(rv map[string]any) *albumPaginateArgs {
+	args := &albumPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (i *ImageQuery) CollectFields(ctx context.Context, satisfies ...string) (*ImageQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return i, nil
+	}
+	if err := i.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return i, nil
+}
+
+func (i *ImageQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(image.Columns))
+		selectedFields = []string{image.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "albums":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&AlbumClient{config: i.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, albumImplementors)...); err != nil {
+				return err
+			}
+			i.WithNamedAlbums(alias, func(wq *AlbumQuery) {
+				*wq = *query
+			})
+		case "url":
+			if _, ok := fieldSeen[image.FieldURL]; !ok {
+				selectedFields = append(selectedFields, image.FieldURL)
+				fieldSeen[image.FieldURL] = struct{}{}
+			}
+		case "width":
+			if _, ok := fieldSeen[image.FieldWidth]; !ok {
+				selectedFields = append(selectedFields, image.FieldWidth)
+				fieldSeen[image.FieldWidth] = struct{}{}
+			}
+		case "height":
+			if _, ok := fieldSeen[image.FieldHeight]; !ok {
+				selectedFields = append(selectedFields, image.FieldHeight)
+				fieldSeen[image.FieldHeight] = struct{}{}
+			}
+		case "text":
+			if _, ok := fieldSeen[image.FieldText]; !ok {
+				selectedFields = append(selectedFields, image.FieldText)
+				fieldSeen[image.FieldText] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		i.Select(selectedFields...)
+	}
+	return nil
+}
+
+type imagePaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ImagePaginateOption
+}
+
+func newImagePaginateArgs(rv map[string]any) *imagePaginateArgs {
+	args := &imagePaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	return args
+}
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (t *TrackQuery) CollectFields(ctx context.Context, satisfies ...string) (*TrackQuery, error) {
@@ -30,6 +264,17 @@ func (t *TrackQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
+
+		case "albums":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&AlbumClient{config: t.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, albumImplementors)...); err != nil {
+				return err
+			}
+			t.withAlbums = query
 		case "createdAt":
 			if _, ok := fieldSeen[track.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, track.FieldCreatedAt)

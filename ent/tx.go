@@ -12,6 +12,10 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Album is the client for interacting with the Album builders.
+	Album *AlbumClient
+	// Image is the client for interacting with the Image builders.
+	Image *ImageClient
 	// Track is the client for interacting with the Track builders.
 	Track *TrackClient
 
@@ -145,6 +149,8 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Album = NewAlbumClient(tx.config)
+	tx.Image = NewImageClient(tx.config)
 	tx.Track = NewTrackClient(tx.config)
 }
 
@@ -155,7 +161,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Track.QueryXXX(), the query will be executed
+// applies a query, for example: Album.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

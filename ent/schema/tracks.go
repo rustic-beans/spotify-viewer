@@ -4,6 +4,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -35,6 +36,9 @@ func (Track) Fields() []ent.Field {
 
 func (Track) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("albums", Album.Type).
+			Ref("tracks").
+			Unique(),
 	}
 }
 

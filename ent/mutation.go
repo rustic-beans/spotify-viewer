@@ -11,6 +11,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
@@ -24,8 +26,1805 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAlbum = "Album"
+	TypeImage = "Image"
 	TypeTrack = "Track"
 )
+
+// AlbumMutation represents an operation that mutates the Album nodes in the graph.
+type AlbumMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *string
+	album_type             *album.AlbumType
+	total_tracks           *int
+	addtotal_tracks        *int
+	href                   *string
+	name                   *string
+	release_date           *string
+	release_date_precision *album.ReleaseDatePrecision
+	restrictions           *string
+	uri                    *string
+	external_ids           *string
+	label                  *string
+	popularity             *int
+	addpopularity          *int
+	clearedFields          map[string]struct{}
+	images                 map[string]struct{}
+	removedimages          map[string]struct{}
+	clearedimages          bool
+	tracks                 map[string]struct{}
+	removedtracks          map[string]struct{}
+	clearedtracks          bool
+	done                   bool
+	oldValue               func(context.Context) (*Album, error)
+	predicates             []predicate.Album
+}
+
+var _ ent.Mutation = (*AlbumMutation)(nil)
+
+// albumOption allows management of the mutation configuration using functional options.
+type albumOption func(*AlbumMutation)
+
+// newAlbumMutation creates new mutation for the Album entity.
+func newAlbumMutation(c config, op Op, opts ...albumOption) *AlbumMutation {
+	m := &AlbumMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAlbum,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAlbumID sets the ID field of the mutation.
+func withAlbumID(id string) albumOption {
+	return func(m *AlbumMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Album
+		)
+		m.oldValue = func(ctx context.Context) (*Album, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Album.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAlbum sets the old Album of the mutation.
+func withAlbum(node *Album) albumOption {
+	return func(m *AlbumMutation) {
+		m.oldValue = func(context.Context) (*Album, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AlbumMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AlbumMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Album entities.
+func (m *AlbumMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AlbumMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AlbumMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Album.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAlbumType sets the "album_type" field.
+func (m *AlbumMutation) SetAlbumType(at album.AlbumType) {
+	m.album_type = &at
+}
+
+// AlbumType returns the value of the "album_type" field in the mutation.
+func (m *AlbumMutation) AlbumType() (r album.AlbumType, exists bool) {
+	v := m.album_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAlbumType returns the old "album_type" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldAlbumType(ctx context.Context) (v album.AlbumType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAlbumType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAlbumType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAlbumType: %w", err)
+	}
+	return oldValue.AlbumType, nil
+}
+
+// ResetAlbumType resets all changes to the "album_type" field.
+func (m *AlbumMutation) ResetAlbumType() {
+	m.album_type = nil
+}
+
+// SetTotalTracks sets the "total_tracks" field.
+func (m *AlbumMutation) SetTotalTracks(i int) {
+	m.total_tracks = &i
+	m.addtotal_tracks = nil
+}
+
+// TotalTracks returns the value of the "total_tracks" field in the mutation.
+func (m *AlbumMutation) TotalTracks() (r int, exists bool) {
+	v := m.total_tracks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalTracks returns the old "total_tracks" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldTotalTracks(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalTracks is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalTracks requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalTracks: %w", err)
+	}
+	return oldValue.TotalTracks, nil
+}
+
+// AddTotalTracks adds i to the "total_tracks" field.
+func (m *AlbumMutation) AddTotalTracks(i int) {
+	if m.addtotal_tracks != nil {
+		*m.addtotal_tracks += i
+	} else {
+		m.addtotal_tracks = &i
+	}
+}
+
+// AddedTotalTracks returns the value that was added to the "total_tracks" field in this mutation.
+func (m *AlbumMutation) AddedTotalTracks() (r int, exists bool) {
+	v := m.addtotal_tracks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalTracks resets all changes to the "total_tracks" field.
+func (m *AlbumMutation) ResetTotalTracks() {
+	m.total_tracks = nil
+	m.addtotal_tracks = nil
+}
+
+// SetHref sets the "href" field.
+func (m *AlbumMutation) SetHref(s string) {
+	m.href = &s
+}
+
+// Href returns the value of the "href" field in the mutation.
+func (m *AlbumMutation) Href() (r string, exists bool) {
+	v := m.href
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHref returns the old "href" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldHref(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHref is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHref requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHref: %w", err)
+	}
+	return oldValue.Href, nil
+}
+
+// ResetHref resets all changes to the "href" field.
+func (m *AlbumMutation) ResetHref() {
+	m.href = nil
+}
+
+// SetName sets the "name" field.
+func (m *AlbumMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *AlbumMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *AlbumMutation) ResetName() {
+	m.name = nil
+}
+
+// SetReleaseDate sets the "release_date" field.
+func (m *AlbumMutation) SetReleaseDate(s string) {
+	m.release_date = &s
+}
+
+// ReleaseDate returns the value of the "release_date" field in the mutation.
+func (m *AlbumMutation) ReleaseDate() (r string, exists bool) {
+	v := m.release_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReleaseDate returns the old "release_date" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldReleaseDate(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReleaseDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReleaseDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReleaseDate: %w", err)
+	}
+	return oldValue.ReleaseDate, nil
+}
+
+// ResetReleaseDate resets all changes to the "release_date" field.
+func (m *AlbumMutation) ResetReleaseDate() {
+	m.release_date = nil
+}
+
+// SetReleaseDatePrecision sets the "release_date_precision" field.
+func (m *AlbumMutation) SetReleaseDatePrecision(adp album.ReleaseDatePrecision) {
+	m.release_date_precision = &adp
+}
+
+// ReleaseDatePrecision returns the value of the "release_date_precision" field in the mutation.
+func (m *AlbumMutation) ReleaseDatePrecision() (r album.ReleaseDatePrecision, exists bool) {
+	v := m.release_date_precision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReleaseDatePrecision returns the old "release_date_precision" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldReleaseDatePrecision(ctx context.Context) (v album.ReleaseDatePrecision, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReleaseDatePrecision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReleaseDatePrecision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReleaseDatePrecision: %w", err)
+	}
+	return oldValue.ReleaseDatePrecision, nil
+}
+
+// ResetReleaseDatePrecision resets all changes to the "release_date_precision" field.
+func (m *AlbumMutation) ResetReleaseDatePrecision() {
+	m.release_date_precision = nil
+}
+
+// SetRestrictions sets the "restrictions" field.
+func (m *AlbumMutation) SetRestrictions(s string) {
+	m.restrictions = &s
+}
+
+// Restrictions returns the value of the "restrictions" field in the mutation.
+func (m *AlbumMutation) Restrictions() (r string, exists bool) {
+	v := m.restrictions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRestrictions returns the old "restrictions" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldRestrictions(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRestrictions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRestrictions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRestrictions: %w", err)
+	}
+	return oldValue.Restrictions, nil
+}
+
+// ClearRestrictions clears the value of the "restrictions" field.
+func (m *AlbumMutation) ClearRestrictions() {
+	m.restrictions = nil
+	m.clearedFields[album.FieldRestrictions] = struct{}{}
+}
+
+// RestrictionsCleared returns if the "restrictions" field was cleared in this mutation.
+func (m *AlbumMutation) RestrictionsCleared() bool {
+	_, ok := m.clearedFields[album.FieldRestrictions]
+	return ok
+}
+
+// ResetRestrictions resets all changes to the "restrictions" field.
+func (m *AlbumMutation) ResetRestrictions() {
+	m.restrictions = nil
+	delete(m.clearedFields, album.FieldRestrictions)
+}
+
+// SetURI sets the "uri" field.
+func (m *AlbumMutation) SetURI(s string) {
+	m.uri = &s
+}
+
+// URI returns the value of the "uri" field in the mutation.
+func (m *AlbumMutation) URI() (r string, exists bool) {
+	v := m.uri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURI returns the old "uri" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldURI(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURI is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURI requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURI: %w", err)
+	}
+	return oldValue.URI, nil
+}
+
+// ResetURI resets all changes to the "uri" field.
+func (m *AlbumMutation) ResetURI() {
+	m.uri = nil
+}
+
+// SetExternalIds sets the "external_ids" field.
+func (m *AlbumMutation) SetExternalIds(s string) {
+	m.external_ids = &s
+}
+
+// ExternalIds returns the value of the "external_ids" field in the mutation.
+func (m *AlbumMutation) ExternalIds() (r string, exists bool) {
+	v := m.external_ids
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalIds returns the old "external_ids" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldExternalIds(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalIds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalIds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalIds: %w", err)
+	}
+	return oldValue.ExternalIds, nil
+}
+
+// ResetExternalIds resets all changes to the "external_ids" field.
+func (m *AlbumMutation) ResetExternalIds() {
+	m.external_ids = nil
+}
+
+// SetLabel sets the "label" field.
+func (m *AlbumMutation) SetLabel(s string) {
+	m.label = &s
+}
+
+// Label returns the value of the "label" field in the mutation.
+func (m *AlbumMutation) Label() (r string, exists bool) {
+	v := m.label
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLabel returns the old "label" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldLabel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLabel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLabel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLabel: %w", err)
+	}
+	return oldValue.Label, nil
+}
+
+// ResetLabel resets all changes to the "label" field.
+func (m *AlbumMutation) ResetLabel() {
+	m.label = nil
+}
+
+// SetPopularity sets the "popularity" field.
+func (m *AlbumMutation) SetPopularity(i int) {
+	m.popularity = &i
+	m.addpopularity = nil
+}
+
+// Popularity returns the value of the "popularity" field in the mutation.
+func (m *AlbumMutation) Popularity() (r int, exists bool) {
+	v := m.popularity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPopularity returns the old "popularity" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldPopularity(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPopularity is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPopularity requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPopularity: %w", err)
+	}
+	return oldValue.Popularity, nil
+}
+
+// AddPopularity adds i to the "popularity" field.
+func (m *AlbumMutation) AddPopularity(i int) {
+	if m.addpopularity != nil {
+		*m.addpopularity += i
+	} else {
+		m.addpopularity = &i
+	}
+}
+
+// AddedPopularity returns the value that was added to the "popularity" field in this mutation.
+func (m *AlbumMutation) AddedPopularity() (r int, exists bool) {
+	v := m.addpopularity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPopularity resets all changes to the "popularity" field.
+func (m *AlbumMutation) ResetPopularity() {
+	m.popularity = nil
+	m.addpopularity = nil
+}
+
+// AddImageIDs adds the "images" edge to the Image entity by ids.
+func (m *AlbumMutation) AddImageIDs(ids ...string) {
+	if m.images == nil {
+		m.images = make(map[string]struct{})
+	}
+	for i := range ids {
+		m.images[ids[i]] = struct{}{}
+	}
+}
+
+// ClearImages clears the "images" edge to the Image entity.
+func (m *AlbumMutation) ClearImages() {
+	m.clearedimages = true
+}
+
+// ImagesCleared reports if the "images" edge to the Image entity was cleared.
+func (m *AlbumMutation) ImagesCleared() bool {
+	return m.clearedimages
+}
+
+// RemoveImageIDs removes the "images" edge to the Image entity by IDs.
+func (m *AlbumMutation) RemoveImageIDs(ids ...string) {
+	if m.removedimages == nil {
+		m.removedimages = make(map[string]struct{})
+	}
+	for i := range ids {
+		delete(m.images, ids[i])
+		m.removedimages[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedImages returns the removed IDs of the "images" edge to the Image entity.
+func (m *AlbumMutation) RemovedImagesIDs() (ids []string) {
+	for id := range m.removedimages {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ImagesIDs returns the "images" edge IDs in the mutation.
+func (m *AlbumMutation) ImagesIDs() (ids []string) {
+	for id := range m.images {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetImages resets all changes to the "images" edge.
+func (m *AlbumMutation) ResetImages() {
+	m.images = nil
+	m.clearedimages = false
+	m.removedimages = nil
+}
+
+// AddTrackIDs adds the "tracks" edge to the Track entity by ids.
+func (m *AlbumMutation) AddTrackIDs(ids ...string) {
+	if m.tracks == nil {
+		m.tracks = make(map[string]struct{})
+	}
+	for i := range ids {
+		m.tracks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTracks clears the "tracks" edge to the Track entity.
+func (m *AlbumMutation) ClearTracks() {
+	m.clearedtracks = true
+}
+
+// TracksCleared reports if the "tracks" edge to the Track entity was cleared.
+func (m *AlbumMutation) TracksCleared() bool {
+	return m.clearedtracks
+}
+
+// RemoveTrackIDs removes the "tracks" edge to the Track entity by IDs.
+func (m *AlbumMutation) RemoveTrackIDs(ids ...string) {
+	if m.removedtracks == nil {
+		m.removedtracks = make(map[string]struct{})
+	}
+	for i := range ids {
+		delete(m.tracks, ids[i])
+		m.removedtracks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTracks returns the removed IDs of the "tracks" edge to the Track entity.
+func (m *AlbumMutation) RemovedTracksIDs() (ids []string) {
+	for id := range m.removedtracks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TracksIDs returns the "tracks" edge IDs in the mutation.
+func (m *AlbumMutation) TracksIDs() (ids []string) {
+	for id := range m.tracks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTracks resets all changes to the "tracks" edge.
+func (m *AlbumMutation) ResetTracks() {
+	m.tracks = nil
+	m.clearedtracks = false
+	m.removedtracks = nil
+}
+
+// Where appends a list predicates to the AlbumMutation builder.
+func (m *AlbumMutation) Where(ps ...predicate.Album) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AlbumMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AlbumMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Album, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AlbumMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AlbumMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Album).
+func (m *AlbumMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AlbumMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.album_type != nil {
+		fields = append(fields, album.FieldAlbumType)
+	}
+	if m.total_tracks != nil {
+		fields = append(fields, album.FieldTotalTracks)
+	}
+	if m.href != nil {
+		fields = append(fields, album.FieldHref)
+	}
+	if m.name != nil {
+		fields = append(fields, album.FieldName)
+	}
+	if m.release_date != nil {
+		fields = append(fields, album.FieldReleaseDate)
+	}
+	if m.release_date_precision != nil {
+		fields = append(fields, album.FieldReleaseDatePrecision)
+	}
+	if m.restrictions != nil {
+		fields = append(fields, album.FieldRestrictions)
+	}
+	if m.uri != nil {
+		fields = append(fields, album.FieldURI)
+	}
+	if m.external_ids != nil {
+		fields = append(fields, album.FieldExternalIds)
+	}
+	if m.label != nil {
+		fields = append(fields, album.FieldLabel)
+	}
+	if m.popularity != nil {
+		fields = append(fields, album.FieldPopularity)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AlbumMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case album.FieldAlbumType:
+		return m.AlbumType()
+	case album.FieldTotalTracks:
+		return m.TotalTracks()
+	case album.FieldHref:
+		return m.Href()
+	case album.FieldName:
+		return m.Name()
+	case album.FieldReleaseDate:
+		return m.ReleaseDate()
+	case album.FieldReleaseDatePrecision:
+		return m.ReleaseDatePrecision()
+	case album.FieldRestrictions:
+		return m.Restrictions()
+	case album.FieldURI:
+		return m.URI()
+	case album.FieldExternalIds:
+		return m.ExternalIds()
+	case album.FieldLabel:
+		return m.Label()
+	case album.FieldPopularity:
+		return m.Popularity()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AlbumMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case album.FieldAlbumType:
+		return m.OldAlbumType(ctx)
+	case album.FieldTotalTracks:
+		return m.OldTotalTracks(ctx)
+	case album.FieldHref:
+		return m.OldHref(ctx)
+	case album.FieldName:
+		return m.OldName(ctx)
+	case album.FieldReleaseDate:
+		return m.OldReleaseDate(ctx)
+	case album.FieldReleaseDatePrecision:
+		return m.OldReleaseDatePrecision(ctx)
+	case album.FieldRestrictions:
+		return m.OldRestrictions(ctx)
+	case album.FieldURI:
+		return m.OldURI(ctx)
+	case album.FieldExternalIds:
+		return m.OldExternalIds(ctx)
+	case album.FieldLabel:
+		return m.OldLabel(ctx)
+	case album.FieldPopularity:
+		return m.OldPopularity(ctx)
+	}
+	return nil, fmt.Errorf("unknown Album field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlbumMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case album.FieldAlbumType:
+		v, ok := value.(album.AlbumType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAlbumType(v)
+		return nil
+	case album.FieldTotalTracks:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalTracks(v)
+		return nil
+	case album.FieldHref:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHref(v)
+		return nil
+	case album.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case album.FieldReleaseDate:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReleaseDate(v)
+		return nil
+	case album.FieldReleaseDatePrecision:
+		v, ok := value.(album.ReleaseDatePrecision)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReleaseDatePrecision(v)
+		return nil
+	case album.FieldRestrictions:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRestrictions(v)
+		return nil
+	case album.FieldURI:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURI(v)
+		return nil
+	case album.FieldExternalIds:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalIds(v)
+		return nil
+	case album.FieldLabel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLabel(v)
+		return nil
+	case album.FieldPopularity:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPopularity(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Album field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AlbumMutation) AddedFields() []string {
+	var fields []string
+	if m.addtotal_tracks != nil {
+		fields = append(fields, album.FieldTotalTracks)
+	}
+	if m.addpopularity != nil {
+		fields = append(fields, album.FieldPopularity)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AlbumMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case album.FieldTotalTracks:
+		return m.AddedTotalTracks()
+	case album.FieldPopularity:
+		return m.AddedPopularity()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlbumMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case album.FieldTotalTracks:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalTracks(v)
+		return nil
+	case album.FieldPopularity:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPopularity(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Album numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AlbumMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(album.FieldRestrictions) {
+		fields = append(fields, album.FieldRestrictions)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AlbumMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AlbumMutation) ClearField(name string) error {
+	switch name {
+	case album.FieldRestrictions:
+		m.ClearRestrictions()
+		return nil
+	}
+	return fmt.Errorf("unknown Album nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AlbumMutation) ResetField(name string) error {
+	switch name {
+	case album.FieldAlbumType:
+		m.ResetAlbumType()
+		return nil
+	case album.FieldTotalTracks:
+		m.ResetTotalTracks()
+		return nil
+	case album.FieldHref:
+		m.ResetHref()
+		return nil
+	case album.FieldName:
+		m.ResetName()
+		return nil
+	case album.FieldReleaseDate:
+		m.ResetReleaseDate()
+		return nil
+	case album.FieldReleaseDatePrecision:
+		m.ResetReleaseDatePrecision()
+		return nil
+	case album.FieldRestrictions:
+		m.ResetRestrictions()
+		return nil
+	case album.FieldURI:
+		m.ResetURI()
+		return nil
+	case album.FieldExternalIds:
+		m.ResetExternalIds()
+		return nil
+	case album.FieldLabel:
+		m.ResetLabel()
+		return nil
+	case album.FieldPopularity:
+		m.ResetPopularity()
+		return nil
+	}
+	return fmt.Errorf("unknown Album field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AlbumMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.images != nil {
+		edges = append(edges, album.EdgeImages)
+	}
+	if m.tracks != nil {
+		edges = append(edges, album.EdgeTracks)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AlbumMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case album.EdgeImages:
+		ids := make([]ent.Value, 0, len(m.images))
+		for id := range m.images {
+			ids = append(ids, id)
+		}
+		return ids
+	case album.EdgeTracks:
+		ids := make([]ent.Value, 0, len(m.tracks))
+		for id := range m.tracks {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AlbumMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedimages != nil {
+		edges = append(edges, album.EdgeImages)
+	}
+	if m.removedtracks != nil {
+		edges = append(edges, album.EdgeTracks)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AlbumMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case album.EdgeImages:
+		ids := make([]ent.Value, 0, len(m.removedimages))
+		for id := range m.removedimages {
+			ids = append(ids, id)
+		}
+		return ids
+	case album.EdgeTracks:
+		ids := make([]ent.Value, 0, len(m.removedtracks))
+		for id := range m.removedtracks {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AlbumMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedimages {
+		edges = append(edges, album.EdgeImages)
+	}
+	if m.clearedtracks {
+		edges = append(edges, album.EdgeTracks)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AlbumMutation) EdgeCleared(name string) bool {
+	switch name {
+	case album.EdgeImages:
+		return m.clearedimages
+	case album.EdgeTracks:
+		return m.clearedtracks
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AlbumMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Album unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AlbumMutation) ResetEdge(name string) error {
+	switch name {
+	case album.EdgeImages:
+		m.ResetImages()
+		return nil
+	case album.EdgeTracks:
+		m.ResetTracks()
+		return nil
+	}
+	return fmt.Errorf("unknown Album edge %s", name)
+}
+
+// ImageMutation represents an operation that mutates the Image nodes in the graph.
+type ImageMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	url           *string
+	width         *int
+	addwidth      *int
+	height        *int
+	addheight     *int
+	text          *string
+	clearedFields map[string]struct{}
+	albums        map[string]struct{}
+	removedalbums map[string]struct{}
+	clearedalbums bool
+	done          bool
+	oldValue      func(context.Context) (*Image, error)
+	predicates    []predicate.Image
+}
+
+var _ ent.Mutation = (*ImageMutation)(nil)
+
+// imageOption allows management of the mutation configuration using functional options.
+type imageOption func(*ImageMutation)
+
+// newImageMutation creates new mutation for the Image entity.
+func newImageMutation(c config, op Op, opts ...imageOption) *ImageMutation {
+	m := &ImageMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeImage,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withImageID sets the ID field of the mutation.
+func withImageID(id string) imageOption {
+	return func(m *ImageMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Image
+		)
+		m.oldValue = func(ctx context.Context) (*Image, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Image.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withImage sets the old Image of the mutation.
+func withImage(node *Image) imageOption {
+	return func(m *ImageMutation) {
+		m.oldValue = func(context.Context) (*Image, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ImageMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ImageMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Image entities.
+func (m *ImageMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ImageMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ImageMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Image.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetURL sets the "url" field.
+func (m *ImageMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *ImageMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *ImageMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetWidth sets the "width" field.
+func (m *ImageMutation) SetWidth(i int) {
+	m.width = &i
+	m.addwidth = nil
+}
+
+// Width returns the value of the "width" field in the mutation.
+func (m *ImageMutation) Width() (r int, exists bool) {
+	v := m.width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWidth returns the old "width" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldWidth(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWidth: %w", err)
+	}
+	return oldValue.Width, nil
+}
+
+// AddWidth adds i to the "width" field.
+func (m *ImageMutation) AddWidth(i int) {
+	if m.addwidth != nil {
+		*m.addwidth += i
+	} else {
+		m.addwidth = &i
+	}
+}
+
+// AddedWidth returns the value that was added to the "width" field in this mutation.
+func (m *ImageMutation) AddedWidth() (r int, exists bool) {
+	v := m.addwidth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWidth resets all changes to the "width" field.
+func (m *ImageMutation) ResetWidth() {
+	m.width = nil
+	m.addwidth = nil
+}
+
+// SetHeight sets the "height" field.
+func (m *ImageMutation) SetHeight(i int) {
+	m.height = &i
+	m.addheight = nil
+}
+
+// Height returns the value of the "height" field in the mutation.
+func (m *ImageMutation) Height() (r int, exists bool) {
+	v := m.height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeight returns the old "height" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldHeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeight: %w", err)
+	}
+	return oldValue.Height, nil
+}
+
+// AddHeight adds i to the "height" field.
+func (m *ImageMutation) AddHeight(i int) {
+	if m.addheight != nil {
+		*m.addheight += i
+	} else {
+		m.addheight = &i
+	}
+}
+
+// AddedHeight returns the value that was added to the "height" field in this mutation.
+func (m *ImageMutation) AddedHeight() (r int, exists bool) {
+	v := m.addheight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetHeight resets all changes to the "height" field.
+func (m *ImageMutation) ResetHeight() {
+	m.height = nil
+	m.addheight = nil
+}
+
+// SetText sets the "text" field.
+func (m *ImageMutation) SetText(s string) {
+	m.text = &s
+}
+
+// Text returns the value of the "text" field in the mutation.
+func (m *ImageMutation) Text() (r string, exists bool) {
+	v := m.text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldText returns the old "text" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldText(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldText: %w", err)
+	}
+	return oldValue.Text, nil
+}
+
+// ResetText resets all changes to the "text" field.
+func (m *ImageMutation) ResetText() {
+	m.text = nil
+}
+
+// AddAlbumIDs adds the "albums" edge to the Album entity by ids.
+func (m *ImageMutation) AddAlbumIDs(ids ...string) {
+	if m.albums == nil {
+		m.albums = make(map[string]struct{})
+	}
+	for i := range ids {
+		m.albums[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAlbums clears the "albums" edge to the Album entity.
+func (m *ImageMutation) ClearAlbums() {
+	m.clearedalbums = true
+}
+
+// AlbumsCleared reports if the "albums" edge to the Album entity was cleared.
+func (m *ImageMutation) AlbumsCleared() bool {
+	return m.clearedalbums
+}
+
+// RemoveAlbumIDs removes the "albums" edge to the Album entity by IDs.
+func (m *ImageMutation) RemoveAlbumIDs(ids ...string) {
+	if m.removedalbums == nil {
+		m.removedalbums = make(map[string]struct{})
+	}
+	for i := range ids {
+		delete(m.albums, ids[i])
+		m.removedalbums[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAlbums returns the removed IDs of the "albums" edge to the Album entity.
+func (m *ImageMutation) RemovedAlbumsIDs() (ids []string) {
+	for id := range m.removedalbums {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AlbumsIDs returns the "albums" edge IDs in the mutation.
+func (m *ImageMutation) AlbumsIDs() (ids []string) {
+	for id := range m.albums {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAlbums resets all changes to the "albums" edge.
+func (m *ImageMutation) ResetAlbums() {
+	m.albums = nil
+	m.clearedalbums = false
+	m.removedalbums = nil
+}
+
+// Where appends a list predicates to the ImageMutation builder.
+func (m *ImageMutation) Where(ps ...predicate.Image) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ImageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ImageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Image, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ImageMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ImageMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Image).
+func (m *ImageMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ImageMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.url != nil {
+		fields = append(fields, image.FieldURL)
+	}
+	if m.width != nil {
+		fields = append(fields, image.FieldWidth)
+	}
+	if m.height != nil {
+		fields = append(fields, image.FieldHeight)
+	}
+	if m.text != nil {
+		fields = append(fields, image.FieldText)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ImageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case image.FieldURL:
+		return m.URL()
+	case image.FieldWidth:
+		return m.Width()
+	case image.FieldHeight:
+		return m.Height()
+	case image.FieldText:
+		return m.Text()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case image.FieldURL:
+		return m.OldURL(ctx)
+	case image.FieldWidth:
+		return m.OldWidth(ctx)
+	case image.FieldHeight:
+		return m.OldHeight(ctx)
+	case image.FieldText:
+		return m.OldText(ctx)
+	}
+	return nil, fmt.Errorf("unknown Image field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ImageMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case image.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case image.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWidth(v)
+		return nil
+	case image.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeight(v)
+		return nil
+	case image.FieldText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetText(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Image field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ImageMutation) AddedFields() []string {
+	var fields []string
+	if m.addwidth != nil {
+		fields = append(fields, image.FieldWidth)
+	}
+	if m.addheight != nil {
+		fields = append(fields, image.FieldHeight)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ImageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case image.FieldWidth:
+		return m.AddedWidth()
+	case image.FieldHeight:
+		return m.AddedHeight()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ImageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case image.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWidth(v)
+		return nil
+	case image.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeight(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Image numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ImageMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ImageMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ImageMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Image nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ImageMutation) ResetField(name string) error {
+	switch name {
+	case image.FieldURL:
+		m.ResetURL()
+		return nil
+	case image.FieldWidth:
+		m.ResetWidth()
+		return nil
+	case image.FieldHeight:
+		m.ResetHeight()
+		return nil
+	case image.FieldText:
+		m.ResetText()
+		return nil
+	}
+	return fmt.Errorf("unknown Image field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ImageMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.albums != nil {
+		edges = append(edges, image.EdgeAlbums)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ImageMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case image.EdgeAlbums:
+		ids := make([]ent.Value, 0, len(m.albums))
+		for id := range m.albums {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ImageMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedalbums != nil {
+		edges = append(edges, image.EdgeAlbums)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ImageMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case image.EdgeAlbums:
+		ids := make([]ent.Value, 0, len(m.removedalbums))
+		for id := range m.removedalbums {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ImageMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedalbums {
+		edges = append(edges, image.EdgeAlbums)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ImageMutation) EdgeCleared(name string) bool {
+	switch name {
+	case image.EdgeAlbums:
+		return m.clearedalbums
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ImageMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Image unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ImageMutation) ResetEdge(name string) error {
+	switch name {
+	case image.EdgeAlbums:
+		m.ResetAlbums()
+		return nil
+	}
+	return fmt.Errorf("unknown Image edge %s", name)
+}
 
 // TrackMutation represents an operation that mutates the Track nodes in the graph.
 type TrackMutation struct {
@@ -46,6 +1845,8 @@ type TrackMutation struct {
 	addduration_ms       *int
 	uri                  *string
 	clearedFields        map[string]struct{}
+	albums               *string
+	clearedalbums        bool
 	done                 bool
 	oldValue             func(context.Context) (*Track, error)
 	predicates           []predicate.Track
@@ -529,6 +2330,45 @@ func (m *TrackMutation) ResetURI() {
 	m.uri = nil
 }
 
+// SetAlbumsID sets the "albums" edge to the Album entity by id.
+func (m *TrackMutation) SetAlbumsID(id string) {
+	m.albums = &id
+}
+
+// ClearAlbums clears the "albums" edge to the Album entity.
+func (m *TrackMutation) ClearAlbums() {
+	m.clearedalbums = true
+}
+
+// AlbumsCleared reports if the "albums" edge to the Album entity was cleared.
+func (m *TrackMutation) AlbumsCleared() bool {
+	return m.clearedalbums
+}
+
+// AlbumsID returns the "albums" edge ID in the mutation.
+func (m *TrackMutation) AlbumsID() (id string, exists bool) {
+	if m.albums != nil {
+		return *m.albums, true
+	}
+	return
+}
+
+// AlbumsIDs returns the "albums" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AlbumsID instead. It exists only for internal usage by the builders.
+func (m *TrackMutation) AlbumsIDs() (ids []string) {
+	if id := m.albums; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAlbums resets all changes to the "albums" edge.
+func (m *TrackMutation) ResetAlbums() {
+	m.albums = nil
+	m.clearedalbums = false
+}
+
 // Where appends a list predicates to the TrackMutation builder.
 func (m *TrackMutation) Where(ps ...predicate.Track) {
 	m.predicates = append(m.predicates, ps...)
@@ -813,19 +2653,28 @@ func (m *TrackMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TrackMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.albums != nil {
+		edges = append(edges, track.EdgeAlbums)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TrackMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case track.EdgeAlbums:
+		if id := m.albums; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TrackMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -837,24 +2686,41 @@ func (m *TrackMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TrackMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedalbums {
+		edges = append(edges, track.EdgeAlbums)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TrackMutation) EdgeCleared(name string) bool {
+	switch name {
+	case track.EdgeAlbums:
+		return m.clearedalbums
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TrackMutation) ClearEdge(name string) error {
+	switch name {
+	case track.EdgeAlbums:
+		m.ClearAlbums()
+		return nil
+	}
 	return fmt.Errorf("unknown Track unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TrackMutation) ResetEdge(name string) error {
+	switch name {
+	case track.EdgeAlbums:
+		m.ResetAlbums()
+		return nil
+	}
 	return fmt.Errorf("unknown Track edge %s", name)
 }

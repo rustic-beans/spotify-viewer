@@ -33,12 +33,6 @@ type SimpleArtist {
   uri: String!
 }
 
-type Image {
-  url: String!
-  height: Int!
-  width: Int!
-}
-
 type SimpleAlbum {
   album_type: String!
   available_markets: [String!]!
