@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -33,10 +32,9 @@ type TrackMutation struct {
 	config
 	op                   Op
 	typ                  string
-	id                   *pulid.ID
+	id                   *string
 	created_at           *time.Time
 	updated_at           *time.Time
-	track_id             *pulid.ID
 	name                 *string
 	artists              *[]string
 	appendartists        []string
@@ -73,7 +71,7 @@ func newTrackMutation(c config, op Op, opts ...trackOption) *TrackMutation {
 }
 
 // withTrackID sets the ID field of the mutation.
-func withTrackID(id pulid.ID) trackOption {
+func withTrackID(id string) trackOption {
 	return func(m *TrackMutation) {
 		var (
 			err   error
@@ -125,13 +123,13 @@ func (m TrackMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Track entities.
-func (m *TrackMutation) SetID(id pulid.ID) {
+func (m *TrackMutation) SetID(id string) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *TrackMutation) ID() (id pulid.ID, exists bool) {
+func (m *TrackMutation) ID() (id string, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -142,12 +140,12 @@ func (m *TrackMutation) ID() (id pulid.ID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *TrackMutation) IDs(ctx context.Context) ([]pulid.ID, error) {
+func (m *TrackMutation) IDs(ctx context.Context) ([]string, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []pulid.ID{id}, nil
+			return []string{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -227,42 +225,6 @@ func (m *TrackMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err erro
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *TrackMutation) ResetUpdatedAt() {
 	m.updated_at = nil
-}
-
-// SetTrackID sets the "track_id" field.
-func (m *TrackMutation) SetTrackID(pu pulid.ID) {
-	m.track_id = &pu
-}
-
-// TrackID returns the value of the "track_id" field in the mutation.
-func (m *TrackMutation) TrackID() (r pulid.ID, exists bool) {
-	v := m.track_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTrackID returns the old "track_id" field's value of the Track entity.
-// If the Track object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TrackMutation) OldTrackID(ctx context.Context) (v pulid.ID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTrackID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTrackID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTrackID: %w", err)
-	}
-	return oldValue.TrackID, nil
-}
-
-// ResetTrackID resets all changes to the "track_id" field.
-func (m *TrackMutation) ResetTrackID() {
-	m.track_id = nil
 }
 
 // SetName sets the "name" field.
@@ -601,15 +563,12 @@ func (m *TrackMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TrackMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, track.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, track.FieldUpdatedAt)
-	}
-	if m.track_id != nil {
-		fields = append(fields, track.FieldTrackID)
 	}
 	if m.name != nil {
 		fields = append(fields, track.FieldName)
@@ -644,8 +603,6 @@ func (m *TrackMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case track.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case track.FieldTrackID:
-		return m.TrackID()
 	case track.FieldName:
 		return m.Name()
 	case track.FieldArtists:
@@ -673,8 +630,6 @@ func (m *TrackMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldCreatedAt(ctx)
 	case track.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case track.FieldTrackID:
-		return m.OldTrackID(ctx)
 	case track.FieldName:
 		return m.OldName(ctx)
 	case track.FieldArtists:
@@ -711,13 +666,6 @@ func (m *TrackMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
-		return nil
-	case track.FieldTrackID:
-		v, ok := value.(pulid.ID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTrackID(v)
 		return nil
 	case track.FieldName:
 		v, ok := value.(string)
@@ -837,9 +785,6 @@ func (m *TrackMutation) ResetField(name string) error {
 		return nil
 	case track.FieldUpdatedAt:
 		m.ResetUpdatedAt()
-		return nil
-	case track.FieldTrackID:
-		m.ResetTrackID()
 		return nil
 	case track.FieldName:
 		m.ResetName()

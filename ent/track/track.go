@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 )
 
 const (
@@ -18,8 +17,6 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldTrackID holds the string denoting the track_id field in the database.
-	FieldTrackID = "track_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldArtists holds the string denoting the artists field in the database.
@@ -43,7 +40,6 @@ var Columns = []string{
 	FieldID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldTrackID,
 	FieldName,
 	FieldArtists,
 	FieldArtistsGenres,
@@ -70,10 +66,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// TrackIDValidator is a validator for the "track_id" field. It is called by the builders before save.
-	TrackIDValidator func(string) error
-	// DefaultID holds the default value on creation for the "id" field.
-	DefaultID func() pulid.ID
+	// IDValidator is a validator for the "id" field. It is called by the builders before save.
+	IDValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the Track queries.
@@ -92,11 +86,6 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
-// ByTrackID orders the results by the track_id field.
-func ByTrackID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTrackID, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

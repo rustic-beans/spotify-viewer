@@ -10,7 +10,6 @@ import (
 	"reflect"
 
 	"github.com/rustic-beans/spotify-viewer/ent/migrate"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -258,7 +257,7 @@ func (c *TrackClient) UpdateOne(t *Track) *TrackUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TrackClient) UpdateOneID(id pulid.ID) *TrackUpdateOne {
+func (c *TrackClient) UpdateOneID(id string) *TrackUpdateOne {
 	mutation := newTrackMutation(c.config, OpUpdateOne, withTrackID(id))
 	return &TrackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -275,7 +274,7 @@ func (c *TrackClient) DeleteOne(t *Track) *TrackDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TrackClient) DeleteOneID(id pulid.ID) *TrackDeleteOne {
+func (c *TrackClient) DeleteOneID(id string) *TrackDeleteOne {
 	builder := c.Delete().Where(track.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -292,12 +291,12 @@ func (c *TrackClient) Query() *TrackQuery {
 }
 
 // Get returns a Track entity by its id.
-func (c *TrackClient) Get(ctx context.Context, id pulid.ID) (*Track, error) {
+func (c *TrackClient) Get(ctx context.Context, id string) (*Track, error) {
 	return c.Query().Where(track.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TrackClient) GetX(ctx context.Context, id pulid.ID) *Track {
+func (c *TrackClient) GetX(ctx context.Context, id string) *Track {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

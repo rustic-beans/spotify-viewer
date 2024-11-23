@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -46,12 +45,6 @@ func (tc *TrackCreate) SetNillableUpdatedAt(t *time.Time) *TrackCreate {
 	if t != nil {
 		tc.SetUpdatedAt(*t)
 	}
-	return tc
-}
-
-// SetTrackID sets the "track_id" field.
-func (tc *TrackCreate) SetTrackID(pu pulid.ID) *TrackCreate {
-	tc.mutation.SetTrackID(pu)
 	return tc
 }
 
@@ -98,16 +91,8 @@ func (tc *TrackCreate) SetURI(s string) *TrackCreate {
 }
 
 // SetID sets the "id" field.
-func (tc *TrackCreate) SetID(pu pulid.ID) *TrackCreate {
-	tc.mutation.SetID(pu)
-	return tc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (tc *TrackCreate) SetNillableID(pu *pulid.ID) *TrackCreate {
-	if pu != nil {
-		tc.SetID(*pu)
-	}
+func (tc *TrackCreate) SetID(s string) *TrackCreate {
+	tc.mutation.SetID(s)
 	return tc
 }
 
@@ -154,10 +139,6 @@ func (tc *TrackCreate) defaults() {
 		v := track.DefaultUpdatedAt()
 		tc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := tc.mutation.ID(); !ok {
-		v := track.DefaultID()
-		tc.mutation.SetID(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -167,14 +148,6 @@ func (tc *TrackCreate) check() error {
 	}
 	if _, ok := tc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Track.updated_at"`)}
-	}
-	if _, ok := tc.mutation.TrackID(); !ok {
-		return &ValidationError{Name: "track_id", err: errors.New(`ent: missing required field "Track.track_id"`)}
-	}
-	if v, ok := tc.mutation.TrackID(); ok {
-		if err := track.TrackIDValidator(string(v)); err != nil {
-			return &ValidationError{Name: "track_id", err: fmt.Errorf(`ent: validator failed for field "Track.track_id": %w`, err)}
-		}
 	}
 	if _, ok := tc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Track.name"`)}
@@ -197,6 +170,11 @@ func (tc *TrackCreate) check() error {
 	if _, ok := tc.mutation.URI(); !ok {
 		return &ValidationError{Name: "uri", err: errors.New(`ent: missing required field "Track.uri"`)}
 	}
+	if v, ok := tc.mutation.ID(); ok {
+		if err := track.IDValidator(v); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Track.id": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -212,10 +190,10 @@ func (tc *TrackCreate) sqlSave(ctx context.Context) (*Track, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*pulid.ID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
+		if id, ok := _spec.ID.Value.(string); ok {
+			_node.ID = id
+		} else {
+			return nil, fmt.Errorf("unexpected Track.ID type: %T", _spec.ID.Value)
 		}
 	}
 	tc.mutation.id = &_node.ID
@@ -230,7 +208,7 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := tc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.SetField(track.FieldCreatedAt, field.TypeTime, value)
@@ -239,10 +217,6 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.UpdatedAt(); ok {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
-	}
-	if value, ok := tc.mutation.TrackID(); ok {
-		_spec.SetField(track.FieldTrackID, field.TypeString, value)
-		_node.TrackID = value
 	}
 	if value, ok := tc.mutation.Name(); ok {
 		_spec.SetField(track.FieldName, field.TypeString, value)

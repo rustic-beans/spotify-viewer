@@ -40,11 +40,6 @@ func (t *TrackQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				selectedFields = append(selectedFields, track.FieldUpdatedAt)
 				fieldSeen[track.FieldUpdatedAt] = struct{}{}
 			}
-		case "trackID":
-			if _, ok := fieldSeen[track.FieldTrackID]; !ok {
-				selectedFields = append(selectedFields, track.FieldTrackID)
-				fieldSeen[track.FieldTrackID] = struct{}{}
-			}
 		case "name":
 			if _, ok := fieldSeen[track.FieldName]; !ok {
 				selectedFields = append(selectedFields, track.FieldName)

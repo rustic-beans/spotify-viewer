@@ -1,9 +1,10 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 )
 
 type Track struct {
@@ -13,13 +14,15 @@ type Track struct {
 func (Track) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		AtTimeMixin{},
-		pulid.MixinWithPrefix("TR"),
 	}
 }
 
 func (Track) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("track_id").NotEmpty().GoType(pulid.ID("")),
+		field.String("id").
+			NotEmpty().
+			Unique().
+			Immutable(),
 		field.String("name"),
 		field.Strings("artists"),
 		field.Strings("artists_genres"),
@@ -27,5 +30,17 @@ func (Track) Fields() []ent.Field {
 		field.String("album_image_uri"),
 		field.Int("duration_ms"),
 		field.String("uri"),
+	}
+}
+
+func (Track) Edges() []ent.Edge {
+	return []ent.Edge{
+	}
+}
+
+func (Track) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.QueryField(),
+		entgql.Mutations(entgql.MutationCreate()),
 	}
 }

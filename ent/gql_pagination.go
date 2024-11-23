@@ -11,15 +11,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Common entgql types.
 type (
-	Cursor         = entgql.Cursor[pulid.ID]
-	PageInfo       = entgql.PageInfo[pulid.ID]
+	Cursor         = entgql.Cursor[string]
+	PageInfo       = entgql.PageInfo[string]
 	OrderDirection = entgql.OrderDirection
 )
 

@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -18,13 +17,11 @@ import (
 type Track struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID pulid.ID `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// TrackID holds the value of the "track_id" field.
-	TrackID pulid.ID `json:"track_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Artists holds the value of the "artists" field.
@@ -49,11 +46,9 @@ func (*Track) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case track.FieldArtists, track.FieldArtistsGenres:
 			values[i] = new([]byte)
-		case track.FieldID, track.FieldTrackID:
-			values[i] = new(pulid.ID)
 		case track.FieldDurationMs:
 			values[i] = new(sql.NullInt64)
-		case track.FieldName, track.FieldAlbumName, track.FieldAlbumImageURI, track.FieldURI:
+		case track.FieldID, track.FieldName, track.FieldAlbumName, track.FieldAlbumImageURI, track.FieldURI:
 			values[i] = new(sql.NullString)
 		case track.FieldCreatedAt, track.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -73,10 +68,10 @@ func (t *Track) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case track.FieldID:
-			if value, ok := values[i].(*pulid.ID); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				t.ID = *value
+			} else if value.Valid {
+				t.ID = value.String
 			}
 		case track.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -89,12 +84,6 @@ func (t *Track) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				t.UpdatedAt = value.Time
-			}
-		case track.FieldTrackID:
-			if value, ok := values[i].(*pulid.ID); !ok {
-				return fmt.Errorf("unexpected type %T for field track_id", values[i])
-			} else if value != nil {
-				t.TrackID = *value
 			}
 		case track.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -183,9 +172,6 @@ func (t *Track) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("track_id=")
-	builder.WriteString(fmt.Sprintf("%v", t.TrackID))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(t.Name)

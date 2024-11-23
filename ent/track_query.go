@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -86,8 +85,8 @@ func (tq *TrackQuery) FirstX(ctx context.Context) *Track {
 
 // FirstID returns the first Track ID from the query.
 // Returns a *NotFoundError when no Track ID was found.
-func (tq *TrackQuery) FirstID(ctx context.Context) (id pulid.ID, err error) {
-	var ids []pulid.ID
+func (tq *TrackQuery) FirstID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = tq.Limit(1).IDs(setContextOp(ctx, tq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -99,7 +98,7 @@ func (tq *TrackQuery) FirstID(ctx context.Context) (id pulid.ID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (tq *TrackQuery) FirstIDX(ctx context.Context) pulid.ID {
+func (tq *TrackQuery) FirstIDX(ctx context.Context) string {
 	id, err := tq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -137,8 +136,8 @@ func (tq *TrackQuery) OnlyX(ctx context.Context) *Track {
 // OnlyID is like Only, but returns the only Track ID in the query.
 // Returns a *NotSingularError when more than one Track ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (tq *TrackQuery) OnlyID(ctx context.Context) (id pulid.ID, err error) {
-	var ids []pulid.ID
+func (tq *TrackQuery) OnlyID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = tq.Limit(2).IDs(setContextOp(ctx, tq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -154,7 +153,7 @@ func (tq *TrackQuery) OnlyID(ctx context.Context) (id pulid.ID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (tq *TrackQuery) OnlyIDX(ctx context.Context) pulid.ID {
+func (tq *TrackQuery) OnlyIDX(ctx context.Context) string {
 	id, err := tq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -182,7 +181,7 @@ func (tq *TrackQuery) AllX(ctx context.Context) []*Track {
 }
 
 // IDs executes the query and returns a list of Track IDs.
-func (tq *TrackQuery) IDs(ctx context.Context) (ids []pulid.ID, err error) {
+func (tq *TrackQuery) IDs(ctx context.Context) (ids []string, err error) {
 	if tq.ctx.Unique == nil && tq.path != nil {
 		tq.Unique(true)
 	}
@@ -194,7 +193,7 @@ func (tq *TrackQuery) IDs(ctx context.Context) (ids []pulid.ID, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (tq *TrackQuery) IDsX(ctx context.Context) []pulid.ID {
+func (tq *TrackQuery) IDsX(ctx context.Context) []string {
 	ids, err := tq.IDs(ctx)
 	if err != nil {
 		panic(err)

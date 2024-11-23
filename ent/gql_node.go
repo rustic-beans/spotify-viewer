@@ -9,7 +9,6 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -31,7 +30,7 @@ type NodeOption func(*nodeOptions)
 // WithNodeType sets the node Type resolver function (i.e. the table to query).
 // If was not provided, the table will be derived from the universal-id
 // configuration as described in: https://entgo.io/docs/migrate/#universal-ids.
-func WithNodeType(f func(context.Context, pulid.ID) (string, error)) NodeOption {
+func WithNodeType(f func(context.Context, string) (string, error)) NodeOption {
 	return func(o *nodeOptions) {
 		o.nodeType = f
 	}
@@ -39,13 +38,13 @@ func WithNodeType(f func(context.Context, pulid.ID) (string, error)) NodeOption 
 
 // WithFixedNodeType sets the Type of the node to a fixed value.
 func WithFixedNodeType(t string) NodeOption {
-	return WithNodeType(func(context.Context, pulid.ID) (string, error) {
+	return WithNodeType(func(context.Context, string) (string, error) {
 		return t, nil
 	})
 }
 
 type nodeOptions struct {
-	nodeType func(context.Context, pulid.ID) (string, error)
+	nodeType func(context.Context, string) (string, error)
 }
 
 func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
@@ -54,7 +53,7 @@ func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
 		opt(nopts)
 	}
 	if nopts.nodeType == nil {
-		nopts.nodeType = func(ctx context.Context, id pulid.ID) (string, error) {
+		nopts.nodeType = func(ctx context.Context, id string) (string, error) {
 			return "", fmt.Errorf("cannot resolve noder (%v) without its type", id)
 		}
 	}
@@ -66,7 +65,7 @@ func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
 //
 //	c.Noder(ctx, id)
 //	c.Noder(ctx, id, ent.WithNodeType(typeResolver))
-func (c *Client) Noder(ctx context.Context, id pulid.ID, opts ...NodeOption) (_ Noder, err error) {
+func (c *Client) Noder(ctx context.Context, id string, opts ...NodeOption) (_ Noder, err error) {
 	defer func() {
 		if IsNotFound(err) {
 			err = multierror.Append(err, entgql.ErrNodeNotFound(id))
@@ -79,15 +78,11 @@ func (c *Client) Noder(ctx context.Context, id pulid.ID, opts ...NodeOption) (_ 
 	return c.noder(ctx, table, id)
 }
 
-func (c *Client) noder(ctx context.Context, table string, id pulid.ID) (Noder, error) {
+func (c *Client) noder(ctx context.Context, table string, id string) (Noder, error) {
 	switch table {
 	case track.Table:
-		var uid pulid.ID
-		if err := uid.UnmarshalGQL(id); err != nil {
-			return nil, err
-		}
 		query := c.Track.Query().
-			Where(track.ID(uid))
+			Where(track.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, trackImplementors...); err != nil {
 				return nil, err
@@ -99,7 +94,7 @@ func (c *Client) noder(ctx context.Context, table string, id pulid.ID) (Noder, e
 	}
 }
 
-func (c *Client) Noders(ctx context.Context, ids []pulid.ID, opts ...NodeOption) ([]Noder, error) {
+func (c *Client) Noders(ctx context.Context, ids []string, opts ...NodeOption) ([]Noder, error) {
 	switch len(ids) {
 	case 1:
 		noder, err := c.Noder(ctx, ids[0], opts...)
@@ -113,8 +108,8 @@ func (c *Client) Noders(ctx context.Context, ids []pulid.ID, opts ...NodeOption)
 
 	noders := make([]Noder, len(ids))
 	errors := make([]error, len(ids))
-	tables := make(map[string][]pulid.ID)
-	id2idx := make(map[pulid.ID][]int, len(ids))
+	tables := make(map[string][]string)
+	id2idx := make(map[string][]int, len(ids))
 	nopts := c.newNodeOpts(opts)
 	for i, id := range ids {
 		table, err := nopts.nodeType(ctx, id)
@@ -160,9 +155,9 @@ func (c *Client) Noders(ctx context.Context, ids []pulid.ID, opts ...NodeOption)
 	return noders, nil
 }
 
-func (c *Client) noders(ctx context.Context, table string, ids []pulid.ID) ([]Noder, error) {
+func (c *Client) noders(ctx context.Context, table string, ids []string) ([]Noder, error) {
 	noders := make([]Noder, len(ids))
-	idmap := make(map[pulid.ID][]*Noder, len(ids))
+	idmap := make(map[string][]*Noder, len(ids))
 	for i, id := range ids {
 		idmap[id] = append(idmap[id], &noders[i])
 	}

@@ -10,10 +10,9 @@ import (
 var (
 	// TracksColumns holds the columns for the "tracks" table.
 	TracksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
+		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "track_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "artists", Type: field.TypeJSON},
 		{Name: "artists_genres", Type: field.TypeJSON},

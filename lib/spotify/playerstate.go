@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/rustic-beans/spotify-viewer/ent"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/lib/infrastructure/http"
 	"github.com/rustic-beans/spotify-viewer/utils"
 	"go.uber.org/zap"
@@ -146,7 +145,6 @@ func addTrack(ctx context.Context, dbClient *ent.Client, track *ent.Track) {
 	_, err := dbClient.Track.Create().
 		SetName(track.Name).
 		SetArtists(track.Artists).
-		SetTrackID(pulid.MustNew(track.Name)).
 		SetArtistsGenres(track.ArtistsGenres).
 		SetAlbumName(track.AlbumName).
 		SetAlbumImageURI(track.AlbumImageURI).

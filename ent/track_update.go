@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -33,20 +32,6 @@ func (tu *TrackUpdate) Where(ps ...predicate.Track) *TrackUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (tu *TrackUpdate) SetUpdatedAt(t time.Time) *TrackUpdate {
 	tu.mutation.SetUpdatedAt(t)
-	return tu
-}
-
-// SetTrackID sets the "track_id" field.
-func (tu *TrackUpdate) SetTrackID(pu pulid.ID) *TrackUpdate {
-	tu.mutation.SetTrackID(pu)
-	return tu
-}
-
-// SetNillableTrackID sets the "track_id" field if the given value is not nil.
-func (tu *TrackUpdate) SetNillableTrackID(pu *pulid.ID) *TrackUpdate {
-	if pu != nil {
-		tu.SetTrackID(*pu)
-	}
 	return tu
 }
 
@@ -192,20 +177,7 @@ func (tu *TrackUpdate) defaults() {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (tu *TrackUpdate) check() error {
-	if v, ok := tu.mutation.TrackID(); ok {
-		if err := track.TrackIDValidator(string(v)); err != nil {
-			return &ValidationError{Name: "track_id", err: fmt.Errorf(`ent: validator failed for field "Track.track_id": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := tu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(track.Table, track.Columns, sqlgraph.NewFieldSpec(track.FieldID, field.TypeString))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -216,9 +188,6 @@ func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.UpdatedAt(); ok {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := tu.mutation.TrackID(); ok {
-		_spec.SetField(track.FieldTrackID, field.TypeString, value)
 	}
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(track.FieldName, field.TypeString, value)
@@ -277,20 +246,6 @@ type TrackUpdateOne struct {
 // SetUpdatedAt sets the "updated_at" field.
 func (tuo *TrackUpdateOne) SetUpdatedAt(t time.Time) *TrackUpdateOne {
 	tuo.mutation.SetUpdatedAt(t)
-	return tuo
-}
-
-// SetTrackID sets the "track_id" field.
-func (tuo *TrackUpdateOne) SetTrackID(pu pulid.ID) *TrackUpdateOne {
-	tuo.mutation.SetTrackID(pu)
-	return tuo
-}
-
-// SetNillableTrackID sets the "track_id" field if the given value is not nil.
-func (tuo *TrackUpdateOne) SetNillableTrackID(pu *pulid.ID) *TrackUpdateOne {
-	if pu != nil {
-		tuo.SetTrackID(*pu)
-	}
 	return tuo
 }
 
@@ -449,20 +404,7 @@ func (tuo *TrackUpdateOne) defaults() {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (tuo *TrackUpdateOne) check() error {
-	if v, ok := tuo.mutation.TrackID(); ok {
-		if err := track.TrackIDValidator(string(v)); err != nil {
-			return &ValidationError{Name: "track_id", err: fmt.Errorf(`ent: validator failed for field "Track.track_id": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error) {
-	if err := tuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(track.Table, track.Columns, sqlgraph.NewFieldSpec(track.FieldID, field.TypeString))
 	id, ok := tuo.mutation.ID()
 	if !ok {
@@ -490,9 +432,6 @@ func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error
 	}
 	if value, ok := tuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := tuo.mutation.TrackID(); ok {
-		_spec.SetField(track.FieldTrackID, field.TypeString, value)
 	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(track.FieldName, field.TypeString, value)

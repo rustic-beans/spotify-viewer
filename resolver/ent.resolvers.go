@@ -9,30 +9,25 @@ import (
 	"fmt"
 
 	"github.com/rustic-beans/spotify-viewer/ent"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/generated"
 )
 
 // Node is the resolver for the node field.
-func (r *queryResolver) Node(ctx context.Context, id pulid.ID) (ent.Noder, error) {
+func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) {
 	panic(fmt.Errorf("not implemented: Node - node"))
 }
 
 // Nodes is the resolver for the nodes field.
-func (r *queryResolver) Nodes(ctx context.Context, ids []pulid.ID) ([]ent.Noder, error) {
+func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, error) {
 	panic(fmt.Errorf("not implemented: Nodes - nodes"))
 }
 
-// TrackID is the resolver for the trackID field.
-func (r *trackResolver) TrackID(ctx context.Context, obj *ent.Track) (string, error) {
-	panic(fmt.Errorf("not implemented: TrackID - trackID"))
+// Tracks is the resolver for the tracks field.
+func (r *queryResolver) Tracks(ctx context.Context) ([]*ent.Track, error) {
+	panic(fmt.Errorf("not implemented: Tracks - tracks"))
 }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-// Track returns generated.TrackResolver implementation.
-func (r *Resolver) Track() generated.TrackResolver { return &trackResolver{r} }
-
 type queryResolver struct{ *Resolver }
-type trackResolver struct{ *Resolver }

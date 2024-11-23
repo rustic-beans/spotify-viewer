@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/rustic-beans/spotify-viewer/ent/schema"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
 
@@ -17,8 +16,6 @@ func init() {
 	trackMixin := schema.Track{}.Mixin()
 	trackMixinFields0 := trackMixin[0].Fields()
 	_ = trackMixinFields0
-	trackMixinFields1 := trackMixin[1].Fields()
-	_ = trackMixinFields1
 	trackFields := schema.Track{}.Fields()
 	_ = trackFields
 	// trackDescCreatedAt is the schema descriptor for created_at field.
@@ -31,12 +28,8 @@ func init() {
 	track.DefaultUpdatedAt = trackDescUpdatedAt.Default.(func() time.Time)
 	// track.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	track.UpdateDefaultUpdatedAt = trackDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// trackDescTrackID is the schema descriptor for track_id field.
-	trackDescTrackID := trackFields[0].Descriptor()
-	// track.TrackIDValidator is a validator for the "track_id" field. It is called by the builders before save.
-	track.TrackIDValidator = trackDescTrackID.Validators[0].(func(string) error)
 	// trackDescID is the schema descriptor for id field.
-	trackDescID := trackMixinFields1[0].Descriptor()
-	// track.DefaultID holds the default value on creation for the id field.
-	track.DefaultID = trackDescID.Default.(func() pulid.ID)
+	trackDescID := trackFields[0].Descriptor()
+	// track.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	track.IDValidator = trackDescID.Validators[0].(func(string) error)
 }

@@ -7,52 +7,61 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
-	"github.com/rustic-beans/spotify-viewer/ent/schema/pulid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id pulid.ID) predicate.Track {
+func ID(id string) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id pulid.ID) predicate.Track {
+func IDEQ(id string) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id pulid.ID) predicate.Track {
+func IDNEQ(id string) predicate.Track {
 	return predicate.Track(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...pulid.ID) predicate.Track {
+func IDIn(ids ...string) predicate.Track {
 	return predicate.Track(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...pulid.ID) predicate.Track {
+func IDNotIn(ids ...string) predicate.Track {
 	return predicate.Track(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id pulid.ID) predicate.Track {
+func IDGT(id string) predicate.Track {
 	return predicate.Track(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id pulid.ID) predicate.Track {
+func IDGTE(id string) predicate.Track {
 	return predicate.Track(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id pulid.ID) predicate.Track {
+func IDLT(id string) predicate.Track {
 	return predicate.Track(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id pulid.ID) predicate.Track {
+func IDLTE(id string) predicate.Track {
 	return predicate.Track(sql.FieldLTE(FieldID, id))
+}
+
+// IDEqualFold applies the EqualFold predicate on the ID field.
+func IDEqualFold(id string) predicate.Track {
+	return predicate.Track(sql.FieldEqualFold(FieldID, id))
+}
+
+// IDContainsFold applies the ContainsFold predicate on the ID field.
+func IDContainsFold(id string) predicate.Track {
+	return predicate.Track(sql.FieldContainsFold(FieldID, id))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -63,11 +72,6 @@ func CreatedAt(v time.Time) predicate.Track {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// TrackID applies equality check predicate on the "track_id" field. It's identical to TrackIDEQ.
-func TrackID(v pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldTrackID, v))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
@@ -173,76 +177,6 @@ func UpdatedAtLT(v time.Time) predicate.Track {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Track {
 	return predicate.Track(sql.FieldLTE(FieldUpdatedAt, v))
-}
-
-// TrackIDEQ applies the EQ predicate on the "track_id" field.
-func TrackIDEQ(v pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldTrackID, v))
-}
-
-// TrackIDNEQ applies the NEQ predicate on the "track_id" field.
-func TrackIDNEQ(v pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldNEQ(FieldTrackID, v))
-}
-
-// TrackIDIn applies the In predicate on the "track_id" field.
-func TrackIDIn(vs ...pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldIn(FieldTrackID, vs...))
-}
-
-// TrackIDNotIn applies the NotIn predicate on the "track_id" field.
-func TrackIDNotIn(vs ...pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldNotIn(FieldTrackID, vs...))
-}
-
-// TrackIDGT applies the GT predicate on the "track_id" field.
-func TrackIDGT(v pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldGT(FieldTrackID, v))
-}
-
-// TrackIDGTE applies the GTE predicate on the "track_id" field.
-func TrackIDGTE(v pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldGTE(FieldTrackID, v))
-}
-
-// TrackIDLT applies the LT predicate on the "track_id" field.
-func TrackIDLT(v pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldLT(FieldTrackID, v))
-}
-
-// TrackIDLTE applies the LTE predicate on the "track_id" field.
-func TrackIDLTE(v pulid.ID) predicate.Track {
-	return predicate.Track(sql.FieldLTE(FieldTrackID, v))
-}
-
-// TrackIDContains applies the Contains predicate on the "track_id" field.
-func TrackIDContains(v pulid.ID) predicate.Track {
-	vc := string(v)
-	return predicate.Track(sql.FieldContains(FieldTrackID, vc))
-}
-
-// TrackIDHasPrefix applies the HasPrefix predicate on the "track_id" field.
-func TrackIDHasPrefix(v pulid.ID) predicate.Track {
-	vc := string(v)
-	return predicate.Track(sql.FieldHasPrefix(FieldTrackID, vc))
-}
-
-// TrackIDHasSuffix applies the HasSuffix predicate on the "track_id" field.
-func TrackIDHasSuffix(v pulid.ID) predicate.Track {
-	vc := string(v)
-	return predicate.Track(sql.FieldHasSuffix(FieldTrackID, vc))
-}
-
-// TrackIDEqualFold applies the EqualFold predicate on the "track_id" field.
-func TrackIDEqualFold(v pulid.ID) predicate.Track {
-	vc := string(v)
-	return predicate.Track(sql.FieldEqualFold(FieldTrackID, vc))
-}
-
-// TrackIDContainsFold applies the ContainsFold predicate on the "track_id" field.
-func TrackIDContainsFold(v pulid.ID) predicate.Track {
-	vc := string(v)
-	return predicate.Track(sql.FieldContainsFold(FieldTrackID, vc))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
