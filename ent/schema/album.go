@@ -25,8 +25,10 @@ func (Album) Fields() []ent.Field {
 			Comment("The type of the album"),
 		field.Int("total_tracks").
 			Comment("The number of tracks in the album"),
-		// field.JSON("available_markets", []string{}).
-		// 	Comment("The markets in which the album is available"),
+		field.JSON("available_markets", []string{}).
+			Comment("The markets in which the album is available"),
+		field.JSON("external_urls", &StringMap{}).
+			Comment("Known external URLs for this artist"),
 		field.Text("href").
 			NotEmpty().
 			Comment("A link to the Web API endpoint providing full details of the album"),
@@ -47,8 +49,8 @@ func (Album) Fields() []ent.Field {
 			Comment("The Spotify URI for the album"),
 		field.Text("external_ids").
 			Comment("Known external IDs for the album"),
-		// field.JSON("genres", []string{}).
-		// 	Comment("A list of the genres the album is associated with"),
+		field.JSON("genres", []string{}).
+			Comment("A list of the genres the album is associated with"),
 		field.Text("label").
 			Comment("The label associated with the album"),
 		field.Int("popularity").
@@ -60,7 +62,7 @@ func (Album) Fields() []ent.Field {
 func (Album) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("images", Image.Type).Required(),
-		// edge.From("artists", Artist.Type).Ref("albums"),
+		edge.From("artists", Artist.Type).Ref("albums"),
 		edge.To("tracks", Track.Type),
 	}
 }
