@@ -35,7 +35,7 @@ func (s *Spotify) Authenticate() {
 }
 
 // Don't question it: https://groups.google.com/g/golang-nuts/c/y9IvZgiNowk
-func callSpotify[R *Q, Q any](ctx context.Context, spot *Spotify, f func(ctx context.Context, opts ...spotifyLib.RequestOption) (R, error), opts ...spotifyLib.RequestOption) (R, error) {
+func callSpotify[R *Q, Q any](spot *Spotify, f func() (R, error)) (R, error) {
 	var err error
 
 	if spot.Client == nil {
@@ -43,7 +43,7 @@ func callSpotify[R *Q, Q any](ctx context.Context, spot *Spotify, f func(ctx con
 		return nil, NotAuthenticatedError{}
 	}
 
-	response, err := f(ctx, opts...)
+	response, err := f()
 
 	if err != nil {
 		return nil, err
@@ -53,7 +53,10 @@ func callSpotify[R *Q, Q any](ctx context.Context, spot *Spotify, f func(ctx con
 }
 
 func (s *Spotify) GetPlayerState(ctx context.Context) (*spotifyLib.PlayerState, error) {
-	playerState, err := callSpotify(ctx, s, s.Client.PlayerState)
+	playerState, err := callSpotify(s, func() (*spotifyLib.PlayerState, error) {
+		return s.Client.PlayerState(ctx)
+	})
+
 	if err != nil {
 		return nil, err
 	}
