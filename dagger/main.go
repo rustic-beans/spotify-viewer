@@ -23,7 +23,7 @@ func (m *SpotifyViewer) BuildEnv(source *dagger.Directory) *dagger.Container {
 		// change the working directory to /src
 		WithWorkdir("/src").
 		// run npm install to install dependencies
-		WithExec([]string{"go", "mod", "tidy"})
+		WithExec([]string{"go", "generate", "./ent"})
 }
 
 func (m *SpotifyViewer) graphqlGenerate(source *dagger.Directory) *dagger.Container {
@@ -33,9 +33,8 @@ func (m *SpotifyViewer) graphqlGenerate(source *dagger.Directory) *dagger.Contai
 
 // Runs the `spotify-viewer` module tests
 func (m *SpotifyViewer) Test(ctx context.Context, source *dagger.Directory) (string, error) {
-	return m.graphqlGenerate(source).
-		// call the test runner
-		WithExec([]string{"go", "test", "./..."}).
+	return m.BuildEnv(source). // call the test runner
+					WithExec([]string{"go", "test", "./..."}).
 		// capture and return the command output
 		Stdout(ctx)
 }
