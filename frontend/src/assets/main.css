@@ -13,3 +13,21 @@ body {
 #app {
   min-height: 100vh;
 }
+
+
+/* Custom classes */
+.transition-colors {
+  transition: color 0.2s linear, background-color 0.2s linear, blur 0.5s ease-in-out;
+}
+
+.transition-background {
+  transition: background-image 3s ease-in-out, background-color 3s ease-in-out;
+}
+
+.transition-colors::before {
+  opacity: 0;
+  background-color: red;
+  transition: opacity 0.2s linear;
+}
+
+

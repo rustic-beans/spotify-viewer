@@ -29,18 +29,17 @@ const trackObj = computed(() => playerStateObj.value.item);
 const imagesObj = computed(() => trackObj.value?.album);
 const backgroundObj = computed(() => trackObj.value?.album);
 //TODO: once we have the artist image from the spotify api call, we can use the obj dominant color for this
-var color = "#821271";
-
-
+var color = "#ffffff";
+// ffffff
 </script>
 
 <template>
   <div class="fixed inset-0">
-    <Background class="object-cover h-full w-full "
+   <Background class="object-cover h-full w-full "
       v-if="backgroundObj"
       :fragment="backgroundObj"
     />
-    <div class="object-cover h-full w-full blur " :style="{'background-color': color}" >
+    <div class="object-cover h-full w-full blur transition-colors" :style="{'background-color': color}" >
       <div class="object-cover h-full w-full bg-gradient-to-tr from-neutral-600 to-neutral-900 opacity-25 blur-lg"></div>
     </div>
     <div class="absolute bottom-0 left-0 right-0 p-12">
