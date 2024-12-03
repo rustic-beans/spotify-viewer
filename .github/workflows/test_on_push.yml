@@ -11,7 +11,6 @@ jobs:
       - name: Call Backend Test Function
         uses: dagger/dagger-for-github@v6
         with:
-          version: "latest"
           verb: call
           args: test --source=.
           # Maybe add this back if we want to see cool output
