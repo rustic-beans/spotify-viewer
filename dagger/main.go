@@ -34,3 +34,11 @@ func (m *SpotifyViewer) Test(ctx context.Context, source *dagger.Directory) (str
 		// capture and return the command output
 		Stdout(ctx)
 }
+
+// Build the application container
+// To Export please call it with ... export --path=./dist from the source folder
+func (m *SpotifyViewer) Build(source *dagger.Directory) *dagger.Directory {
+	return m.BuildEnv(source).
+		WithExec([]string{"go", "build", "-C", "cmd", "-o", "../dist/backend"}).
+		Directory("./dist")
+}
