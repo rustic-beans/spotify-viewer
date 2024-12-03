@@ -16,7 +16,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/spf13/viper v1.19.0
 	github.com/vektah/gqlparser/v2 v2.5.19
-	github.com/zmb3/spotify/v2 v2.4.2
+	github.com/zmb3/spotify/v2 v2.4.3
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.24.0
 )
