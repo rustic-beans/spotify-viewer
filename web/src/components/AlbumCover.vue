@@ -3,8 +3,8 @@ import { computed } from 'vue';
 import { type FragmentType, useFragment, graphql } from '@/__generated__';
 
 const ImagesFragment = graphql(/* GraphQL */ `
-  fragment Images on SimpleAlbum {
-    external_urls
+  fragment Images on Album {
+    externalUrls
     images {
       url
     }
@@ -27,7 +27,7 @@ const albumUrl = computed(() => {
 });
 
 const spotifyUrl = computed(() => {
-  return imagesObj.value.external_urls.spotify;
+  return imagesObj.value.externalUrls.spotify;
 });
 </script>
 

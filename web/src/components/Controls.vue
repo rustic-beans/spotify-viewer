@@ -4,7 +4,7 @@ import { computed } from 'vue';
 
 const ControlFragment = graphql(/* GraphQL */ `
   fragment Control on PlayerState {
-    is_playing
+    isPlaying
   }
 `);
 
@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const controlObj = computed(() => useFragment(ControlFragment, props.fragment));
-const isPlaying = computed(() => controlObj.value.is_playing);
+const isPlaying = computed(() => controlObj.value.isPlaying);
 </script>
 
 <template>

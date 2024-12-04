@@ -5,11 +5,11 @@ import { useTimestamp } from '@vueuse/core';
 
 const ProgressFragment = graphql(/* GraphQL */ `
   fragment Progress on PlayerState {
-    progress_ms
-    is_playing
+    progressMs
+    isPlaying
     timestamp
-    item {
-      duration_ms
+    track {
+      durationMs
     }
   }
 `);
@@ -21,11 +21,11 @@ const props = defineProps<{
 const progressObj = computed(() => useFragment(ProgressFragment, props.fragment));
 const timestamp = useTimestamp({ interval: 1000 });
 const timeAgo = computed(() => timestamp.value - (progressObj.value.timestamp));
-const progressMs = computed(() => progressObj.value.progress_ms);
-const durationMs = computed(() => progressObj.value.item?.duration_ms || 0);
+const progressMs = computed(() => progressObj.value.progressMs);
+const durationMs = computed(() => progressObj.value.track.durationMs || 0);
 const actualProgressMs = computed(() => {
   let prog = progressMs.value;
-  if (progressObj.value.is_playing) {
+  if (progressObj.value.isPlaying) {
     prog += timeAgo.value;
   }
 

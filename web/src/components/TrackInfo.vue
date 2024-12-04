@@ -3,12 +3,12 @@ import { type FragmentType, useFragment, graphql } from '@/__generated__';
 import { computed } from 'vue';
 
 const TrackFragment = graphql(/* GraphQL */ `
-  fragment Track on FullTrack {
+  fragment Track on Track {
     name
-    external_urls
+    externalUrls
     artists {
       name
-      external_urls
+      externalUrls
     }
   }
 `);
@@ -22,13 +22,13 @@ const artists = computed(() => {
   return trackObj.value.artists.map((artist) => {
     return {
       name: artist.name,
-      link: artist.external_urls.spotify,
+      link: artist.externalUrls.spotify,
     };
   });
 });
 
 const trackLink = computed(() => {
-  return trackObj.value.external_urls?.spotify;
+  return trackObj.value.externalUrls?.spotify;
 });
 </script>
 

@@ -10,7 +10,7 @@ const PlayerStateFragment = graphql(/* GraphQL */ `
   fragment PlayerState on PlayerState {
     ...Progress
     ...Control
-    item {
+    track {
       ... Track
       album {
         ...Images
@@ -24,7 +24,7 @@ const props = defineProps<{
 }>();
 
 const playerStateObj = computed(() => useFragment(PlayerStateFragment, props.fragment));
-const trackObj = computed(() => playerStateObj.value.item);
+const trackObj = computed(() => playerStateObj.value.track);
 const imagesObj = computed(() => trackObj.value?.album);
 </script>
 
