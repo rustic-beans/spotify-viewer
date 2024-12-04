@@ -13,7 +13,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/mattn/go-sqlite3 v1.14.24
-	github.com/oklog/ulid/v2 v2.1.0
 	github.com/spf13/viper v1.19.0
 	github.com/vektah/gqlparser/v2 v2.5.20
 	github.com/zmb3/spotify/v2 v2.4.3
@@ -25,9 +24,7 @@ require (
 	ariga.io/atlas v0.25.1-0.20240717145915-af51d3945208 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/agnivade/levenshtein v1.2.0 // indirect
-	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-openapi/inflect v0.21.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
