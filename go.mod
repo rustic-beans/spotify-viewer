@@ -7,23 +7,25 @@ toolchain go1.23.2
 require (
 	entgo.io/contrib v0.6.0
 	entgo.io/ent v0.14.1
-	github.com/99designs/gqlgen v0.17.56
+	github.com/99designs/gqlgen v0.17.57
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/labstack/echo/v4 v4.12.0
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/oklog/ulid/v2 v2.1.0
 	github.com/spf13/viper v1.19.0
-	github.com/vektah/gqlparser/v2 v2.5.19
-	github.com/zmb3/spotify/v2 v2.4.2
+	github.com/vektah/gqlparser/v2 v2.5.20
+	github.com/zmb3/spotify/v2 v2.4.3
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.24.0
 )
 
 require (
-	ariga.io/atlas v0.28.1 // indirect
-	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/agnivade/levenshtein v1.1.1 // indirect
+	ariga.io/atlas v0.25.1-0.20240717145915-af51d3945208 // indirect
+	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/agnivade/levenshtein v1.2.0 // indirect
+	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
