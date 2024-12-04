@@ -27,8 +27,6 @@ type Track struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// The album on which the track appears
 	AlbumID string `json:"album_id,omitempty"`
-	// A list of the countries in which the track can be played
-	AvailableMarkets []string `json:"available_markets,omitempty"`
 	// The disc number
 	DiscNumber int `json:"disc_number,omitempty"`
 	// The track length in milliseconds
@@ -39,8 +37,6 @@ type Track struct {
 	ExternalUrls *schema.StringMap `json:"external_urls,omitempty"`
 	// A link to the Web API endpoint providing full details of the track
 	Href string `json:"href,omitempty"`
-	// If true, the track is playable in the given market
-	IsPlayable bool `json:"is_playable,omitempty"`
 	// The name of the track
 	Name string `json:"name,omitempty"`
 	// The popularity of the track
@@ -97,9 +93,9 @@ func (*Track) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case track.FieldAvailableMarkets, track.FieldExternalUrls:
+		case track.FieldExternalUrls:
 			values[i] = new([]byte)
-		case track.FieldExplicit, track.FieldIsPlayable:
+		case track.FieldExplicit:
 			values[i] = new(sql.NullBool)
 		case track.FieldDiscNumber, track.FieldDurationMs, track.FieldPopularity, track.FieldTrackNumber:
 			values[i] = new(sql.NullInt64)
@@ -146,14 +142,6 @@ func (t *Track) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.AlbumID = value.String
 			}
-		case track.FieldAvailableMarkets:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field available_markets", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.AvailableMarkets); err != nil {
-					return fmt.Errorf("unmarshal field available_markets: %w", err)
-				}
-			}
 		case track.FieldDiscNumber:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field disc_number", values[i])
@@ -185,12 +173,6 @@ func (t *Track) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field href", values[i])
 			} else if value.Valid {
 				t.Href = value.String
-			}
-		case track.FieldIsPlayable:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_playable", values[i])
-			} else if value.Valid {
-				t.IsPlayable = value.Bool
 			}
 		case track.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -277,9 +259,6 @@ func (t *Track) String() string {
 	builder.WriteString("album_id=")
 	builder.WriteString(t.AlbumID)
 	builder.WriteString(", ")
-	builder.WriteString("available_markets=")
-	builder.WriteString(fmt.Sprintf("%v", t.AvailableMarkets))
-	builder.WriteString(", ")
 	builder.WriteString("disc_number=")
 	builder.WriteString(fmt.Sprintf("%v", t.DiscNumber))
 	builder.WriteString(", ")
@@ -294,9 +273,6 @@ func (t *Track) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("href=")
 	builder.WriteString(t.Href)
-	builder.WriteString(", ")
-	builder.WriteString("is_playable=")
-	builder.WriteString(fmt.Sprintf("%v", t.IsPlayable))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(t.Name)

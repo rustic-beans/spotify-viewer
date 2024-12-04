@@ -38,12 +38,6 @@ func (ac *AlbumCreate) SetTotalTracks(i int) *AlbumCreate {
 	return ac
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (ac *AlbumCreate) SetAvailableMarkets(s []string) *AlbumCreate {
-	ac.mutation.SetAvailableMarkets(s)
-	return ac
-}
-
 // SetExternalUrls sets the "external_urls" field.
 func (ac *AlbumCreate) SetExternalUrls(sm *schema.StringMap) *AlbumCreate {
 	ac.mutation.SetExternalUrls(sm)
@@ -74,20 +68,6 @@ func (ac *AlbumCreate) SetReleaseDatePrecision(adp album.ReleaseDatePrecision) *
 	return ac
 }
 
-// SetRestrictions sets the "restrictions" field.
-func (ac *AlbumCreate) SetRestrictions(s string) *AlbumCreate {
-	ac.mutation.SetRestrictions(s)
-	return ac
-}
-
-// SetNillableRestrictions sets the "restrictions" field if the given value is not nil.
-func (ac *AlbumCreate) SetNillableRestrictions(s *string) *AlbumCreate {
-	if s != nil {
-		ac.SetRestrictions(*s)
-	}
-	return ac
-}
-
 // SetURI sets the "uri" field.
 func (ac *AlbumCreate) SetURI(s string) *AlbumCreate {
 	ac.mutation.SetURI(s)
@@ -97,18 +77,6 @@ func (ac *AlbumCreate) SetURI(s string) *AlbumCreate {
 // SetGenres sets the "genres" field.
 func (ac *AlbumCreate) SetGenres(s []string) *AlbumCreate {
 	ac.mutation.SetGenres(s)
-	return ac
-}
-
-// SetLabel sets the "label" field.
-func (ac *AlbumCreate) SetLabel(s string) *AlbumCreate {
-	ac.mutation.SetLabel(s)
-	return ac
-}
-
-// SetPopularity sets the "popularity" field.
-func (ac *AlbumCreate) SetPopularity(i int) *AlbumCreate {
-	ac.mutation.SetPopularity(i)
 	return ac
 }
 
@@ -208,9 +176,6 @@ func (ac *AlbumCreate) check() error {
 	if _, ok := ac.mutation.TotalTracks(); !ok {
 		return &ValidationError{Name: "total_tracks", err: errors.New(`ent: missing required field "Album.total_tracks"`)}
 	}
-	if _, ok := ac.mutation.AvailableMarkets(); !ok {
-		return &ValidationError{Name: "available_markets", err: errors.New(`ent: missing required field "Album.available_markets"`)}
-	}
 	if _, ok := ac.mutation.ExternalUrls(); !ok {
 		return &ValidationError{Name: "external_urls", err: errors.New(`ent: missing required field "Album.external_urls"`)}
 	}
@@ -256,12 +221,6 @@ func (ac *AlbumCreate) check() error {
 	}
 	if _, ok := ac.mutation.Genres(); !ok {
 		return &ValidationError{Name: "genres", err: errors.New(`ent: missing required field "Album.genres"`)}
-	}
-	if _, ok := ac.mutation.Label(); !ok {
-		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "Album.label"`)}
-	}
-	if _, ok := ac.mutation.Popularity(); !ok {
-		return &ValidationError{Name: "popularity", err: errors.New(`ent: missing required field "Album.popularity"`)}
 	}
 	if v, ok := ac.mutation.ID(); ok {
 		if err := album.IDValidator(v); err != nil {
@@ -315,10 +274,6 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 		_spec.SetField(album.FieldTotalTracks, field.TypeInt, value)
 		_node.TotalTracks = value
 	}
-	if value, ok := ac.mutation.AvailableMarkets(); ok {
-		_spec.SetField(album.FieldAvailableMarkets, field.TypeJSON, value)
-		_node.AvailableMarkets = value
-	}
 	if value, ok := ac.mutation.ExternalUrls(); ok {
 		_spec.SetField(album.FieldExternalUrls, field.TypeJSON, value)
 		_node.ExternalUrls = value
@@ -339,10 +294,6 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 		_spec.SetField(album.FieldReleaseDatePrecision, field.TypeEnum, value)
 		_node.ReleaseDatePrecision = value
 	}
-	if value, ok := ac.mutation.Restrictions(); ok {
-		_spec.SetField(album.FieldRestrictions, field.TypeString, value)
-		_node.Restrictions = value
-	}
 	if value, ok := ac.mutation.URI(); ok {
 		_spec.SetField(album.FieldURI, field.TypeString, value)
 		_node.URI = value
@@ -350,14 +301,6 @@ func (ac *AlbumCreate) createSpec() (*Album, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Genres(); ok {
 		_spec.SetField(album.FieldGenres, field.TypeJSON, value)
 		_node.Genres = value
-	}
-	if value, ok := ac.mutation.Label(); ok {
-		_spec.SetField(album.FieldLabel, field.TypeString, value)
-		_node.Label = value
-	}
-	if value, ok := ac.mutation.Popularity(); ok {
-		_spec.SetField(album.FieldPopularity, field.TypeInt, value)
-		_node.Popularity = value
 	}
 	if nodes := ac.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -489,18 +432,6 @@ func (u *AlbumUpsert) AddTotalTracks(v int) *AlbumUpsert {
 	return u
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (u *AlbumUpsert) SetAvailableMarkets(v []string) *AlbumUpsert {
-	u.Set(album.FieldAvailableMarkets, v)
-	return u
-}
-
-// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
-func (u *AlbumUpsert) UpdateAvailableMarkets() *AlbumUpsert {
-	u.SetExcluded(album.FieldAvailableMarkets)
-	return u
-}
-
 // SetExternalUrls sets the "external_urls" field.
 func (u *AlbumUpsert) SetExternalUrls(v *schema.StringMap) *AlbumUpsert {
 	u.Set(album.FieldExternalUrls, v)
@@ -561,24 +492,6 @@ func (u *AlbumUpsert) UpdateReleaseDatePrecision() *AlbumUpsert {
 	return u
 }
 
-// SetRestrictions sets the "restrictions" field.
-func (u *AlbumUpsert) SetRestrictions(v string) *AlbumUpsert {
-	u.Set(album.FieldRestrictions, v)
-	return u
-}
-
-// UpdateRestrictions sets the "restrictions" field to the value that was provided on create.
-func (u *AlbumUpsert) UpdateRestrictions() *AlbumUpsert {
-	u.SetExcluded(album.FieldRestrictions)
-	return u
-}
-
-// ClearRestrictions clears the value of the "restrictions" field.
-func (u *AlbumUpsert) ClearRestrictions() *AlbumUpsert {
-	u.SetNull(album.FieldRestrictions)
-	return u
-}
-
 // SetURI sets the "uri" field.
 func (u *AlbumUpsert) SetURI(v string) *AlbumUpsert {
 	u.Set(album.FieldURI, v)
@@ -600,36 +513,6 @@ func (u *AlbumUpsert) SetGenres(v []string) *AlbumUpsert {
 // UpdateGenres sets the "genres" field to the value that was provided on create.
 func (u *AlbumUpsert) UpdateGenres() *AlbumUpsert {
 	u.SetExcluded(album.FieldGenres)
-	return u
-}
-
-// SetLabel sets the "label" field.
-func (u *AlbumUpsert) SetLabel(v string) *AlbumUpsert {
-	u.Set(album.FieldLabel, v)
-	return u
-}
-
-// UpdateLabel sets the "label" field to the value that was provided on create.
-func (u *AlbumUpsert) UpdateLabel() *AlbumUpsert {
-	u.SetExcluded(album.FieldLabel)
-	return u
-}
-
-// SetPopularity sets the "popularity" field.
-func (u *AlbumUpsert) SetPopularity(v int) *AlbumUpsert {
-	u.Set(album.FieldPopularity, v)
-	return u
-}
-
-// UpdatePopularity sets the "popularity" field to the value that was provided on create.
-func (u *AlbumUpsert) UpdatePopularity() *AlbumUpsert {
-	u.SetExcluded(album.FieldPopularity)
-	return u
-}
-
-// AddPopularity adds v to the "popularity" field.
-func (u *AlbumUpsert) AddPopularity(v int) *AlbumUpsert {
-	u.Add(album.FieldPopularity, v)
 	return u
 }
 
@@ -716,20 +599,6 @@ func (u *AlbumUpsertOne) UpdateTotalTracks() *AlbumUpsertOne {
 	})
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (u *AlbumUpsertOne) SetAvailableMarkets(v []string) *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetAvailableMarkets(v)
-	})
-}
-
-// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
-func (u *AlbumUpsertOne) UpdateAvailableMarkets() *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdateAvailableMarkets()
-	})
-}
-
 // SetExternalUrls sets the "external_urls" field.
 func (u *AlbumUpsertOne) SetExternalUrls(v *schema.StringMap) *AlbumUpsertOne {
 	return u.Update(func(s *AlbumUpsert) {
@@ -800,27 +669,6 @@ func (u *AlbumUpsertOne) UpdateReleaseDatePrecision() *AlbumUpsertOne {
 	})
 }
 
-// SetRestrictions sets the "restrictions" field.
-func (u *AlbumUpsertOne) SetRestrictions(v string) *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetRestrictions(v)
-	})
-}
-
-// UpdateRestrictions sets the "restrictions" field to the value that was provided on create.
-func (u *AlbumUpsertOne) UpdateRestrictions() *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdateRestrictions()
-	})
-}
-
-// ClearRestrictions clears the value of the "restrictions" field.
-func (u *AlbumUpsertOne) ClearRestrictions() *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.ClearRestrictions()
-	})
-}
-
 // SetURI sets the "uri" field.
 func (u *AlbumUpsertOne) SetURI(v string) *AlbumUpsertOne {
 	return u.Update(func(s *AlbumUpsert) {
@@ -846,41 +694,6 @@ func (u *AlbumUpsertOne) SetGenres(v []string) *AlbumUpsertOne {
 func (u *AlbumUpsertOne) UpdateGenres() *AlbumUpsertOne {
 	return u.Update(func(s *AlbumUpsert) {
 		s.UpdateGenres()
-	})
-}
-
-// SetLabel sets the "label" field.
-func (u *AlbumUpsertOne) SetLabel(v string) *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetLabel(v)
-	})
-}
-
-// UpdateLabel sets the "label" field to the value that was provided on create.
-func (u *AlbumUpsertOne) UpdateLabel() *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdateLabel()
-	})
-}
-
-// SetPopularity sets the "popularity" field.
-func (u *AlbumUpsertOne) SetPopularity(v int) *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetPopularity(v)
-	})
-}
-
-// AddPopularity adds v to the "popularity" field.
-func (u *AlbumUpsertOne) AddPopularity(v int) *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.AddPopularity(v)
-	})
-}
-
-// UpdatePopularity sets the "popularity" field to the value that was provided on create.
-func (u *AlbumUpsertOne) UpdatePopularity() *AlbumUpsertOne {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdatePopularity()
 	})
 }
 
@@ -1133,20 +946,6 @@ func (u *AlbumUpsertBulk) UpdateTotalTracks() *AlbumUpsertBulk {
 	})
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (u *AlbumUpsertBulk) SetAvailableMarkets(v []string) *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetAvailableMarkets(v)
-	})
-}
-
-// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
-func (u *AlbumUpsertBulk) UpdateAvailableMarkets() *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdateAvailableMarkets()
-	})
-}
-
 // SetExternalUrls sets the "external_urls" field.
 func (u *AlbumUpsertBulk) SetExternalUrls(v *schema.StringMap) *AlbumUpsertBulk {
 	return u.Update(func(s *AlbumUpsert) {
@@ -1217,27 +1016,6 @@ func (u *AlbumUpsertBulk) UpdateReleaseDatePrecision() *AlbumUpsertBulk {
 	})
 }
 
-// SetRestrictions sets the "restrictions" field.
-func (u *AlbumUpsertBulk) SetRestrictions(v string) *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetRestrictions(v)
-	})
-}
-
-// UpdateRestrictions sets the "restrictions" field to the value that was provided on create.
-func (u *AlbumUpsertBulk) UpdateRestrictions() *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdateRestrictions()
-	})
-}
-
-// ClearRestrictions clears the value of the "restrictions" field.
-func (u *AlbumUpsertBulk) ClearRestrictions() *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.ClearRestrictions()
-	})
-}
-
 // SetURI sets the "uri" field.
 func (u *AlbumUpsertBulk) SetURI(v string) *AlbumUpsertBulk {
 	return u.Update(func(s *AlbumUpsert) {
@@ -1263,41 +1041,6 @@ func (u *AlbumUpsertBulk) SetGenres(v []string) *AlbumUpsertBulk {
 func (u *AlbumUpsertBulk) UpdateGenres() *AlbumUpsertBulk {
 	return u.Update(func(s *AlbumUpsert) {
 		s.UpdateGenres()
-	})
-}
-
-// SetLabel sets the "label" field.
-func (u *AlbumUpsertBulk) SetLabel(v string) *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetLabel(v)
-	})
-}
-
-// UpdateLabel sets the "label" field to the value that was provided on create.
-func (u *AlbumUpsertBulk) UpdateLabel() *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdateLabel()
-	})
-}
-
-// SetPopularity sets the "popularity" field.
-func (u *AlbumUpsertBulk) SetPopularity(v int) *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.SetPopularity(v)
-	})
-}
-
-// AddPopularity adds v to the "popularity" field.
-func (u *AlbumUpsertBulk) AddPopularity(v int) *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.AddPopularity(v)
-	})
-}
-
-// UpdatePopularity sets the "popularity" field to the value that was provided on create.
-func (u *AlbumUpsertBulk) UpdatePopularity() *AlbumUpsertBulk {
-	return u.Update(func(s *AlbumUpsert) {
-		s.UpdatePopularity()
 	})
 }
 

@@ -548,6 +548,22 @@ func (c *ArtistClient) QueryTracks(a *Artist) *TrackQuery {
 	return query
 }
 
+// QueryImages queries the images edge of a Artist.
+func (c *ArtistClient) QueryImages(a *Artist) *ImageQuery {
+	query := (&ImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(artist.Table, artist.FieldID, id),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, artist.ImagesTable, artist.ImagesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ArtistClient) Hooks() []Hook {
 	return c.hooks.Artist
@@ -690,6 +706,22 @@ func (c *ImageClient) QueryAlbums(i *Image) *AlbumQuery {
 			sqlgraph.From(image.Table, image.FieldID, id),
 			sqlgraph.To(album.Table, album.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, image.AlbumsTable, image.AlbumsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryArtists queries the artists edge of a Image.
+func (c *ImageClient) QueryArtists(i *Image) *ArtistQuery {
+	query := (&ArtistClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, id),
+			sqlgraph.To(artist.Table, artist.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, image.ArtistsTable, image.ArtistsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil

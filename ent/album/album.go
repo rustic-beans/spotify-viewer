@@ -20,8 +20,6 @@ const (
 	FieldAlbumType = "album_type"
 	// FieldTotalTracks holds the string denoting the total_tracks field in the database.
 	FieldTotalTracks = "total_tracks"
-	// FieldAvailableMarkets holds the string denoting the available_markets field in the database.
-	FieldAvailableMarkets = "available_markets"
 	// FieldExternalUrls holds the string denoting the external_urls field in the database.
 	FieldExternalUrls = "external_urls"
 	// FieldHref holds the string denoting the href field in the database.
@@ -32,16 +30,10 @@ const (
 	FieldReleaseDate = "release_date"
 	// FieldReleaseDatePrecision holds the string denoting the release_date_precision field in the database.
 	FieldReleaseDatePrecision = "release_date_precision"
-	// FieldRestrictions holds the string denoting the restrictions field in the database.
-	FieldRestrictions = "restrictions"
 	// FieldURI holds the string denoting the uri field in the database.
 	FieldURI = "uri"
 	// FieldGenres holds the string denoting the genres field in the database.
 	FieldGenres = "genres"
-	// FieldLabel holds the string denoting the label field in the database.
-	FieldLabel = "label"
-	// FieldPopularity holds the string denoting the popularity field in the database.
-	FieldPopularity = "popularity"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
 	// EdgeArtists holds the string denoting the artists edge name in mutations.
@@ -74,17 +66,13 @@ var Columns = []string{
 	FieldID,
 	FieldAlbumType,
 	FieldTotalTracks,
-	FieldAvailableMarkets,
 	FieldExternalUrls,
 	FieldHref,
 	FieldName,
 	FieldReleaseDate,
 	FieldReleaseDatePrecision,
-	FieldRestrictions,
 	FieldURI,
 	FieldGenres,
-	FieldLabel,
-	FieldPopularity,
 }
 
 var (
@@ -205,24 +193,9 @@ func ByReleaseDatePrecision(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReleaseDatePrecision, opts...).ToFunc()
 }
 
-// ByRestrictions orders the results by the restrictions field.
-func ByRestrictions(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRestrictions, opts...).ToFunc()
-}
-
 // ByURI orders the results by the uri field.
 func ByURI(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURI, opts...).ToFunc()
-}
-
-// ByLabel orders the results by the label field.
-func ByLabel(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLabel, opts...).ToFunc()
-}
-
-// ByPopularity orders the results by the popularity field.
-func ByPopularity(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPopularity, opts...).ToFunc()
 }
 
 // ByImagesCount orders the results by images count.

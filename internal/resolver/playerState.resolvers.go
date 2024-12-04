@@ -8,17 +8,17 @@ import (
 	"context"
 	"fmt"
 
-	spotify "github.com/zmb3/spotify/v2"
+	"github.com/rustic-beans/spotify-viewer/internal/models"
 )
 
 // PlayerState is the resolver for the playerState field.
-func (r *queryResolver) PlayerState(ctx context.Context) (*spotify.PlayerState, error) {
-	return r.SpotifyClient.GetPlayerState(ctx)
+func (r *queryResolver) PlayerState(ctx context.Context) (*models.PlayerState, error) {
+	return r.SharedService.GetPlayerState(ctx)
 }
 
 // PlayerState is the resolver for the playerState field.
-func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *spotify.PlayerState, error) {
-	ch := make(chan *spotify.PlayerState, 1)
+func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *models.PlayerState, error) {
+	ch := make(chan *models.PlayerState, 1)
 	id := r.PlayerStateWebsocketHandler.AddConnection(ch)
 
 	go func() {
@@ -26,7 +26,7 @@ func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *spotify
 		r.PlayerStateWebsocketHandler.RemoveConnection(id)
 		close(ch)
 	}()
-	state, err := r.SpotifyClient.GetPlayerState(ctx)
+	state, err := r.SharedService.GetPlayerState(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get player state: %w", err)
 	}

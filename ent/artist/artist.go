@@ -20,10 +20,14 @@ const (
 	FieldName = "name"
 	// FieldURI holds the string denoting the uri field in the database.
 	FieldURI = "uri"
+	// FieldGenres holds the string denoting the genres field in the database.
+	FieldGenres = "genres"
 	// EdgeAlbums holds the string denoting the albums edge name in mutations.
 	EdgeAlbums = "albums"
 	// EdgeTracks holds the string denoting the tracks edge name in mutations.
 	EdgeTracks = "tracks"
+	// EdgeImages holds the string denoting the images edge name in mutations.
+	EdgeImages = "images"
 	// Table holds the table name of the artist in the database.
 	Table = "artists"
 	// AlbumsTable is the table that holds the albums relation/edge. The primary key declared below.
@@ -36,6 +40,11 @@ const (
 	// TracksInverseTable is the table name for the Track entity.
 	// It exists in this package in order to avoid circular dependency with the "track" package.
 	TracksInverseTable = "tracks"
+	// ImagesTable is the table that holds the images relation/edge. The primary key declared below.
+	ImagesTable = "artist_images"
+	// ImagesInverseTable is the table name for the Image entity.
+	// It exists in this package in order to avoid circular dependency with the "image" package.
+	ImagesInverseTable = "images"
 )
 
 // Columns holds all SQL columns for artist fields.
@@ -45,6 +54,7 @@ var Columns = []string{
 	FieldHref,
 	FieldName,
 	FieldURI,
+	FieldGenres,
 }
 
 var (
@@ -54,6 +64,9 @@ var (
 	// TracksPrimaryKey and TracksColumn2 are the table columns denoting the
 	// primary key for the tracks relation (M2M).
 	TracksPrimaryKey = []string{"artist_id", "track_id"}
+	// ImagesPrimaryKey and ImagesColumn2 are the table columns denoting the
+	// primary key for the images relation (M2M).
+	ImagesPrimaryKey = []string{"artist_id", "image_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -127,6 +140,20 @@ func ByTracks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTracksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByImagesCount orders the results by images count.
+func ByImagesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newImagesStep(), opts...)
+	}
+}
+
+// ByImages orders the results by images terms.
+func ByImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAlbumsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -139,5 +166,12 @@ func newTracksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TracksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, TracksTable, TracksPrimaryKey...),
+	)
+}
+func newImagesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ImagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
 	)
 }

@@ -18,8 +18,6 @@ resolver:
 
 autobind:
   - github.com/rustic-beans/spotify-viewer/internal/models
-  - github.com/rustic-beans/spotify-viewer/ent
-  - github.com/zmb3/spotify/v2
 
 # This section declares type mapping between the GraphQL and Go type systems.
 models:

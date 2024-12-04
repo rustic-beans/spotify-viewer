@@ -5,4 +5,3 @@ import (
 )
 
 type Image = ent.Image
-type CreateImageInput = ent.CreateImageInput

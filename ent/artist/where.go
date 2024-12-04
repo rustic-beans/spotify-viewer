@@ -319,6 +319,29 @@ func HasTracksWith(preds ...predicate.Track) predicate.Artist {
 	})
 }
 
+// HasImages applies the HasEdge predicate on the "images" edge.
+func HasImages() predicate.Artist {
+	return predicate.Artist(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasImagesWith applies the HasEdge predicate on the "images" edge with a given conditions (other predicates).
+func HasImagesWith(preds ...predicate.Image) predicate.Artist {
+	return predicate.Artist(func(s *sql.Selector) {
+		step := newImagesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Artist) predicate.Artist {
 	return predicate.Artist(sql.AndPredicates(predicates...))

@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
 	"github.com/rustic-beans/spotify-viewer/ent/artist"
@@ -49,18 +48,6 @@ func (tu *TrackUpdate) SetNillableAlbumID(s *string) *TrackUpdate {
 	if s != nil {
 		tu.SetAlbumID(*s)
 	}
-	return tu
-}
-
-// SetAvailableMarkets sets the "available_markets" field.
-func (tu *TrackUpdate) SetAvailableMarkets(s []string) *TrackUpdate {
-	tu.mutation.SetAvailableMarkets(s)
-	return tu
-}
-
-// AppendAvailableMarkets appends s to the "available_markets" field.
-func (tu *TrackUpdate) AppendAvailableMarkets(s []string) *TrackUpdate {
-	tu.mutation.AppendAvailableMarkets(s)
 	return tu
 }
 
@@ -142,20 +129,6 @@ func (tu *TrackUpdate) SetHref(s string) *TrackUpdate {
 func (tu *TrackUpdate) SetNillableHref(s *string) *TrackUpdate {
 	if s != nil {
 		tu.SetHref(*s)
-	}
-	return tu
-}
-
-// SetIsPlayable sets the "is_playable" field.
-func (tu *TrackUpdate) SetIsPlayable(b bool) *TrackUpdate {
-	tu.mutation.SetIsPlayable(b)
-	return tu
-}
-
-// SetNillableIsPlayable sets the "is_playable" field if the given value is not nil.
-func (tu *TrackUpdate) SetNillableIsPlayable(b *bool) *TrackUpdate {
-	if b != nil {
-		tu.SetIsPlayable(*b)
 	}
 	return tu
 }
@@ -386,14 +359,6 @@ func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.UpdatedAt(); ok {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tu.mutation.AvailableMarkets(); ok {
-		_spec.SetField(track.FieldAvailableMarkets, field.TypeJSON, value)
-	}
-	if value, ok := tu.mutation.AppendedAvailableMarkets(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, track.FieldAvailableMarkets, value)
-		})
-	}
 	if value, ok := tu.mutation.DiscNumber(); ok {
 		_spec.SetField(track.FieldDiscNumber, field.TypeInt, value)
 	}
@@ -417,9 +382,6 @@ func (tu *TrackUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.Href(); ok {
 		_spec.SetField(track.FieldHref, field.TypeString, value)
-	}
-	if value, ok := tu.mutation.IsPlayable(); ok {
-		_spec.SetField(track.FieldIsPlayable, field.TypeBool, value)
 	}
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(track.FieldName, field.TypeString, value)
@@ -559,18 +521,6 @@ func (tuo *TrackUpdateOne) SetNillableAlbumID(s *string) *TrackUpdateOne {
 	return tuo
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (tuo *TrackUpdateOne) SetAvailableMarkets(s []string) *TrackUpdateOne {
-	tuo.mutation.SetAvailableMarkets(s)
-	return tuo
-}
-
-// AppendAvailableMarkets appends s to the "available_markets" field.
-func (tuo *TrackUpdateOne) AppendAvailableMarkets(s []string) *TrackUpdateOne {
-	tuo.mutation.AppendAvailableMarkets(s)
-	return tuo
-}
-
 // SetDiscNumber sets the "disc_number" field.
 func (tuo *TrackUpdateOne) SetDiscNumber(i int) *TrackUpdateOne {
 	tuo.mutation.ResetDiscNumber()
@@ -649,20 +599,6 @@ func (tuo *TrackUpdateOne) SetHref(s string) *TrackUpdateOne {
 func (tuo *TrackUpdateOne) SetNillableHref(s *string) *TrackUpdateOne {
 	if s != nil {
 		tuo.SetHref(*s)
-	}
-	return tuo
-}
-
-// SetIsPlayable sets the "is_playable" field.
-func (tuo *TrackUpdateOne) SetIsPlayable(b bool) *TrackUpdateOne {
-	tuo.mutation.SetIsPlayable(b)
-	return tuo
-}
-
-// SetNillableIsPlayable sets the "is_playable" field if the given value is not nil.
-func (tuo *TrackUpdateOne) SetNillableIsPlayable(b *bool) *TrackUpdateOne {
-	if b != nil {
-		tuo.SetIsPlayable(*b)
 	}
 	return tuo
 }
@@ -923,14 +859,6 @@ func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error
 	if value, ok := tuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tuo.mutation.AvailableMarkets(); ok {
-		_spec.SetField(track.FieldAvailableMarkets, field.TypeJSON, value)
-	}
-	if value, ok := tuo.mutation.AppendedAvailableMarkets(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, track.FieldAvailableMarkets, value)
-		})
-	}
 	if value, ok := tuo.mutation.DiscNumber(); ok {
 		_spec.SetField(track.FieldDiscNumber, field.TypeInt, value)
 	}
@@ -954,9 +882,6 @@ func (tuo *TrackUpdateOne) sqlSave(ctx context.Context) (_node *Track, err error
 	}
 	if value, ok := tuo.mutation.Href(); ok {
 		_spec.SetField(track.FieldHref, field.TypeString, value)
-	}
-	if value, ok := tuo.mutation.IsPlayable(); ok {
-		_spec.SetField(track.FieldIsPlayable, field.TypeBool, value)
 	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(track.FieldName, field.TypeString, value)

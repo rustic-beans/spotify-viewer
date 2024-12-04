@@ -27,6 +27,8 @@ type Artist struct {
 	Name string `json:"name,omitempty"`
 	// The Spotify URI for the artist
 	URI string `json:"uri,omitempty"`
+	// A list of genres the artist is associated with.  For example, "Prog Rock" or "Post-Grunge".  If not yet classified, the slice is empty.
+	Genres []string `json:"genres,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArtistQuery when eager-loading is set.
 	Edges        ArtistEdges `json:"edges"`
@@ -39,14 +41,17 @@ type ArtistEdges struct {
 	Albums []*Album `json:"albums,omitempty"`
 	// Tracks holds the value of the tracks edge.
 	Tracks []*Track `json:"tracks,omitempty"`
+	// Images holds the value of the images edge.
+	Images []*Image `json:"images,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [3]map[string]int
 
 	namedAlbums map[string][]*Album
 	namedTracks map[string][]*Track
+	namedImages map[string][]*Image
 }
 
 // AlbumsOrErr returns the Albums value or an error if the edge
@@ -67,12 +72,21 @@ func (e ArtistEdges) TracksOrErr() ([]*Track, error) {
 	return nil, &NotLoadedError{edge: "tracks"}
 }
 
+// ImagesOrErr returns the Images value or an error if the edge
+// was not loaded in eager-loading.
+func (e ArtistEdges) ImagesOrErr() ([]*Image, error) {
+	if e.loadedTypes[2] {
+		return e.Images, nil
+	}
+	return nil, &NotLoadedError{edge: "images"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Artist) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case artist.FieldExternalUrls:
+		case artist.FieldExternalUrls, artist.FieldGenres:
 			values[i] = new([]byte)
 		case artist.FieldID, artist.FieldHref, artist.FieldName, artist.FieldURI:
 			values[i] = new(sql.NullString)
@@ -123,6 +137,14 @@ func (a *Artist) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.URI = value.String
 			}
+		case artist.FieldGenres:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field genres", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &a.Genres); err != nil {
+					return fmt.Errorf("unmarshal field genres: %w", err)
+				}
+			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
 		}
@@ -144,6 +166,11 @@ func (a *Artist) QueryAlbums() *AlbumQuery {
 // QueryTracks queries the "tracks" edge of the Artist entity.
 func (a *Artist) QueryTracks() *TrackQuery {
 	return NewArtistClient(a.config).QueryTracks(a)
+}
+
+// QueryImages queries the "images" edge of the Artist entity.
+func (a *Artist) QueryImages() *ImageQuery {
+	return NewArtistClient(a.config).QueryImages(a)
 }
 
 // Update returns a builder for updating this Artist.
@@ -180,6 +207,9 @@ func (a *Artist) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("uri=")
 	builder.WriteString(a.URI)
+	builder.WriteString(", ")
+	builder.WriteString("genres=")
+	builder.WriteString(fmt.Sprintf("%v", a.Genres))
 	builder.WriteByte(')')
 	return builder.String()
 }
@@ -229,6 +259,30 @@ func (a *Artist) appendNamedTracks(name string, edges ...*Track) {
 		a.Edges.namedTracks[name] = []*Track{}
 	} else {
 		a.Edges.namedTracks[name] = append(a.Edges.namedTracks[name], edges...)
+	}
+}
+
+// NamedImages returns the Images named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (a *Artist) NamedImages(name string) ([]*Image, error) {
+	if a.Edges.namedImages == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := a.Edges.namedImages[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (a *Artist) appendNamedImages(name string, edges ...*Image) {
+	if a.Edges.namedImages == nil {
+		a.Edges.namedImages = make(map[string][]*Image)
+	}
+	if len(edges) == 0 {
+		a.Edges.namedImages[name] = []*Image{}
+	} else {
+		a.Edges.namedImages[name] = append(a.Edges.namedImages[name], edges...)
 	}
 }
 

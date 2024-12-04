@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 )
 
@@ -41,23 +42,9 @@ func (ic *ImageCreate) SetHeight(i int) *ImageCreate {
 	return ic
 }
 
-// SetText sets the "text" field.
-func (ic *ImageCreate) SetText(s string) *ImageCreate {
-	ic.mutation.SetText(s)
-	return ic
-}
-
 // SetID sets the "id" field.
 func (ic *ImageCreate) SetID(s string) *ImageCreate {
 	ic.mutation.SetID(s)
-	return ic
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (ic *ImageCreate) SetNillableID(s *string) *ImageCreate {
-	if s != nil {
-		ic.SetID(*s)
-	}
 	return ic
 }
 
@@ -76,6 +63,21 @@ func (ic *ImageCreate) AddAlbums(a ...*Album) *ImageCreate {
 	return ic.AddAlbumIDs(ids...)
 }
 
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (ic *ImageCreate) AddArtistIDs(ids ...string) *ImageCreate {
+	ic.mutation.AddArtistIDs(ids...)
+	return ic
+}
+
+// AddArtists adds the "artists" edges to the Artist entity.
+func (ic *ImageCreate) AddArtists(a ...*Artist) *ImageCreate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ic.AddArtistIDs(ids...)
+}
+
 // Mutation returns the ImageMutation object of the builder.
 func (ic *ImageCreate) Mutation() *ImageMutation {
 	return ic.mutation
@@ -83,7 +85,6 @@ func (ic *ImageCreate) Mutation() *ImageMutation {
 
 // Save creates the Image in the database.
 func (ic *ImageCreate) Save(ctx context.Context) (*Image, error) {
-	ic.defaults()
 	return withHooks(ctx, ic.sqlSave, ic.mutation, ic.hooks)
 }
 
@@ -106,14 +107,6 @@ func (ic *ImageCreate) Exec(ctx context.Context) error {
 func (ic *ImageCreate) ExecX(ctx context.Context) {
 	if err := ic.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (ic *ImageCreate) defaults() {
-	if _, ok := ic.mutation.ID(); !ok {
-		v := image.DefaultID()
-		ic.mutation.SetID(v)
 	}
 }
 
@@ -141,14 +134,6 @@ func (ic *ImageCreate) check() error {
 	if v, ok := ic.mutation.Height(); ok {
 		if err := image.HeightValidator(v); err != nil {
 			return &ValidationError{Name: "height", err: fmt.Errorf(`ent: validator failed for field "Image.height": %w`, err)}
-		}
-	}
-	if _, ok := ic.mutation.Text(); !ok {
-		return &ValidationError{Name: "text", err: errors.New(`ent: missing required field "Image.text"`)}
-	}
-	if v, ok := ic.mutation.Text(); ok {
-		if err := image.TextValidator(v); err != nil {
-			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "Image.text": %w`, err)}
 		}
 	}
 	if v, ok := ic.mutation.ID(); ok {
@@ -204,10 +189,6 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_spec.SetField(image.FieldHeight, field.TypeInt, value)
 		_node.Height = value
 	}
-	if value, ok := ic.mutation.Text(); ok {
-		_spec.SetField(image.FieldText, field.TypeString, value)
-		_node.Text = value
-	}
 	if nodes := ic.mutation.AlbumsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -217,6 +198,22 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.ArtistsTable,
+			Columns: image.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -324,18 +321,6 @@ func (u *ImageUpsert) AddHeight(v int) *ImageUpsert {
 	return u
 }
 
-// SetText sets the "text" field.
-func (u *ImageUpsert) SetText(v string) *ImageUpsert {
-	u.Set(image.FieldText, v)
-	return u
-}
-
-// UpdateText sets the "text" field to the value that was provided on create.
-func (u *ImageUpsert) UpdateText() *ImageUpsert {
-	u.SetExcluded(image.FieldText)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -440,20 +425,6 @@ func (u *ImageUpsertOne) UpdateHeight() *ImageUpsertOne {
 	})
 }
 
-// SetText sets the "text" field.
-func (u *ImageUpsertOne) SetText(v string) *ImageUpsertOne {
-	return u.Update(func(s *ImageUpsert) {
-		s.SetText(v)
-	})
-}
-
-// UpdateText sets the "text" field to the value that was provided on create.
-func (u *ImageUpsertOne) UpdateText() *ImageUpsertOne {
-	return u.Update(func(s *ImageUpsert) {
-		s.UpdateText()
-	})
-}
-
 // Exec executes the query.
 func (u *ImageUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -511,7 +482,6 @@ func (icb *ImageCreateBulk) Save(ctx context.Context) ([]*Image, error) {
 	for i := range icb.builders {
 		func(i int, root context.Context) {
 			builder := icb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ImageMutation)
 				if !ok {
@@ -722,20 +692,6 @@ func (u *ImageUpsertBulk) AddHeight(v int) *ImageUpsertBulk {
 func (u *ImageUpsertBulk) UpdateHeight() *ImageUpsertBulk {
 	return u.Update(func(s *ImageUpsert) {
 		s.UpdateHeight()
-	})
-}
-
-// SetText sets the "text" field.
-func (u *ImageUpsertBulk) SetText(v string) *ImageUpsertBulk {
-	return u.Update(func(s *ImageUpsert) {
-		s.SetText(v)
-	})
-}
-
-// UpdateText sets the "text" field to the value that was provided on create.
-func (u *ImageUpsertBulk) UpdateText() *ImageUpsertBulk {
-	return u.Update(func(s *ImageUpsert) {
-		s.UpdateText()
 	})
 }
 

@@ -22,8 +22,6 @@ type Album struct {
 	AlbumType album.AlbumType `json:"album_type,omitempty"`
 	// The number of tracks in the album
 	TotalTracks int `json:"total_tracks,omitempty"`
-	// The markets in which the album is available
-	AvailableMarkets []string `json:"available_markets,omitempty"`
 	// Known external URLs for this artist
 	ExternalUrls *schema.StringMap `json:"external_urls,omitempty"`
 	// A link to the Web API endpoint providing full details of the album
@@ -34,16 +32,10 @@ type Album struct {
 	ReleaseDate string `json:"release_date,omitempty"`
 	// The precision with which release_date value is known
 	ReleaseDatePrecision album.ReleaseDatePrecision `json:"release_date_precision,omitempty"`
-	// Included in the response when a content restriction is applied
-	Restrictions string `json:"restrictions,omitempty"`
 	// The Spotify URI for the album
 	URI string `json:"uri,omitempty"`
 	// A list of the genres the album is associated with
 	Genres []string `json:"genres,omitempty"`
-	// The label associated with the album
-	Label string `json:"label,omitempty"`
-	// The popularity of the album
-	Popularity int `json:"popularity,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlbumQuery when eager-loading is set.
 	Edges        AlbumEdges `json:"edges"`
@@ -101,11 +93,11 @@ func (*Album) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case album.FieldAvailableMarkets, album.FieldExternalUrls, album.FieldGenres:
+		case album.FieldExternalUrls, album.FieldGenres:
 			values[i] = new([]byte)
-		case album.FieldTotalTracks, album.FieldPopularity:
+		case album.FieldTotalTracks:
 			values[i] = new(sql.NullInt64)
-		case album.FieldID, album.FieldAlbumType, album.FieldHref, album.FieldName, album.FieldReleaseDate, album.FieldReleaseDatePrecision, album.FieldRestrictions, album.FieldURI, album.FieldLabel:
+		case album.FieldID, album.FieldAlbumType, album.FieldHref, album.FieldName, album.FieldReleaseDate, album.FieldReleaseDatePrecision, album.FieldURI:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -140,14 +132,6 @@ func (a *Album) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.TotalTracks = int(value.Int64)
 			}
-		case album.FieldAvailableMarkets:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field available_markets", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &a.AvailableMarkets); err != nil {
-					return fmt.Errorf("unmarshal field available_markets: %w", err)
-				}
-			}
 		case album.FieldExternalUrls:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field external_urls", values[i])
@@ -180,12 +164,6 @@ func (a *Album) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.ReleaseDatePrecision = album.ReleaseDatePrecision(value.String)
 			}
-		case album.FieldRestrictions:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field restrictions", values[i])
-			} else if value.Valid {
-				a.Restrictions = value.String
-			}
 		case album.FieldURI:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field uri", values[i])
@@ -199,18 +177,6 @@ func (a *Album) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &a.Genres); err != nil {
 					return fmt.Errorf("unmarshal field genres: %w", err)
 				}
-			}
-		case album.FieldLabel:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field label", values[i])
-			} else if value.Valid {
-				a.Label = value.String
-			}
-		case album.FieldPopularity:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field popularity", values[i])
-			} else if value.Valid {
-				a.Popularity = int(value.Int64)
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -269,9 +235,6 @@ func (a *Album) String() string {
 	builder.WriteString("total_tracks=")
 	builder.WriteString(fmt.Sprintf("%v", a.TotalTracks))
 	builder.WriteString(", ")
-	builder.WriteString("available_markets=")
-	builder.WriteString(fmt.Sprintf("%v", a.AvailableMarkets))
-	builder.WriteString(", ")
 	builder.WriteString("external_urls=")
 	builder.WriteString(fmt.Sprintf("%v", a.ExternalUrls))
 	builder.WriteString(", ")
@@ -287,20 +250,11 @@ func (a *Album) String() string {
 	builder.WriteString("release_date_precision=")
 	builder.WriteString(fmt.Sprintf("%v", a.ReleaseDatePrecision))
 	builder.WriteString(", ")
-	builder.WriteString("restrictions=")
-	builder.WriteString(a.Restrictions)
-	builder.WriteString(", ")
 	builder.WriteString("uri=")
 	builder.WriteString(a.URI)
 	builder.WriteString(", ")
 	builder.WriteString("genres=")
 	builder.WriteString(fmt.Sprintf("%v", a.Genres))
-	builder.WriteString(", ")
-	builder.WriteString("label=")
-	builder.WriteString(a.Label)
-	builder.WriteString(", ")
-	builder.WriteString("popularity=")
-	builder.WriteString(fmt.Sprintf("%v", a.Popularity))
 	builder.WriteByte(')')
 	return builder.String()
 }

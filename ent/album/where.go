@@ -83,19 +83,9 @@ func ReleaseDate(v string) predicate.Album {
 	return predicate.Album(sql.FieldEQ(FieldReleaseDate, v))
 }
 
-// Restrictions applies equality check predicate on the "restrictions" field. It's identical to RestrictionsEQ.
-func Restrictions(v string) predicate.Album {
-	return predicate.Album(sql.FieldEQ(FieldRestrictions, v))
-}
-
 // URI applies equality check predicate on the "uri" field. It's identical to URIEQ.
 func URI(v string) predicate.Album {
 	return predicate.Album(sql.FieldEQ(FieldURI, v))
-}
-
-// Popularity applies equality check predicate on the "popularity" field. It's identical to PopularityEQ.
-func Popularity(v int) predicate.Album {
-	return predicate.Album(sql.FieldEQ(FieldPopularity, v))
 }
 
 // AlbumTypeEQ applies the EQ predicate on the "album_type" field.
@@ -373,81 +363,6 @@ func ReleaseDatePrecisionNotIn(vs ...ReleaseDatePrecision) predicate.Album {
 	return predicate.Album(sql.FieldNotIn(FieldReleaseDatePrecision, vs...))
 }
 
-// RestrictionsEQ applies the EQ predicate on the "restrictions" field.
-func RestrictionsEQ(v string) predicate.Album {
-	return predicate.Album(sql.FieldEQ(FieldRestrictions, v))
-}
-
-// RestrictionsNEQ applies the NEQ predicate on the "restrictions" field.
-func RestrictionsNEQ(v string) predicate.Album {
-	return predicate.Album(sql.FieldNEQ(FieldRestrictions, v))
-}
-
-// RestrictionsIn applies the In predicate on the "restrictions" field.
-func RestrictionsIn(vs ...string) predicate.Album {
-	return predicate.Album(sql.FieldIn(FieldRestrictions, vs...))
-}
-
-// RestrictionsNotIn applies the NotIn predicate on the "restrictions" field.
-func RestrictionsNotIn(vs ...string) predicate.Album {
-	return predicate.Album(sql.FieldNotIn(FieldRestrictions, vs...))
-}
-
-// RestrictionsGT applies the GT predicate on the "restrictions" field.
-func RestrictionsGT(v string) predicate.Album {
-	return predicate.Album(sql.FieldGT(FieldRestrictions, v))
-}
-
-// RestrictionsGTE applies the GTE predicate on the "restrictions" field.
-func RestrictionsGTE(v string) predicate.Album {
-	return predicate.Album(sql.FieldGTE(FieldRestrictions, v))
-}
-
-// RestrictionsLT applies the LT predicate on the "restrictions" field.
-func RestrictionsLT(v string) predicate.Album {
-	return predicate.Album(sql.FieldLT(FieldRestrictions, v))
-}
-
-// RestrictionsLTE applies the LTE predicate on the "restrictions" field.
-func RestrictionsLTE(v string) predicate.Album {
-	return predicate.Album(sql.FieldLTE(FieldRestrictions, v))
-}
-
-// RestrictionsContains applies the Contains predicate on the "restrictions" field.
-func RestrictionsContains(v string) predicate.Album {
-	return predicate.Album(sql.FieldContains(FieldRestrictions, v))
-}
-
-// RestrictionsHasPrefix applies the HasPrefix predicate on the "restrictions" field.
-func RestrictionsHasPrefix(v string) predicate.Album {
-	return predicate.Album(sql.FieldHasPrefix(FieldRestrictions, v))
-}
-
-// RestrictionsHasSuffix applies the HasSuffix predicate on the "restrictions" field.
-func RestrictionsHasSuffix(v string) predicate.Album {
-	return predicate.Album(sql.FieldHasSuffix(FieldRestrictions, v))
-}
-
-// RestrictionsIsNil applies the IsNil predicate on the "restrictions" field.
-func RestrictionsIsNil() predicate.Album {
-	return predicate.Album(sql.FieldIsNull(FieldRestrictions))
-}
-
-// RestrictionsNotNil applies the NotNil predicate on the "restrictions" field.
-func RestrictionsNotNil() predicate.Album {
-	return predicate.Album(sql.FieldNotNull(FieldRestrictions))
-}
-
-// RestrictionsEqualFold applies the EqualFold predicate on the "restrictions" field.
-func RestrictionsEqualFold(v string) predicate.Album {
-	return predicate.Album(sql.FieldEqualFold(FieldRestrictions, v))
-}
-
-// RestrictionsContainsFold applies the ContainsFold predicate on the "restrictions" field.
-func RestrictionsContainsFold(v string) predicate.Album {
-	return predicate.Album(sql.FieldContainsFold(FieldRestrictions, v))
-}
-
 // URIEQ applies the EQ predicate on the "uri" field.
 func URIEQ(v string) predicate.Album {
 	return predicate.Album(sql.FieldEQ(FieldURI, v))
@@ -511,111 +426,6 @@ func URIEqualFold(v string) predicate.Album {
 // URIContainsFold applies the ContainsFold predicate on the "uri" field.
 func URIContainsFold(v string) predicate.Album {
 	return predicate.Album(sql.FieldContainsFold(FieldURI, v))
-}
-
-// LabelEQ applies the EQ predicate on the "label" field.
-func LabelEQ(v string) predicate.Album {
-	return predicate.Album(sql.FieldEQ(FieldLabel, v))
-}
-
-// LabelNEQ applies the NEQ predicate on the "label" field.
-func LabelNEQ(v string) predicate.Album {
-	return predicate.Album(sql.FieldNEQ(FieldLabel, v))
-}
-
-// LabelIn applies the In predicate on the "label" field.
-func LabelIn(vs ...string) predicate.Album {
-	return predicate.Album(sql.FieldIn(FieldLabel, vs...))
-}
-
-// LabelNotIn applies the NotIn predicate on the "label" field.
-func LabelNotIn(vs ...string) predicate.Album {
-	return predicate.Album(sql.FieldNotIn(FieldLabel, vs...))
-}
-
-// LabelGT applies the GT predicate on the "label" field.
-func LabelGT(v string) predicate.Album {
-	return predicate.Album(sql.FieldGT(FieldLabel, v))
-}
-
-// LabelGTE applies the GTE predicate on the "label" field.
-func LabelGTE(v string) predicate.Album {
-	return predicate.Album(sql.FieldGTE(FieldLabel, v))
-}
-
-// LabelLT applies the LT predicate on the "label" field.
-func LabelLT(v string) predicate.Album {
-	return predicate.Album(sql.FieldLT(FieldLabel, v))
-}
-
-// LabelLTE applies the LTE predicate on the "label" field.
-func LabelLTE(v string) predicate.Album {
-	return predicate.Album(sql.FieldLTE(FieldLabel, v))
-}
-
-// LabelContains applies the Contains predicate on the "label" field.
-func LabelContains(v string) predicate.Album {
-	return predicate.Album(sql.FieldContains(FieldLabel, v))
-}
-
-// LabelHasPrefix applies the HasPrefix predicate on the "label" field.
-func LabelHasPrefix(v string) predicate.Album {
-	return predicate.Album(sql.FieldHasPrefix(FieldLabel, v))
-}
-
-// LabelHasSuffix applies the HasSuffix predicate on the "label" field.
-func LabelHasSuffix(v string) predicate.Album {
-	return predicate.Album(sql.FieldHasSuffix(FieldLabel, v))
-}
-
-// LabelEqualFold applies the EqualFold predicate on the "label" field.
-func LabelEqualFold(v string) predicate.Album {
-	return predicate.Album(sql.FieldEqualFold(FieldLabel, v))
-}
-
-// LabelContainsFold applies the ContainsFold predicate on the "label" field.
-func LabelContainsFold(v string) predicate.Album {
-	return predicate.Album(sql.FieldContainsFold(FieldLabel, v))
-}
-
-// PopularityEQ applies the EQ predicate on the "popularity" field.
-func PopularityEQ(v int) predicate.Album {
-	return predicate.Album(sql.FieldEQ(FieldPopularity, v))
-}
-
-// PopularityNEQ applies the NEQ predicate on the "popularity" field.
-func PopularityNEQ(v int) predicate.Album {
-	return predicate.Album(sql.FieldNEQ(FieldPopularity, v))
-}
-
-// PopularityIn applies the In predicate on the "popularity" field.
-func PopularityIn(vs ...int) predicate.Album {
-	return predicate.Album(sql.FieldIn(FieldPopularity, vs...))
-}
-
-// PopularityNotIn applies the NotIn predicate on the "popularity" field.
-func PopularityNotIn(vs ...int) predicate.Album {
-	return predicate.Album(sql.FieldNotIn(FieldPopularity, vs...))
-}
-
-// PopularityGT applies the GT predicate on the "popularity" field.
-func PopularityGT(v int) predicate.Album {
-	return predicate.Album(sql.FieldGT(FieldPopularity, v))
-}
-
-// PopularityGTE applies the GTE predicate on the "popularity" field.
-func PopularityGTE(v int) predicate.Album {
-	return predicate.Album(sql.FieldGTE(FieldPopularity, v))
-}
-
-// PopularityLT applies the LT predicate on the "popularity" field.
-func PopularityLT(v int) predicate.Album {
-	return predicate.Album(sql.FieldLT(FieldPopularity, v))
-}
-
-// PopularityLTE applies the LTE predicate on the "popularity" field.
-func PopularityLTE(v int) predicate.Album {
-	return predicate.Album(sql.FieldLTE(FieldPopularity, v))
 }
 
 // HasImages applies the HasEdge predicate on the "images" edge.

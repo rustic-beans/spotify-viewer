@@ -18,10 +18,10 @@ const (
 	FieldWidth = "width"
 	// FieldHeight holds the string denoting the height field in the database.
 	FieldHeight = "height"
-	// FieldText holds the string denoting the text field in the database.
-	FieldText = "text"
 	// EdgeAlbums holds the string denoting the albums edge name in mutations.
 	EdgeAlbums = "albums"
+	// EdgeArtists holds the string denoting the artists edge name in mutations.
+	EdgeArtists = "artists"
 	// Table holds the table name of the image in the database.
 	Table = "images"
 	// AlbumsTable is the table that holds the albums relation/edge. The primary key declared below.
@@ -29,6 +29,11 @@ const (
 	// AlbumsInverseTable is the table name for the Album entity.
 	// It exists in this package in order to avoid circular dependency with the "album" package.
 	AlbumsInverseTable = "albums"
+	// ArtistsTable is the table that holds the artists relation/edge. The primary key declared below.
+	ArtistsTable = "artist_images"
+	// ArtistsInverseTable is the table name for the Artist entity.
+	// It exists in this package in order to avoid circular dependency with the "artist" package.
+	ArtistsInverseTable = "artists"
 )
 
 // Columns holds all SQL columns for image fields.
@@ -37,13 +42,15 @@ var Columns = []string{
 	FieldURL,
 	FieldWidth,
 	FieldHeight,
-	FieldText,
 }
 
 var (
 	// AlbumsPrimaryKey and AlbumsColumn2 are the table columns denoting the
 	// primary key for the albums relation (M2M).
 	AlbumsPrimaryKey = []string{"album_id", "image_id"}
+	// ArtistsPrimaryKey and ArtistsColumn2 are the table columns denoting the
+	// primary key for the artists relation (M2M).
+	ArtistsPrimaryKey = []string{"artist_id", "image_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -63,10 +70,6 @@ var (
 	WidthValidator func(int) error
 	// HeightValidator is a validator for the "height" field. It is called by the builders before save.
 	HeightValidator func(int) error
-	// TextValidator is a validator for the "text" field. It is called by the builders before save.
-	TextValidator func(string) error
-	// DefaultID holds the default value on creation for the "id" field.
-	DefaultID func() string
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(string) error
 )
@@ -94,11 +97,6 @@ func ByHeight(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHeight, opts...).ToFunc()
 }
 
-// ByText orders the results by the text field.
-func ByText(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldText, opts...).ToFunc()
-}
-
 // ByAlbumsCount orders the results by albums count.
 func ByAlbumsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -112,10 +110,31 @@ func ByAlbums(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAlbumsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByArtistsCount orders the results by artists count.
+func ByArtistsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newArtistsStep(), opts...)
+	}
+}
+
+// ByArtists orders the results by artists terms.
+func ByArtists(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newArtistsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAlbumsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AlbumsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, AlbumsTable, AlbumsPrimaryKey...),
+	)
+}
+func newArtistsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ArtistsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ArtistsTable, ArtistsPrimaryKey...),
 	)
 }

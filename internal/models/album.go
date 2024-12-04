@@ -8,8 +8,6 @@ import (
 )
 
 type Album = ent.Album
-type CreateAlbumInput = ent.CreateAlbumInput
-
 type AlbumType = album.AlbumType
 
 const (

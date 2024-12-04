@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -30,6 +32,8 @@ func (Artist) Fields() []ent.Field {
 		field.Text("uri").
 			NotEmpty().
 			Comment("The Spotify URI for the artist"),
+		field.JSON("genres", []string{}).
+			Comment("A list of genres the artist is associated with.  For example, \"Prog Rock\" or \"Post-Grunge\".  If not yet classified, the slice is empty."),
 	}
 }
 
@@ -38,5 +42,12 @@ func (Artist) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("albums", Album.Type),
 		edge.To("tracks", Track.Type),
+		edge.To("images", Image.Type).Required(),
+	}
+}
+
+func (Artist) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.QueryField(),
 	}
 }

@@ -60,12 +60,6 @@ func (tc *TrackCreate) SetAlbumID(s string) *TrackCreate {
 	return tc
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (tc *TrackCreate) SetAvailableMarkets(s []string) *TrackCreate {
-	tc.mutation.SetAvailableMarkets(s)
-	return tc
-}
-
 // SetDiscNumber sets the "disc_number" field.
 func (tc *TrackCreate) SetDiscNumber(i int) *TrackCreate {
 	tc.mutation.SetDiscNumber(i)
@@ -109,12 +103,6 @@ func (tc *TrackCreate) SetExternalUrls(sm *schema.StringMap) *TrackCreate {
 // SetHref sets the "href" field.
 func (tc *TrackCreate) SetHref(s string) *TrackCreate {
 	tc.mutation.SetHref(s)
-	return tc
-}
-
-// SetIsPlayable sets the "is_playable" field.
-func (tc *TrackCreate) SetIsPlayable(b bool) *TrackCreate {
-	tc.mutation.SetIsPlayable(b)
 	return tc
 }
 
@@ -247,9 +235,6 @@ func (tc *TrackCreate) check() error {
 			return &ValidationError{Name: "album_id", err: fmt.Errorf(`ent: validator failed for field "Track.album_id": %w`, err)}
 		}
 	}
-	if _, ok := tc.mutation.AvailableMarkets(); !ok {
-		return &ValidationError{Name: "available_markets", err: errors.New(`ent: missing required field "Track.available_markets"`)}
-	}
 	if _, ok := tc.mutation.DurationMs(); !ok {
 		return &ValidationError{Name: "duration_ms", err: errors.New(`ent: missing required field "Track.duration_ms"`)}
 	}
@@ -271,9 +256,6 @@ func (tc *TrackCreate) check() error {
 		if err := track.HrefValidator(v); err != nil {
 			return &ValidationError{Name: "href", err: fmt.Errorf(`ent: validator failed for field "Track.href": %w`, err)}
 		}
-	}
-	if _, ok := tc.mutation.IsPlayable(); !ok {
-		return &ValidationError{Name: "is_playable", err: errors.New(`ent: missing required field "Track.is_playable"`)}
 	}
 	if _, ok := tc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Track.name"`)}
@@ -352,10 +334,6 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 		_spec.SetField(track.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := tc.mutation.AvailableMarkets(); ok {
-		_spec.SetField(track.FieldAvailableMarkets, field.TypeJSON, value)
-		_node.AvailableMarkets = value
-	}
 	if value, ok := tc.mutation.DiscNumber(); ok {
 		_spec.SetField(track.FieldDiscNumber, field.TypeInt, value)
 		_node.DiscNumber = value
@@ -375,10 +353,6 @@ func (tc *TrackCreate) createSpec() (*Track, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.Href(); ok {
 		_spec.SetField(track.FieldHref, field.TypeString, value)
 		_node.Href = value
-	}
-	if value, ok := tc.mutation.IsPlayable(); ok {
-		_spec.SetField(track.FieldIsPlayable, field.TypeBool, value)
-		_node.IsPlayable = value
 	}
 	if value, ok := tc.mutation.Name(); ok {
 		_spec.SetField(track.FieldName, field.TypeString, value)
@@ -509,18 +483,6 @@ func (u *TrackUpsert) UpdateAlbumID() *TrackUpsert {
 	return u
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (u *TrackUpsert) SetAvailableMarkets(v []string) *TrackUpsert {
-	u.Set(track.FieldAvailableMarkets, v)
-	return u
-}
-
-// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
-func (u *TrackUpsert) UpdateAvailableMarkets() *TrackUpsert {
-	u.SetExcluded(track.FieldAvailableMarkets)
-	return u
-}
-
 // SetDiscNumber sets the "disc_number" field.
 func (u *TrackUpsert) SetDiscNumber(v int) *TrackUpsert {
 	u.Set(track.FieldDiscNumber, v)
@@ -596,18 +558,6 @@ func (u *TrackUpsert) SetHref(v string) *TrackUpsert {
 // UpdateHref sets the "href" field to the value that was provided on create.
 func (u *TrackUpsert) UpdateHref() *TrackUpsert {
 	u.SetExcluded(track.FieldHref)
-	return u
-}
-
-// SetIsPlayable sets the "is_playable" field.
-func (u *TrackUpsert) SetIsPlayable(v bool) *TrackUpsert {
-	u.Set(track.FieldIsPlayable, v)
-	return u
-}
-
-// UpdateIsPlayable sets the "is_playable" field to the value that was provided on create.
-func (u *TrackUpsert) UpdateIsPlayable() *TrackUpsert {
-	u.SetExcluded(track.FieldIsPlayable)
 	return u
 }
 
@@ -768,20 +718,6 @@ func (u *TrackUpsertOne) UpdateAlbumID() *TrackUpsertOne {
 	})
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (u *TrackUpsertOne) SetAvailableMarkets(v []string) *TrackUpsertOne {
-	return u.Update(func(s *TrackUpsert) {
-		s.SetAvailableMarkets(v)
-	})
-}
-
-// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
-func (u *TrackUpsertOne) UpdateAvailableMarkets() *TrackUpsertOne {
-	return u.Update(func(s *TrackUpsert) {
-		s.UpdateAvailableMarkets()
-	})
-}
-
 // SetDiscNumber sets the "disc_number" field.
 func (u *TrackUpsertOne) SetDiscNumber(v int) *TrackUpsertOne {
 	return u.Update(func(s *TrackUpsert) {
@@ -870,20 +806,6 @@ func (u *TrackUpsertOne) SetHref(v string) *TrackUpsertOne {
 func (u *TrackUpsertOne) UpdateHref() *TrackUpsertOne {
 	return u.Update(func(s *TrackUpsert) {
 		s.UpdateHref()
-	})
-}
-
-// SetIsPlayable sets the "is_playable" field.
-func (u *TrackUpsertOne) SetIsPlayable(v bool) *TrackUpsertOne {
-	return u.Update(func(s *TrackUpsert) {
-		s.SetIsPlayable(v)
-	})
-}
-
-// UpdateIsPlayable sets the "is_playable" field to the value that was provided on create.
-func (u *TrackUpsertOne) UpdateIsPlayable() *TrackUpsertOne {
-	return u.Update(func(s *TrackUpsert) {
-		s.UpdateIsPlayable()
 	})
 }
 
@@ -1224,20 +1146,6 @@ func (u *TrackUpsertBulk) UpdateAlbumID() *TrackUpsertBulk {
 	})
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (u *TrackUpsertBulk) SetAvailableMarkets(v []string) *TrackUpsertBulk {
-	return u.Update(func(s *TrackUpsert) {
-		s.SetAvailableMarkets(v)
-	})
-}
-
-// UpdateAvailableMarkets sets the "available_markets" field to the value that was provided on create.
-func (u *TrackUpsertBulk) UpdateAvailableMarkets() *TrackUpsertBulk {
-	return u.Update(func(s *TrackUpsert) {
-		s.UpdateAvailableMarkets()
-	})
-}
-
 // SetDiscNumber sets the "disc_number" field.
 func (u *TrackUpsertBulk) SetDiscNumber(v int) *TrackUpsertBulk {
 	return u.Update(func(s *TrackUpsert) {
@@ -1326,20 +1234,6 @@ func (u *TrackUpsertBulk) SetHref(v string) *TrackUpsertBulk {
 func (u *TrackUpsertBulk) UpdateHref() *TrackUpsertBulk {
 	return u.Update(func(s *TrackUpsert) {
 		s.UpdateHref()
-	})
-}
-
-// SetIsPlayable sets the "is_playable" field.
-func (u *TrackUpsertBulk) SetIsPlayable(v bool) *TrackUpsertBulk {
-	return u.Update(func(s *TrackUpsert) {
-		s.SetIsPlayable(v)
-	})
-}
-
-// UpdateIsPlayable sets the "is_playable" field to the value that was provided on create.
-func (u *TrackUpsertBulk) UpdateIsPlayable() *TrackUpsertBulk {
-	return u.Update(func(s *TrackUpsert) {
-		s.UpdateIsPlayable()
 	})
 }
 

@@ -67,18 +67,6 @@ func (au *AlbumUpdate) AddTotalTracks(i int) *AlbumUpdate {
 	return au
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (au *AlbumUpdate) SetAvailableMarkets(s []string) *AlbumUpdate {
-	au.mutation.SetAvailableMarkets(s)
-	return au
-}
-
-// AppendAvailableMarkets appends s to the "available_markets" field.
-func (au *AlbumUpdate) AppendAvailableMarkets(s []string) *AlbumUpdate {
-	au.mutation.AppendAvailableMarkets(s)
-	return au
-}
-
 // SetExternalUrls sets the "external_urls" field.
 func (au *AlbumUpdate) SetExternalUrls(sm *schema.StringMap) *AlbumUpdate {
 	au.mutation.SetExternalUrls(sm)
@@ -141,26 +129,6 @@ func (au *AlbumUpdate) SetNillableReleaseDatePrecision(adp *album.ReleaseDatePre
 	return au
 }
 
-// SetRestrictions sets the "restrictions" field.
-func (au *AlbumUpdate) SetRestrictions(s string) *AlbumUpdate {
-	au.mutation.SetRestrictions(s)
-	return au
-}
-
-// SetNillableRestrictions sets the "restrictions" field if the given value is not nil.
-func (au *AlbumUpdate) SetNillableRestrictions(s *string) *AlbumUpdate {
-	if s != nil {
-		au.SetRestrictions(*s)
-	}
-	return au
-}
-
-// ClearRestrictions clears the value of the "restrictions" field.
-func (au *AlbumUpdate) ClearRestrictions() *AlbumUpdate {
-	au.mutation.ClearRestrictions()
-	return au
-}
-
 // SetURI sets the "uri" field.
 func (au *AlbumUpdate) SetURI(s string) *AlbumUpdate {
 	au.mutation.SetURI(s)
@@ -184,41 +152,6 @@ func (au *AlbumUpdate) SetGenres(s []string) *AlbumUpdate {
 // AppendGenres appends s to the "genres" field.
 func (au *AlbumUpdate) AppendGenres(s []string) *AlbumUpdate {
 	au.mutation.AppendGenres(s)
-	return au
-}
-
-// SetLabel sets the "label" field.
-func (au *AlbumUpdate) SetLabel(s string) *AlbumUpdate {
-	au.mutation.SetLabel(s)
-	return au
-}
-
-// SetNillableLabel sets the "label" field if the given value is not nil.
-func (au *AlbumUpdate) SetNillableLabel(s *string) *AlbumUpdate {
-	if s != nil {
-		au.SetLabel(*s)
-	}
-	return au
-}
-
-// SetPopularity sets the "popularity" field.
-func (au *AlbumUpdate) SetPopularity(i int) *AlbumUpdate {
-	au.mutation.ResetPopularity()
-	au.mutation.SetPopularity(i)
-	return au
-}
-
-// SetNillablePopularity sets the "popularity" field if the given value is not nil.
-func (au *AlbumUpdate) SetNillablePopularity(i *int) *AlbumUpdate {
-	if i != nil {
-		au.SetPopularity(*i)
-	}
-	return au
-}
-
-// AddPopularity adds i to the "popularity" field.
-func (au *AlbumUpdate) AddPopularity(i int) *AlbumUpdate {
-	au.mutation.AddPopularity(i)
 	return au
 }
 
@@ -418,14 +351,6 @@ func (au *AlbumUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.AddedTotalTracks(); ok {
 		_spec.AddField(album.FieldTotalTracks, field.TypeInt, value)
 	}
-	if value, ok := au.mutation.AvailableMarkets(); ok {
-		_spec.SetField(album.FieldAvailableMarkets, field.TypeJSON, value)
-	}
-	if value, ok := au.mutation.AppendedAvailableMarkets(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, album.FieldAvailableMarkets, value)
-		})
-	}
 	if value, ok := au.mutation.ExternalUrls(); ok {
 		_spec.SetField(album.FieldExternalUrls, field.TypeJSON, value)
 	}
@@ -441,12 +366,6 @@ func (au *AlbumUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.ReleaseDatePrecision(); ok {
 		_spec.SetField(album.FieldReleaseDatePrecision, field.TypeEnum, value)
 	}
-	if value, ok := au.mutation.Restrictions(); ok {
-		_spec.SetField(album.FieldRestrictions, field.TypeString, value)
-	}
-	if au.mutation.RestrictionsCleared() {
-		_spec.ClearField(album.FieldRestrictions, field.TypeString)
-	}
 	if value, ok := au.mutation.URI(); ok {
 		_spec.SetField(album.FieldURI, field.TypeString, value)
 	}
@@ -457,15 +376,6 @@ func (au *AlbumUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, album.FieldGenres, value)
 		})
-	}
-	if value, ok := au.mutation.Label(); ok {
-		_spec.SetField(album.FieldLabel, field.TypeString, value)
-	}
-	if value, ok := au.mutation.Popularity(); ok {
-		_spec.SetField(album.FieldPopularity, field.TypeInt, value)
-	}
-	if value, ok := au.mutation.AddedPopularity(); ok {
-		_spec.AddField(album.FieldPopularity, field.TypeInt, value)
 	}
 	if au.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -657,18 +567,6 @@ func (auo *AlbumUpdateOne) AddTotalTracks(i int) *AlbumUpdateOne {
 	return auo
 }
 
-// SetAvailableMarkets sets the "available_markets" field.
-func (auo *AlbumUpdateOne) SetAvailableMarkets(s []string) *AlbumUpdateOne {
-	auo.mutation.SetAvailableMarkets(s)
-	return auo
-}
-
-// AppendAvailableMarkets appends s to the "available_markets" field.
-func (auo *AlbumUpdateOne) AppendAvailableMarkets(s []string) *AlbumUpdateOne {
-	auo.mutation.AppendAvailableMarkets(s)
-	return auo
-}
-
 // SetExternalUrls sets the "external_urls" field.
 func (auo *AlbumUpdateOne) SetExternalUrls(sm *schema.StringMap) *AlbumUpdateOne {
 	auo.mutation.SetExternalUrls(sm)
@@ -731,26 +629,6 @@ func (auo *AlbumUpdateOne) SetNillableReleaseDatePrecision(adp *album.ReleaseDat
 	return auo
 }
 
-// SetRestrictions sets the "restrictions" field.
-func (auo *AlbumUpdateOne) SetRestrictions(s string) *AlbumUpdateOne {
-	auo.mutation.SetRestrictions(s)
-	return auo
-}
-
-// SetNillableRestrictions sets the "restrictions" field if the given value is not nil.
-func (auo *AlbumUpdateOne) SetNillableRestrictions(s *string) *AlbumUpdateOne {
-	if s != nil {
-		auo.SetRestrictions(*s)
-	}
-	return auo
-}
-
-// ClearRestrictions clears the value of the "restrictions" field.
-func (auo *AlbumUpdateOne) ClearRestrictions() *AlbumUpdateOne {
-	auo.mutation.ClearRestrictions()
-	return auo
-}
-
 // SetURI sets the "uri" field.
 func (auo *AlbumUpdateOne) SetURI(s string) *AlbumUpdateOne {
 	auo.mutation.SetURI(s)
@@ -774,41 +652,6 @@ func (auo *AlbumUpdateOne) SetGenres(s []string) *AlbumUpdateOne {
 // AppendGenres appends s to the "genres" field.
 func (auo *AlbumUpdateOne) AppendGenres(s []string) *AlbumUpdateOne {
 	auo.mutation.AppendGenres(s)
-	return auo
-}
-
-// SetLabel sets the "label" field.
-func (auo *AlbumUpdateOne) SetLabel(s string) *AlbumUpdateOne {
-	auo.mutation.SetLabel(s)
-	return auo
-}
-
-// SetNillableLabel sets the "label" field if the given value is not nil.
-func (auo *AlbumUpdateOne) SetNillableLabel(s *string) *AlbumUpdateOne {
-	if s != nil {
-		auo.SetLabel(*s)
-	}
-	return auo
-}
-
-// SetPopularity sets the "popularity" field.
-func (auo *AlbumUpdateOne) SetPopularity(i int) *AlbumUpdateOne {
-	auo.mutation.ResetPopularity()
-	auo.mutation.SetPopularity(i)
-	return auo
-}
-
-// SetNillablePopularity sets the "popularity" field if the given value is not nil.
-func (auo *AlbumUpdateOne) SetNillablePopularity(i *int) *AlbumUpdateOne {
-	if i != nil {
-		auo.SetPopularity(*i)
-	}
-	return auo
-}
-
-// AddPopularity adds i to the "popularity" field.
-func (auo *AlbumUpdateOne) AddPopularity(i int) *AlbumUpdateOne {
-	auo.mutation.AddPopularity(i)
 	return auo
 }
 
@@ -1038,14 +881,6 @@ func (auo *AlbumUpdateOne) sqlSave(ctx context.Context) (_node *Album, err error
 	if value, ok := auo.mutation.AddedTotalTracks(); ok {
 		_spec.AddField(album.FieldTotalTracks, field.TypeInt, value)
 	}
-	if value, ok := auo.mutation.AvailableMarkets(); ok {
-		_spec.SetField(album.FieldAvailableMarkets, field.TypeJSON, value)
-	}
-	if value, ok := auo.mutation.AppendedAvailableMarkets(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, album.FieldAvailableMarkets, value)
-		})
-	}
 	if value, ok := auo.mutation.ExternalUrls(); ok {
 		_spec.SetField(album.FieldExternalUrls, field.TypeJSON, value)
 	}
@@ -1061,12 +896,6 @@ func (auo *AlbumUpdateOne) sqlSave(ctx context.Context) (_node *Album, err error
 	if value, ok := auo.mutation.ReleaseDatePrecision(); ok {
 		_spec.SetField(album.FieldReleaseDatePrecision, field.TypeEnum, value)
 	}
-	if value, ok := auo.mutation.Restrictions(); ok {
-		_spec.SetField(album.FieldRestrictions, field.TypeString, value)
-	}
-	if auo.mutation.RestrictionsCleared() {
-		_spec.ClearField(album.FieldRestrictions, field.TypeString)
-	}
 	if value, ok := auo.mutation.URI(); ok {
 		_spec.SetField(album.FieldURI, field.TypeString, value)
 	}
@@ -1077,15 +906,6 @@ func (auo *AlbumUpdateOne) sqlSave(ctx context.Context) (_node *Album, err error
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, album.FieldGenres, value)
 		})
-	}
-	if value, ok := auo.mutation.Label(); ok {
-		_spec.SetField(album.FieldLabel, field.TypeString, value)
-	}
-	if value, ok := auo.mutation.Popularity(); ok {
-		_spec.SetField(album.FieldPopularity, field.TypeInt, value)
-	}
-	if value, ok := auo.mutation.AddedPopularity(); ok {
-		_spec.AddField(album.FieldPopularity, field.TypeInt, value)
 	}
 	if auo.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{

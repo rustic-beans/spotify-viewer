@@ -24,17 +24,22 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, e
 
 // Albums is the resolver for the albums field.
 func (r *queryResolver) Albums(ctx context.Context) ([]*ent.Album, error) {
-	panic(fmt.Errorf("not implemented: Albums - albums"))
+	return r.SharedService.GetAlbums(ctx)
+}
+
+// Artists is the resolver for the artists field.
+func (r *queryResolver) Artists(ctx context.Context) ([]*ent.Artist, error) {
+	panic(fmt.Errorf("not implemented: Artists - artists"))
 }
 
 // Images is the resolver for the images field.
 func (r *queryResolver) Images(ctx context.Context) ([]*ent.Image, error) {
-	panic(fmt.Errorf("not implemented: Images - images"))
+	return r.SharedService.GetImages(ctx)
 }
 
 // Tracks is the resolver for the tracks field.
 func (r *queryResolver) Tracks(ctx context.Context) ([]*ent.Track, error) {
-	return r.EntClient.Track.Query().All(ctx)
+	return r.SharedService.GetTracks(ctx)
 }
 
 // Query returns generated.QueryResolver implementation.

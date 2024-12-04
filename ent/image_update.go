@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
 )
@@ -84,20 +85,6 @@ func (iu *ImageUpdate) AddHeight(i int) *ImageUpdate {
 	return iu
 }
 
-// SetText sets the "text" field.
-func (iu *ImageUpdate) SetText(s string) *ImageUpdate {
-	iu.mutation.SetText(s)
-	return iu
-}
-
-// SetNillableText sets the "text" field if the given value is not nil.
-func (iu *ImageUpdate) SetNillableText(s *string) *ImageUpdate {
-	if s != nil {
-		iu.SetText(*s)
-	}
-	return iu
-}
-
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
 func (iu *ImageUpdate) AddAlbumIDs(ids ...string) *ImageUpdate {
 	iu.mutation.AddAlbumIDs(ids...)
@@ -111,6 +98,21 @@ func (iu *ImageUpdate) AddAlbums(a ...*Album) *ImageUpdate {
 		ids[i] = a[i].ID
 	}
 	return iu.AddAlbumIDs(ids...)
+}
+
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (iu *ImageUpdate) AddArtistIDs(ids ...string) *ImageUpdate {
+	iu.mutation.AddArtistIDs(ids...)
+	return iu
+}
+
+// AddArtists adds the "artists" edges to the Artist entity.
+func (iu *ImageUpdate) AddArtists(a ...*Artist) *ImageUpdate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.AddArtistIDs(ids...)
 }
 
 // Mutation returns the ImageMutation object of the builder.
@@ -137,6 +139,27 @@ func (iu *ImageUpdate) RemoveAlbums(a ...*Album) *ImageUpdate {
 		ids[i] = a[i].ID
 	}
 	return iu.RemoveAlbumIDs(ids...)
+}
+
+// ClearArtists clears all "artists" edges to the Artist entity.
+func (iu *ImageUpdate) ClearArtists() *ImageUpdate {
+	iu.mutation.ClearArtists()
+	return iu
+}
+
+// RemoveArtistIDs removes the "artists" edge to Artist entities by IDs.
+func (iu *ImageUpdate) RemoveArtistIDs(ids ...string) *ImageUpdate {
+	iu.mutation.RemoveArtistIDs(ids...)
+	return iu
+}
+
+// RemoveArtists removes "artists" edges to Artist entities.
+func (iu *ImageUpdate) RemoveArtists(a ...*Artist) *ImageUpdate {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.RemoveArtistIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -183,11 +206,6 @@ func (iu *ImageUpdate) check() error {
 			return &ValidationError{Name: "height", err: fmt.Errorf(`ent: validator failed for field "Image.height": %w`, err)}
 		}
 	}
-	if v, ok := iu.mutation.Text(); ok {
-		if err := image.TextValidator(v); err != nil {
-			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "Image.text": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -217,9 +235,6 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := iu.mutation.AddedHeight(); ok {
 		_spec.AddField(image.FieldHeight, field.TypeInt, value)
-	}
-	if value, ok := iu.mutation.Text(); ok {
-		_spec.SetField(image.FieldText, field.TypeString, value)
 	}
 	if iu.mutation.AlbumsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -259,6 +274,51 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.ArtistsTable,
+			Columns: image.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedArtistsIDs(); len(nodes) > 0 && !iu.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.ArtistsTable,
+			Columns: image.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.ArtistsTable,
+			Columns: image.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -342,20 +402,6 @@ func (iuo *ImageUpdateOne) AddHeight(i int) *ImageUpdateOne {
 	return iuo
 }
 
-// SetText sets the "text" field.
-func (iuo *ImageUpdateOne) SetText(s string) *ImageUpdateOne {
-	iuo.mutation.SetText(s)
-	return iuo
-}
-
-// SetNillableText sets the "text" field if the given value is not nil.
-func (iuo *ImageUpdateOne) SetNillableText(s *string) *ImageUpdateOne {
-	if s != nil {
-		iuo.SetText(*s)
-	}
-	return iuo
-}
-
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
 func (iuo *ImageUpdateOne) AddAlbumIDs(ids ...string) *ImageUpdateOne {
 	iuo.mutation.AddAlbumIDs(ids...)
@@ -369,6 +415,21 @@ func (iuo *ImageUpdateOne) AddAlbums(a ...*Album) *ImageUpdateOne {
 		ids[i] = a[i].ID
 	}
 	return iuo.AddAlbumIDs(ids...)
+}
+
+// AddArtistIDs adds the "artists" edge to the Artist entity by IDs.
+func (iuo *ImageUpdateOne) AddArtistIDs(ids ...string) *ImageUpdateOne {
+	iuo.mutation.AddArtistIDs(ids...)
+	return iuo
+}
+
+// AddArtists adds the "artists" edges to the Artist entity.
+func (iuo *ImageUpdateOne) AddArtists(a ...*Artist) *ImageUpdateOne {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.AddArtistIDs(ids...)
 }
 
 // Mutation returns the ImageMutation object of the builder.
@@ -395,6 +456,27 @@ func (iuo *ImageUpdateOne) RemoveAlbums(a ...*Album) *ImageUpdateOne {
 		ids[i] = a[i].ID
 	}
 	return iuo.RemoveAlbumIDs(ids...)
+}
+
+// ClearArtists clears all "artists" edges to the Artist entity.
+func (iuo *ImageUpdateOne) ClearArtists() *ImageUpdateOne {
+	iuo.mutation.ClearArtists()
+	return iuo
+}
+
+// RemoveArtistIDs removes the "artists" edge to Artist entities by IDs.
+func (iuo *ImageUpdateOne) RemoveArtistIDs(ids ...string) *ImageUpdateOne {
+	iuo.mutation.RemoveArtistIDs(ids...)
+	return iuo
+}
+
+// RemoveArtists removes "artists" edges to Artist entities.
+func (iuo *ImageUpdateOne) RemoveArtists(a ...*Artist) *ImageUpdateOne {
+	ids := make([]string, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.RemoveArtistIDs(ids...)
 }
 
 // Where appends a list predicates to the ImageUpdate builder.
@@ -454,11 +536,6 @@ func (iuo *ImageUpdateOne) check() error {
 			return &ValidationError{Name: "height", err: fmt.Errorf(`ent: validator failed for field "Image.height": %w`, err)}
 		}
 	}
-	if v, ok := iuo.mutation.Text(); ok {
-		if err := image.TextValidator(v); err != nil {
-			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "Image.text": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -506,9 +583,6 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 	if value, ok := iuo.mutation.AddedHeight(); ok {
 		_spec.AddField(image.FieldHeight, field.TypeInt, value)
 	}
-	if value, ok := iuo.mutation.Text(); ok {
-		_spec.SetField(image.FieldText, field.TypeString, value)
-	}
 	if iuo.mutation.AlbumsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -547,6 +621,51 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.ArtistsTable,
+			Columns: image.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedArtistsIDs(); len(nodes) > 0 && !iuo.mutation.ArtistsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.ArtistsTable,
+			Columns: image.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.ArtistsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.ArtistsTable,
+			Columns: image.ArtistsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(artist.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

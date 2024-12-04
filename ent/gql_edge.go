@@ -68,6 +68,18 @@ func (a *Artist) Tracks(ctx context.Context) (result []*Track, err error) {
 	return result, err
 }
 
+func (a *Artist) Images(ctx context.Context) (result []*Image, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = a.NamedImages(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = a.Edges.ImagesOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = a.QueryImages().All(ctx)
+	}
+	return result, err
+}
+
 func (i *Image) Albums(ctx context.Context) (result []*Album, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = i.NamedAlbums(graphql.GetFieldContext(ctx).Field.Alias)
@@ -76,6 +88,18 @@ func (i *Image) Albums(ctx context.Context) (result []*Album, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = i.QueryAlbums().All(ctx)
+	}
+	return result, err
+}
+
+func (i *Image) Artists(ctx context.Context) (result []*Artist, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = i.NamedArtists(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = i.Edges.ArtistsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = i.QueryArtists().All(ctx)
 	}
 	return result, err
 }

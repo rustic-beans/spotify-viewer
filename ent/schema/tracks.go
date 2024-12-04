@@ -29,8 +29,6 @@ func (Track) Fields() []ent.Field {
 		field.Text("album_id").
 			NotEmpty().
 			Comment("The album on which the track appears"),
-		field.JSON("available_markets", []string{}).
-			Comment("A list of the countries in which the track can be played"),
 		field.Int("disc_number").
 			Optional().
 			Comment("The disc number"),
@@ -45,8 +43,6 @@ func (Track) Fields() []ent.Field {
 		field.Text("href").
 			NotEmpty().
 			Comment("A link to the Web API endpoint providing full details of the track"),
-		field.Bool("is_playable").
-			Comment("If true, the track is playable in the given market"),
 		field.Text("name").
 			NotEmpty().
 			Comment("The name of the track"),
@@ -80,6 +76,5 @@ func (Track) Edges() []ent.Edge {
 func (Track) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField(),
-		entgql.Mutations(entgql.MutationCreate()),
 	}
 }

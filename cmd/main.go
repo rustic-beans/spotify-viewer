@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/rustic-beans/spotify-viewer/internal/models"
+	"github.com/rustic-beans/spotify-viewer/internal/services"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
 
@@ -10,7 +12,6 @@ import (
 	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/graphql"
 	httpLib "github.com/rustic-beans/spotify-viewer/internal/infrastructure/http"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
-	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
 func main() {
@@ -26,18 +27,23 @@ func main() {
 	}
 
 	dbClient := database.Connect(config)
-
 	spotifyClient := spotify.NewSpotify(config)
 
-	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*spotifyLib.PlayerState]()
+	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*models.PlayerState]()
 
-	graphqlServer := graphql.NewServer(dbClient, spotifyClient, playerStateWebsocketHandler)
+	databaseService := services.NewDatabase(dbClient)
+	spotifyService := services.NewSpotify(spotifyClient)
+	sharedService := services.NewShared(databaseService, spotifyService, spotifyClient)
+
+	watcherService := services.NewWatcher(sharedService, playerStateWebsocketHandler)
+
+	graphqlServer := graphql.NewServer(sharedService, playerStateWebsocketHandler)
 	e := httpLib.NewServer(graphqlServer)
 
 	spotifyClient.SetupRoutes(e)
 	spotifyClient.Authenticate()
 
-	go spotify.PlayerStateLoop(spotifyClient, dbClient, playerStateWebsocketHandler)
+	go watcherService.StartPlayerStateLoop()
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)))
 }

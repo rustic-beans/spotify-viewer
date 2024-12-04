@@ -82,11 +82,6 @@ func (a *AlbumQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				selectedFields = append(selectedFields, album.FieldTotalTracks)
 				fieldSeen[album.FieldTotalTracks] = struct{}{}
 			}
-		case "availableMarkets":
-			if _, ok := fieldSeen[album.FieldAvailableMarkets]; !ok {
-				selectedFields = append(selectedFields, album.FieldAvailableMarkets)
-				fieldSeen[album.FieldAvailableMarkets] = struct{}{}
-			}
 		case "externalUrls":
 			if _, ok := fieldSeen[album.FieldExternalUrls]; !ok {
 				selectedFields = append(selectedFields, album.FieldExternalUrls)
@@ -112,11 +107,6 @@ func (a *AlbumQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				selectedFields = append(selectedFields, album.FieldReleaseDatePrecision)
 				fieldSeen[album.FieldReleaseDatePrecision] = struct{}{}
 			}
-		case "restrictions":
-			if _, ok := fieldSeen[album.FieldRestrictions]; !ok {
-				selectedFields = append(selectedFields, album.FieldRestrictions)
-				fieldSeen[album.FieldRestrictions] = struct{}{}
-			}
 		case "uri":
 			if _, ok := fieldSeen[album.FieldURI]; !ok {
 				selectedFields = append(selectedFields, album.FieldURI)
@@ -126,16 +116,6 @@ func (a *AlbumQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			if _, ok := fieldSeen[album.FieldGenres]; !ok {
 				selectedFields = append(selectedFields, album.FieldGenres)
 				fieldSeen[album.FieldGenres] = struct{}{}
-			}
-		case "label":
-			if _, ok := fieldSeen[album.FieldLabel]; !ok {
-				selectedFields = append(selectedFields, album.FieldLabel)
-				fieldSeen[album.FieldLabel] = struct{}{}
-			}
-		case "popularity":
-			if _, ok := fieldSeen[album.FieldPopularity]; !ok {
-				selectedFields = append(selectedFields, album.FieldPopularity)
-				fieldSeen[album.FieldPopularity] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -222,6 +202,19 @@ func (a *ArtistQuery) collectField(ctx context.Context, oneNode bool, opCtx *gra
 			a.WithNamedTracks(alias, func(wq *TrackQuery) {
 				*wq = *query
 			})
+
+		case "images":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ImageClient{config: a.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, imageImplementors)...); err != nil {
+				return err
+			}
+			a.WithNamedImages(alias, func(wq *ImageQuery) {
+				*wq = *query
+			})
 		case "externalUrls":
 			if _, ok := fieldSeen[artist.FieldExternalUrls]; !ok {
 				selectedFields = append(selectedFields, artist.FieldExternalUrls)
@@ -241,6 +234,11 @@ func (a *ArtistQuery) collectField(ctx context.Context, oneNode bool, opCtx *gra
 			if _, ok := fieldSeen[artist.FieldURI]; !ok {
 				selectedFields = append(selectedFields, artist.FieldURI)
 				fieldSeen[artist.FieldURI] = struct{}{}
+			}
+		case "genres":
+			if _, ok := fieldSeen[artist.FieldGenres]; !ok {
+				selectedFields = append(selectedFields, artist.FieldGenres)
+				fieldSeen[artist.FieldGenres] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -314,6 +312,19 @@ func (i *ImageQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			i.WithNamedAlbums(alias, func(wq *AlbumQuery) {
 				*wq = *query
 			})
+
+		case "artists":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ArtistClient{config: i.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, artistImplementors)...); err != nil {
+				return err
+			}
+			i.WithNamedArtists(alias, func(wq *ArtistQuery) {
+				*wq = *query
+			})
 		case "url":
 			if _, ok := fieldSeen[image.FieldURL]; !ok {
 				selectedFields = append(selectedFields, image.FieldURL)
@@ -328,11 +339,6 @@ func (i *ImageQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			if _, ok := fieldSeen[image.FieldHeight]; !ok {
 				selectedFields = append(selectedFields, image.FieldHeight)
 				fieldSeen[image.FieldHeight] = struct{}{}
-			}
-		case "text":
-			if _, ok := fieldSeen[image.FieldText]; !ok {
-				selectedFields = append(selectedFields, image.FieldText)
-				fieldSeen[image.FieldText] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -436,11 +442,6 @@ func (t *TrackQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				selectedFields = append(selectedFields, track.FieldAlbumID)
 				fieldSeen[track.FieldAlbumID] = struct{}{}
 			}
-		case "availableMarkets":
-			if _, ok := fieldSeen[track.FieldAvailableMarkets]; !ok {
-				selectedFields = append(selectedFields, track.FieldAvailableMarkets)
-				fieldSeen[track.FieldAvailableMarkets] = struct{}{}
-			}
 		case "discNumber":
 			if _, ok := fieldSeen[track.FieldDiscNumber]; !ok {
 				selectedFields = append(selectedFields, track.FieldDiscNumber)
@@ -465,11 +466,6 @@ func (t *TrackQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			if _, ok := fieldSeen[track.FieldHref]; !ok {
 				selectedFields = append(selectedFields, track.FieldHref)
 				fieldSeen[track.FieldHref] = struct{}{}
-			}
-		case "isPlayable":
-			if _, ok := fieldSeen[track.FieldIsPlayable]; !ok {
-				selectedFields = append(selectedFields, track.FieldIsPlayable)
-				fieldSeen[track.FieldIsPlayable] = struct{}{}
 			}
 		case "name":
 			if _, ok := fieldSeen[track.FieldName]; !ok {

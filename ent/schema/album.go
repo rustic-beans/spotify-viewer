@@ -25,8 +25,6 @@ func (Album) Fields() []ent.Field {
 			Comment("The type of the album"),
 		field.Int("total_tracks").
 			Comment("The number of tracks in the album"),
-		field.JSON("available_markets", []string{}).
-			Comment("The markets in which the album is available"),
 		field.JSON("external_urls", &StringMap{}).
 			Comment("Known external URLs for this artist"),
 		field.Text("href").
@@ -41,18 +39,11 @@ func (Album) Fields() []ent.Field {
 		field.Enum("release_date_precision").
 			Values("year", "month", "day").
 			Comment("The precision with which release_date value is known"),
-		field.Text("restrictions").
-			Optional().
-			Comment("Included in the response when a content restriction is applied"),
 		field.Text("uri").
 			NotEmpty().
 			Comment("The Spotify URI for the album"),
 		field.JSON("genres", []string{}).
 			Comment("A list of the genres the album is associated with"),
-		field.Text("label").
-			Comment("The label associated with the album"),
-		field.Int("popularity").
-			Comment("The popularity of the album"),
 	}
 }
 
@@ -68,6 +59,5 @@ func (Album) Edges() []ent.Edge {
 func (Album) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField(),
-		entgql.Mutations(entgql.MutationCreate()),
 	}
 }

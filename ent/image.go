@@ -22,8 +22,6 @@ type Image struct {
 	Width int `json:"width,omitempty"`
 	// Height holds the value of the "height" field.
 	Height int `json:"height,omitempty"`
-	// Text holds the value of the "text" field.
-	Text string `json:"text,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges        ImageEdges `json:"edges"`
@@ -34,13 +32,16 @@ type Image struct {
 type ImageEdges struct {
 	// Albums holds the value of the albums edge.
 	Albums []*Album `json:"albums,omitempty"`
+	// Artists holds the value of the artists edge.
+	Artists []*Artist `json:"artists,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
 
-	namedAlbums map[string][]*Album
+	namedAlbums  map[string][]*Album
+	namedArtists map[string][]*Artist
 }
 
 // AlbumsOrErr returns the Albums value or an error if the edge
@@ -52,6 +53,15 @@ func (e ImageEdges) AlbumsOrErr() ([]*Album, error) {
 	return nil, &NotLoadedError{edge: "albums"}
 }
 
+// ArtistsOrErr returns the Artists value or an error if the edge
+// was not loaded in eager-loading.
+func (e ImageEdges) ArtistsOrErr() ([]*Artist, error) {
+	if e.loadedTypes[1] {
+		return e.Artists, nil
+	}
+	return nil, &NotLoadedError{edge: "artists"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Image) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -59,7 +69,7 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case image.FieldWidth, image.FieldHeight:
 			values[i] = new(sql.NullInt64)
-		case image.FieldID, image.FieldURL, image.FieldText:
+		case image.FieldID, image.FieldURL:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -100,12 +110,6 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				i.Height = int(value.Int64)
 			}
-		case image.FieldText:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field text", values[j])
-			} else if value.Valid {
-				i.Text = value.String
-			}
 		default:
 			i.selectValues.Set(columns[j], values[j])
 		}
@@ -122,6 +126,11 @@ func (i *Image) Value(name string) (ent.Value, error) {
 // QueryAlbums queries the "albums" edge of the Image entity.
 func (i *Image) QueryAlbums() *AlbumQuery {
 	return NewImageClient(i.config).QueryAlbums(i)
+}
+
+// QueryArtists queries the "artists" edge of the Image entity.
+func (i *Image) QueryArtists() *ArtistQuery {
+	return NewImageClient(i.config).QueryArtists(i)
 }
 
 // Update returns a builder for updating this Image.
@@ -155,9 +164,6 @@ func (i *Image) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("height=")
 	builder.WriteString(fmt.Sprintf("%v", i.Height))
-	builder.WriteString(", ")
-	builder.WriteString("text=")
-	builder.WriteString(i.Text)
 	builder.WriteByte(')')
 	return builder.String()
 }
@@ -183,6 +189,30 @@ func (i *Image) appendNamedAlbums(name string, edges ...*Album) {
 		i.Edges.namedAlbums[name] = []*Album{}
 	} else {
 		i.Edges.namedAlbums[name] = append(i.Edges.namedAlbums[name], edges...)
+	}
+}
+
+// NamedArtists returns the Artists named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (i *Image) NamedArtists(name string) ([]*Artist, error) {
+	if i.Edges.namedArtists == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := i.Edges.namedArtists[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (i *Image) appendNamedArtists(name string, edges ...*Artist) {
+	if i.Edges.namedArtists == nil {
+		i.Edges.namedArtists = make(map[string][]*Artist)
+	}
+	if len(edges) == 0 {
+		i.Edges.namedArtists[name] = []*Artist{}
+	} else {
+		i.Edges.namedArtists[name] = append(i.Edges.namedArtists[name], edges...)
 	}
 }
 

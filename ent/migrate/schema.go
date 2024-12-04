@@ -13,17 +13,13 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "album_type", Type: field.TypeEnum, Enums: []string{"album", "single", "compilation"}},
 		{Name: "total_tracks", Type: field.TypeInt},
-		{Name: "available_markets", Type: field.TypeJSON},
 		{Name: "external_urls", Type: field.TypeJSON},
 		{Name: "href", Type: field.TypeString, Size: 2147483647},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "release_date", Type: field.TypeString, Size: 2147483647},
 		{Name: "release_date_precision", Type: field.TypeEnum, Enums: []string{"year", "month", "day"}},
-		{Name: "restrictions", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "uri", Type: field.TypeString, Size: 2147483647},
 		{Name: "genres", Type: field.TypeJSON},
-		{Name: "label", Type: field.TypeString, Size: 2147483647},
-		{Name: "popularity", Type: field.TypeInt},
 	}
 	// AlbumsTable holds the schema information for the "albums" table.
 	AlbumsTable = &schema.Table{
@@ -38,6 +34,7 @@ var (
 		{Name: "href", Type: field.TypeString, Size: 2147483647},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "uri", Type: field.TypeString, Size: 2147483647},
+		{Name: "genres", Type: field.TypeJSON},
 	}
 	// ArtistsTable holds the schema information for the "artists" table.
 	ArtistsTable = &schema.Table{
@@ -51,7 +48,6 @@ var (
 		{Name: "url", Type: field.TypeString},
 		{Name: "width", Type: field.TypeInt},
 		{Name: "height", Type: field.TypeInt},
-		{Name: "text", Type: field.TypeString, Size: 2147483647},
 	}
 	// ImagesTable holds the schema information for the "images" table.
 	ImagesTable = &schema.Table{
@@ -64,13 +60,11 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "available_markets", Type: field.TypeJSON},
 		{Name: "disc_number", Type: field.TypeInt, Nullable: true},
 		{Name: "duration_ms", Type: field.TypeInt},
 		{Name: "explicit", Type: field.TypeBool, Default: false},
 		{Name: "external_urls", Type: field.TypeJSON},
 		{Name: "href", Type: field.TypeString, Size: 2147483647},
-		{Name: "is_playable", Type: field.TypeBool},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "popularity", Type: field.TypeInt},
 		{Name: "preview_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -86,7 +80,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "tracks_albums_tracks",
-				Columns:    []*schema.Column{TracksColumns[15]},
+				Columns:    []*schema.Column{TracksColumns[13]},
 				RefColumns: []*schema.Column{AlbumsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -167,6 +161,31 @@ var (
 			},
 		},
 	}
+	// ArtistImagesColumns holds the columns for the "artist_images" table.
+	ArtistImagesColumns = []*schema.Column{
+		{Name: "artist_id", Type: field.TypeString},
+		{Name: "image_id", Type: field.TypeString},
+	}
+	// ArtistImagesTable holds the schema information for the "artist_images" table.
+	ArtistImagesTable = &schema.Table{
+		Name:       "artist_images",
+		Columns:    ArtistImagesColumns,
+		PrimaryKey: []*schema.Column{ArtistImagesColumns[0], ArtistImagesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "artist_images_artist_id",
+				Columns:    []*schema.Column{ArtistImagesColumns[0]},
+				RefColumns: []*schema.Column{ArtistsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "artist_images_image_id",
+				Columns:    []*schema.Column{ArtistImagesColumns[1]},
+				RefColumns: []*schema.Column{ImagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlbumsTable,
@@ -176,6 +195,7 @@ var (
 		AlbumImagesTable,
 		ArtistAlbumsTable,
 		ArtistTracksTable,
+		ArtistImagesTable,
 	}
 )
 
@@ -187,4 +207,6 @@ func init() {
 	ArtistAlbumsTable.ForeignKeys[1].RefTable = AlbumsTable
 	ArtistTracksTable.ForeignKeys[0].RefTable = ArtistsTable
 	ArtistTracksTable.ForeignKeys[1].RefTable = TracksTable
+	ArtistImagesTable.ForeignKeys[0].RefTable = ArtistsTable
+	ArtistImagesTable.ForeignKeys[1].RefTable = ImagesTable
 }

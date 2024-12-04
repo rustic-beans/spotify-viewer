@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/ent/artist"
 	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/predicate"
 )
@@ -21,14 +22,16 @@ import (
 // ImageQuery is the builder for querying Image entities.
 type ImageQuery struct {
 	config
-	ctx             *QueryContext
-	order           []image.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Image
-	withAlbums      *AlbumQuery
-	loadTotal       []func(context.Context, []*Image) error
-	modifiers       []func(*sql.Selector)
-	withNamedAlbums map[string]*AlbumQuery
+	ctx              *QueryContext
+	order            []image.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Image
+	withAlbums       *AlbumQuery
+	withArtists      *ArtistQuery
+	loadTotal        []func(context.Context, []*Image) error
+	modifiers        []func(*sql.Selector)
+	withNamedAlbums  map[string]*AlbumQuery
+	withNamedArtists map[string]*ArtistQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -80,6 +83,28 @@ func (iq *ImageQuery) QueryAlbums() *AlbumQuery {
 			sqlgraph.From(image.Table, image.FieldID, selector),
 			sqlgraph.To(album.Table, album.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, image.AlbumsTable, image.AlbumsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryArtists chains the current query on the "artists" edge.
+func (iq *ImageQuery) QueryArtists() *ArtistQuery {
+	query := (&ArtistClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, selector),
+			sqlgraph.To(artist.Table, artist.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, image.ArtistsTable, image.ArtistsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -274,12 +299,13 @@ func (iq *ImageQuery) Clone() *ImageQuery {
 		return nil
 	}
 	return &ImageQuery{
-		config:     iq.config,
-		ctx:        iq.ctx.Clone(),
-		order:      append([]image.OrderOption{}, iq.order...),
-		inters:     append([]Interceptor{}, iq.inters...),
-		predicates: append([]predicate.Image{}, iq.predicates...),
-		withAlbums: iq.withAlbums.Clone(),
+		config:      iq.config,
+		ctx:         iq.ctx.Clone(),
+		order:       append([]image.OrderOption{}, iq.order...),
+		inters:      append([]Interceptor{}, iq.inters...),
+		predicates:  append([]predicate.Image{}, iq.predicates...),
+		withAlbums:  iq.withAlbums.Clone(),
+		withArtists: iq.withArtists.Clone(),
 		// clone intermediate query.
 		sql:  iq.sql.Clone(),
 		path: iq.path,
@@ -294,6 +320,17 @@ func (iq *ImageQuery) WithAlbums(opts ...func(*AlbumQuery)) *ImageQuery {
 		opt(query)
 	}
 	iq.withAlbums = query
+	return iq
+}
+
+// WithArtists tells the query-builder to eager-load the nodes that are connected to
+// the "artists" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *ImageQuery) WithArtists(opts ...func(*ArtistQuery)) *ImageQuery {
+	query := (&ArtistClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withArtists = query
 	return iq
 }
 
@@ -375,8 +412,9 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 	var (
 		nodes       = []*Image{}
 		_spec       = iq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			iq.withAlbums != nil,
+			iq.withArtists != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -407,10 +445,24 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 			return nil, err
 		}
 	}
+	if query := iq.withArtists; query != nil {
+		if err := iq.loadArtists(ctx, query, nodes,
+			func(n *Image) { n.Edges.Artists = []*Artist{} },
+			func(n *Image, e *Artist) { n.Edges.Artists = append(n.Edges.Artists, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range iq.withNamedAlbums {
 		if err := iq.loadAlbums(ctx, query, nodes,
 			func(n *Image) { n.appendNamedAlbums(name) },
 			func(n *Image, e *Album) { n.appendNamedAlbums(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range iq.withNamedArtists {
+		if err := iq.loadArtists(ctx, query, nodes,
+			func(n *Image) { n.appendNamedArtists(name) },
+			func(n *Image, e *Artist) { n.appendNamedArtists(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -476,6 +528,67 @@ func (iq *ImageQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes [
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "albums" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (iq *ImageQuery) loadArtists(ctx context.Context, query *ArtistQuery, nodes []*Image, init func(*Image), assign func(*Image, *Artist)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[string]*Image)
+	nids := make(map[string]map[*Image]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(image.ArtistsTable)
+		s.Join(joinT).On(s.C(artist.FieldID), joinT.C(image.ArtistsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(image.ArtistsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(image.ArtistsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullString).String
+				inValue := values[1].(*sql.NullString).String
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Image]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Artist](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "artists" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -608,6 +721,20 @@ func (iq *ImageQuery) WithNamedAlbums(name string, opts ...func(*AlbumQuery)) *I
 		iq.withNamedAlbums = make(map[string]*AlbumQuery)
 	}
 	iq.withNamedAlbums[name] = query
+	return iq
+}
+
+// WithNamedArtists tells the query-builder to eager-load the nodes that are connected to the "artists"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (iq *ImageQuery) WithNamedArtists(name string, opts ...func(*ArtistQuery)) *ImageQuery {
+	query := (&ArtistClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if iq.withNamedArtists == nil {
+		iq.withNamedArtists = make(map[string]*ArtistQuery)
+	}
+	iq.withNamedArtists[name] = query
 	return iq
 }
 

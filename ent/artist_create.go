@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/rustic-beans/spotify-viewer/ent/album"
 	"github.com/rustic-beans/spotify-viewer/ent/artist"
+	"github.com/rustic-beans/spotify-viewer/ent/image"
 	"github.com/rustic-beans/spotify-viewer/ent/schema"
 	"github.com/rustic-beans/spotify-viewer/ent/track"
 )
@@ -46,6 +47,12 @@ func (ac *ArtistCreate) SetName(s string) *ArtistCreate {
 // SetURI sets the "uri" field.
 func (ac *ArtistCreate) SetURI(s string) *ArtistCreate {
 	ac.mutation.SetURI(s)
+	return ac
+}
+
+// SetGenres sets the "genres" field.
+func (ac *ArtistCreate) SetGenres(s []string) *ArtistCreate {
+	ac.mutation.SetGenres(s)
 	return ac
 }
 
@@ -83,6 +90,21 @@ func (ac *ArtistCreate) AddTracks(t ...*Track) *ArtistCreate {
 		ids[i] = t[i].ID
 	}
 	return ac.AddTrackIDs(ids...)
+}
+
+// AddImageIDs adds the "images" edge to the Image entity by IDs.
+func (ac *ArtistCreate) AddImageIDs(ids ...string) *ArtistCreate {
+	ac.mutation.AddImageIDs(ids...)
+	return ac
+}
+
+// AddImages adds the "images" edges to the Image entity.
+func (ac *ArtistCreate) AddImages(i ...*Image) *ArtistCreate {
+	ids := make([]string, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ac.AddImageIDs(ids...)
 }
 
 // Mutation returns the ArtistMutation object of the builder.
@@ -146,10 +168,16 @@ func (ac *ArtistCreate) check() error {
 			return &ValidationError{Name: "uri", err: fmt.Errorf(`ent: validator failed for field "Artist.uri": %w`, err)}
 		}
 	}
+	if _, ok := ac.mutation.Genres(); !ok {
+		return &ValidationError{Name: "genres", err: errors.New(`ent: missing required field "Artist.genres"`)}
+	}
 	if v, ok := ac.mutation.ID(); ok {
 		if err := artist.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Artist.id": %w`, err)}
 		}
+	}
+	if len(ac.mutation.ImagesIDs()) == 0 {
+		return &ValidationError{Name: "images", err: errors.New(`ent: missing required edge "Artist.images"`)}
 	}
 	return nil
 }
@@ -203,6 +231,10 @@ func (ac *ArtistCreate) createSpec() (*Artist, *sqlgraph.CreateSpec) {
 		_spec.SetField(artist.FieldURI, field.TypeString, value)
 		_node.URI = value
 	}
+	if value, ok := ac.mutation.Genres(); ok {
+		_spec.SetField(artist.FieldGenres, field.TypeJSON, value)
+		_node.Genres = value
+	}
 	if nodes := ac.mutation.AlbumsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -228,6 +260,22 @@ func (ac *ArtistCreate) createSpec() (*Artist, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(track.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.ImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   artist.ImagesTable,
+			Columns: artist.ImagesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -335,6 +383,18 @@ func (u *ArtistUpsert) UpdateURI() *ArtistUpsert {
 	return u
 }
 
+// SetGenres sets the "genres" field.
+func (u *ArtistUpsert) SetGenres(v []string) *ArtistUpsert {
+	u.Set(artist.FieldGenres, v)
+	return u
+}
+
+// UpdateGenres sets the "genres" field to the value that was provided on create.
+func (u *ArtistUpsert) UpdateGenres() *ArtistUpsert {
+	u.SetExcluded(artist.FieldGenres)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -436,6 +496,20 @@ func (u *ArtistUpsertOne) SetURI(v string) *ArtistUpsertOne {
 func (u *ArtistUpsertOne) UpdateURI() *ArtistUpsertOne {
 	return u.Update(func(s *ArtistUpsert) {
 		s.UpdateURI()
+	})
+}
+
+// SetGenres sets the "genres" field.
+func (u *ArtistUpsertOne) SetGenres(v []string) *ArtistUpsertOne {
+	return u.Update(func(s *ArtistUpsert) {
+		s.SetGenres(v)
+	})
+}
+
+// UpdateGenres sets the "genres" field to the value that was provided on create.
+func (u *ArtistUpsertOne) UpdateGenres() *ArtistUpsertOne {
+	return u.Update(func(s *ArtistUpsert) {
+		s.UpdateGenres()
 	})
 }
 
@@ -706,6 +780,20 @@ func (u *ArtistUpsertBulk) SetURI(v string) *ArtistUpsertBulk {
 func (u *ArtistUpsertBulk) UpdateURI() *ArtistUpsertBulk {
 	return u.Update(func(s *ArtistUpsert) {
 		s.UpdateURI()
+	})
+}
+
+// SetGenres sets the "genres" field.
+func (u *ArtistUpsertBulk) SetGenres(v []string) *ArtistUpsertBulk {
+	return u.Update(func(s *ArtistUpsert) {
+		s.SetGenres(v)
+	})
+}
+
+// UpdateGenres sets the "genres" field to the value that was provided on create.
+func (u *ArtistUpsertBulk) UpdateGenres() *ArtistUpsertBulk {
+	return u.Update(func(s *ArtistUpsert) {
+		s.UpdateGenres()
 	})
 }
 

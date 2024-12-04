@@ -20,8 +20,6 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAlbumID holds the string denoting the album_id field in the database.
 	FieldAlbumID = "album_id"
-	// FieldAvailableMarkets holds the string denoting the available_markets field in the database.
-	FieldAvailableMarkets = "available_markets"
 	// FieldDiscNumber holds the string denoting the disc_number field in the database.
 	FieldDiscNumber = "disc_number"
 	// FieldDurationMs holds the string denoting the duration_ms field in the database.
@@ -32,8 +30,6 @@ const (
 	FieldExternalUrls = "external_urls"
 	// FieldHref holds the string denoting the href field in the database.
 	FieldHref = "href"
-	// FieldIsPlayable holds the string denoting the is_playable field in the database.
-	FieldIsPlayable = "is_playable"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldPopularity holds the string denoting the popularity field in the database.
@@ -70,13 +66,11 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAlbumID,
-	FieldAvailableMarkets,
 	FieldDiscNumber,
 	FieldDurationMs,
 	FieldExplicit,
 	FieldExternalUrls,
 	FieldHref,
-	FieldIsPlayable,
 	FieldName,
 	FieldPopularity,
 	FieldPreviewURL,
@@ -164,11 +158,6 @@ func ByExplicit(opts ...sql.OrderTermOption) OrderOption {
 // ByHref orders the results by the href field.
 func ByHref(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHref, opts...).ToFunc()
-}
-
-// ByIsPlayable orders the results by the is_playable field.
-func ByIsPlayable(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsPlayable, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

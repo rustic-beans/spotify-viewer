@@ -78,11 +78,6 @@ func Height(v int) predicate.Image {
 	return predicate.Image(sql.FieldEQ(FieldHeight, v))
 }
 
-// Text applies equality check predicate on the "text" field. It's identical to TextEQ.
-func Text(v string) predicate.Image {
-	return predicate.Image(sql.FieldEQ(FieldText, v))
-}
-
 // URLEQ applies the EQ predicate on the "url" field.
 func URLEQ(v string) predicate.Image {
 	return predicate.Image(sql.FieldEQ(FieldURL, v))
@@ -228,71 +223,6 @@ func HeightLTE(v int) predicate.Image {
 	return predicate.Image(sql.FieldLTE(FieldHeight, v))
 }
 
-// TextEQ applies the EQ predicate on the "text" field.
-func TextEQ(v string) predicate.Image {
-	return predicate.Image(sql.FieldEQ(FieldText, v))
-}
-
-// TextNEQ applies the NEQ predicate on the "text" field.
-func TextNEQ(v string) predicate.Image {
-	return predicate.Image(sql.FieldNEQ(FieldText, v))
-}
-
-// TextIn applies the In predicate on the "text" field.
-func TextIn(vs ...string) predicate.Image {
-	return predicate.Image(sql.FieldIn(FieldText, vs...))
-}
-
-// TextNotIn applies the NotIn predicate on the "text" field.
-func TextNotIn(vs ...string) predicate.Image {
-	return predicate.Image(sql.FieldNotIn(FieldText, vs...))
-}
-
-// TextGT applies the GT predicate on the "text" field.
-func TextGT(v string) predicate.Image {
-	return predicate.Image(sql.FieldGT(FieldText, v))
-}
-
-// TextGTE applies the GTE predicate on the "text" field.
-func TextGTE(v string) predicate.Image {
-	return predicate.Image(sql.FieldGTE(FieldText, v))
-}
-
-// TextLT applies the LT predicate on the "text" field.
-func TextLT(v string) predicate.Image {
-	return predicate.Image(sql.FieldLT(FieldText, v))
-}
-
-// TextLTE applies the LTE predicate on the "text" field.
-func TextLTE(v string) predicate.Image {
-	return predicate.Image(sql.FieldLTE(FieldText, v))
-}
-
-// TextContains applies the Contains predicate on the "text" field.
-func TextContains(v string) predicate.Image {
-	return predicate.Image(sql.FieldContains(FieldText, v))
-}
-
-// TextHasPrefix applies the HasPrefix predicate on the "text" field.
-func TextHasPrefix(v string) predicate.Image {
-	return predicate.Image(sql.FieldHasPrefix(FieldText, v))
-}
-
-// TextHasSuffix applies the HasSuffix predicate on the "text" field.
-func TextHasSuffix(v string) predicate.Image {
-	return predicate.Image(sql.FieldHasSuffix(FieldText, v))
-}
-
-// TextEqualFold applies the EqualFold predicate on the "text" field.
-func TextEqualFold(v string) predicate.Image {
-	return predicate.Image(sql.FieldEqualFold(FieldText, v))
-}
-
-// TextContainsFold applies the ContainsFold predicate on the "text" field.
-func TextContainsFold(v string) predicate.Image {
-	return predicate.Image(sql.FieldContainsFold(FieldText, v))
-}
-
 // HasAlbums applies the HasEdge predicate on the "albums" edge.
 func HasAlbums() predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
@@ -308,6 +238,29 @@ func HasAlbums() predicate.Image {
 func HasAlbumsWith(preds ...predicate.Album) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		step := newAlbumsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasArtists applies the HasEdge predicate on the "artists" edge.
+func HasArtists() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ArtistsTable, ArtistsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasArtistsWith applies the HasEdge predicate on the "artists" edge with a given conditions (other predicates).
+func HasArtistsWith(preds ...predicate.Artist) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := newArtistsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

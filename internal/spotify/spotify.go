@@ -65,3 +65,39 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*spotifyLib.PlayerState, 
 
 	return playerState, nil
 }
+
+func (s *Spotify) GetArtist(ctx context.Context, id string) (*spotifyLib.FullArtist, error) {
+	artist, err := callSpotify(s, func() (*spotifyLib.FullArtist, error) {
+		return s.Client.GetArtist(ctx, spotifyLib.ID(id))
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return artist, nil
+}
+
+func (s *Spotify) GetAlbum(ctx context.Context, id string) (*spotifyLib.FullAlbum, error) {
+	album, err := callSpotify(s, func() (*spotifyLib.FullAlbum, error) {
+		return s.Client.GetAlbum(ctx, spotifyLib.ID(id))
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return album, nil
+}
+
+func (s *Spotify) GetTrack(ctx context.Context, id string) (*spotifyLib.FullTrack, error) {
+	track, err := callSpotify(s, func() (*spotifyLib.FullTrack, error) {
+		return s.Client.GetTrack(ctx, spotifyLib.ID(id))
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return track, nil
+}

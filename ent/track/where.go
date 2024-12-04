@@ -100,11 +100,6 @@ func Href(v string) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldHref, v))
 }
 
-// IsPlayable applies equality check predicate on the "is_playable" field. It's identical to IsPlayableEQ.
-func IsPlayable(v bool) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldIsPlayable, v))
-}
-
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Track {
 	return predicate.Track(sql.FieldEQ(FieldName, v))
@@ -438,16 +433,6 @@ func HrefEqualFold(v string) predicate.Track {
 // HrefContainsFold applies the ContainsFold predicate on the "href" field.
 func HrefContainsFold(v string) predicate.Track {
 	return predicate.Track(sql.FieldContainsFold(FieldHref, v))
-}
-
-// IsPlayableEQ applies the EQ predicate on the "is_playable" field.
-func IsPlayableEQ(v bool) predicate.Track {
-	return predicate.Track(sql.FieldEQ(FieldIsPlayable, v))
-}
-
-// IsPlayableNEQ applies the NEQ predicate on the "is_playable" field.
-func IsPlayableNEQ(v bool) predicate.Track {
-	return predicate.Track(sql.FieldNEQ(FieldIsPlayable, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
