@@ -13,7 +13,7 @@ type SpotifyViewer struct{}
 func (m *SpotifyViewer) BuildEnv(source *dagger.Directory) *dagger.Container {
 	// create a Dagger cache volume for dependencies
 	goCache := dag.CacheVolume("go-modules")
-	return dag.Go().WithModuleCache(goCache).Container().WithExec([]string{"go", "generate", "./ent"})
+	return dag.Go().WithSource(source).WithModuleCache(goCache).Container().WithExec([]string{"go", "generate", "./ent"})
 }
 
 // Runs the `spotify-viewer` module tests
