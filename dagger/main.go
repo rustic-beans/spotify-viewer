@@ -28,10 +28,13 @@ func (m *SpotifyViewer) BuildEnv(source *dagger.Directory) *dagger.Container {
 
 // Runs the `spotify-viewer` module tests
 func (m *SpotifyViewer) Test(ctx context.Context, source *dagger.Directory) (string, error) {
-	return m.BuildEnv(source). // call the test runner
-					WithExec([]string{"go", "test", "./lib/..."}).
-		// capture and return the command output
-		Stdout(ctx)
+	output, err := m.BuildEnv(source). // call the test runner
+						WithExec([]string{"go", "test", "./lib/..."}).Stdout(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return output, nil
 }
 
 // Build the application container

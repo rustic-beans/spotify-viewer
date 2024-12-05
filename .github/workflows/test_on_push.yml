@@ -7,12 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Fix Multiline issue
-        run: | 
-              echo 'var<<EOF' >> $GITHUB_OUTPUT
-
+        uses: actions/checkout@v4  
       - name: Call Backend Test Function
         uses: dagger/dagger-for-github@v6
         with:
@@ -22,7 +17,4 @@ jobs:
           # Maybe add this back if we want to see cool output
           #cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           #
-      - name: fix multiline issue
-        run: |
-            echo 'EOF' >> $GITHUB_OUTPUT
           
