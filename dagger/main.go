@@ -23,6 +23,7 @@ func (m *SpotifyViewer) Test(ctx context.Context, source *dagger.Directory) (str
 	if err != nil {
 		return "", err
 	}
+	println(output)
 
 	return "", nil
 }
