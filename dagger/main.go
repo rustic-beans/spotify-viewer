@@ -53,7 +53,7 @@ func (m *SpotifyViewer) Publish(ctx context.Context, source *dagger.Directory) (
 
 	bin := m.Build_Bin(source)
 
-	return dag.Container().From("golang:latest").
+	return dag.Container().From("debian:bookworm-slim").
 		WithFile("/bin/backend", bin.File("backend")).
 		WithEntrypoint([]string{"/bin/backend"}).
 		WithExposedPort(8080).
