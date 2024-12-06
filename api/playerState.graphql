@@ -5,7 +5,7 @@ type PlayerState {
   timestamp: Int!
   progressMs: Int!
   isPlaying: Boolean!
-  track: Track!
+  track: Track
 }
 
 extend type Query {

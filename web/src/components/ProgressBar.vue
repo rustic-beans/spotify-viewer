@@ -22,7 +22,7 @@ const progressObj = computed(() => useFragment(ProgressFragment, props.fragment)
 const timestamp = useTimestamp({ interval: 1000 });
 const timeAgo = computed(() => timestamp.value - (progressObj.value.timestamp));
 const progressMs = computed(() => progressObj.value.progressMs);
-const durationMs = computed(() => progressObj.value.track.durationMs || 0);
+const durationMs = computed(() => progressObj.value.track?.durationMs || 0);
 const actualProgressMs = computed(() => {
   let prog = progressMs.value;
   if (progressObj.value.isPlaying) {

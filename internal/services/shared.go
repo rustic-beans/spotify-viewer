@@ -5,6 +5,7 @@ import (
 
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
 )
 
 type Shared struct {
@@ -115,11 +116,6 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 		return nil, err
 	}
 
-	track, err := s.GetTrack(ctx, string(playerState.Item.ID))
-	if err != nil {
-		return nil, err
-	}
-
 	model := &models.PlayerState{
 		ContextType: string(playerState.PlaybackContext.Type),
 		ContextURI:  string(playerState.PlaybackContext.URI),
@@ -127,9 +123,19 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 		Timestamp:  int64(playerState.Timestamp),
 		ProgressMs: int64(playerState.Progress),
 		IsPlaying:  playerState.Playing,
-
-		Track: track,
 	}
+
+	if playerState.Item == nil {
+		utils.Logger.Info("No track playing")
+		return model, nil
+	}
+
+	track, err := s.GetTrack(ctx, string(playerState.Item.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	model.Track = track
 
 	return model, nil
 }

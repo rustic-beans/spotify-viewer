@@ -19,9 +19,6 @@ const config: CodegenConfig = {
         vueCompositionApiImportFrom: 'vue'
       }
     },
-    "./src/__generated__/types.ts": {
-      plugins: ["typescript", "typescript-operations", "typescript-vue-apollo"],
-    }
   }
 }
 

@@ -49,5 +49,7 @@ func NewServer(srv *handler.Server) *echo.Echo {
 		return nil
 	})
 
+	e.Static("/", "web/dist")
+
 	return e
 }
