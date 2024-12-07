@@ -15,17 +15,17 @@ func NewSpotify(client *spotify.Spotify) *Spotify {
 	return &Spotify{client: client}
 }
 
-func (s *Spotify) GetArtist(ctx context.Context, id string) (*models.Artist, []*models.Image, error) {
+func (s *Spotify) GetArtist(ctx context.Context, id string) (*models.CreateArtistParams, []*models.CreateImageParams, error) {
 	artist, err := s.client.GetArtist(ctx, id)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return spotify.FullArtistToModel(artist), spotify.ImageSliceToModelSlice(artist.Images), nil
+	return spotify.FullArtistToParams(artist), spotify.ImageSliceToModelParams(artist.Images), nil
 }
 
 // TODO: This is kind bad. Use a DTO or CreateInput from gqlgen instead
-func (s *Spotify) GetAlbum(ctx context.Context, id string) (*models.Album, []*models.Image, []string, error) {
+func (s *Spotify) GetAlbum(ctx context.Context, id string) (*models.CreateAlbumParams, []*models.CreateImageParams, []string, error) {
 	album, err := s.client.GetAlbum(ctx, id)
 	if err != nil {
 		return nil, nil, nil, err
@@ -36,10 +36,10 @@ func (s *Spotify) GetAlbum(ctx context.Context, id string) (*models.Album, []*mo
 		artistIDs = append(artistIDs, string(artist.ID))
 	}
 
-	return spotify.FullAlbumToModel(album), spotify.ImageSliceToModelSlice(album.Images), artistIDs, nil
+	return spotify.FullAlbumToParams(album), spotify.ImageSliceToModelParams(album.Images), artistIDs, nil
 }
 
-func (s *Spotify) GetTrack(ctx context.Context, id string) (*models.Track, []string, error) {
+func (s *Spotify) GetTrack(ctx context.Context, id string) (*models.CreateTrackParams, []string, error) {
 	track, err := s.client.GetTrack(ctx, id)
 	if err != nil {
 		return nil, nil, err
@@ -50,5 +50,5 @@ func (s *Spotify) GetTrack(ctx context.Context, id string) (*models.Track, []str
 		artistIDs = append(artistIDs, string(artist.ID))
 	}
 
-	return spotify.FullTrackToModel(track), artistIDs, nil
+	return spotify.FullTrackToParams(track), artistIDs, nil
 }

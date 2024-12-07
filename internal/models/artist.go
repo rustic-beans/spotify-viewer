@@ -1,5 +1,6 @@
 package models
 
-import "github.com/rustic-beans/spotify-viewer/ent"
+import "github.com/rustic-beans/spotify-viewer/internal/database"
 
-type Artist = ent.Artist
+type Artist = database.Artist
+type CreateArtistParams = database.CreateArtistParams

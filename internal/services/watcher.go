@@ -11,8 +11,8 @@ import (
 
 const (
 	sleepTime                     = 5 * time.Second
-	lastTrackDurationPercentage   = 50
-	replayTrackDurationPercentage = 5
+	lastTrackDurationPercentage   = int64(50)
+	replayTrackDurationPercentage = int64(5)
 )
 
 type Watcher struct {
@@ -83,8 +83,8 @@ func (w *Watcher) checkUpdate(ctx context.Context, playerState *models.PlayerSta
 	// TODO: Maybe find a better way to do this but works for now
 	// Check if last track update duration is more than 50% done and if current progress is less than 05% into the track
 	// This is what constitutes as a replay
-	if (trackDuration/lastTrackDurationPercentage)*100 < int(lastPlayerProgress) &&
-		int(playerProgress) <= (trackDuration/replayTrackDurationPercentage)*100 {
+	if (trackDuration/lastTrackDurationPercentage)*100 < lastPlayerProgress &&
+		playerProgress <= (trackDuration/replayTrackDurationPercentage)*int64(100) {
 		utils.Logger.Debug("Track has been replayed")
 
 		return true

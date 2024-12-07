@@ -1,7 +1,6 @@
 package models
 
-import (
-	"github.com/rustic-beans/spotify-viewer/ent"
-)
+import "github.com/rustic-beans/spotify-viewer/internal/database"
 
-type Image = ent.Image
+type Image = database.Image
+type CreateImageParams = database.CreateImageParams

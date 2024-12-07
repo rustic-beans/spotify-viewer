@@ -2,24 +2,16 @@ package database
 
 import (
 	"context"
-	"log"
 
-	"github.com/rustic-beans/spotify-viewer/ent"
+	"github.com/jackc/pgx/v5"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
-
-	_ "github.com/mattn/go-sqlite3" // sqlite driver
+	"go.uber.org/zap"
 )
 
-func Connect(config *utils.Config) *ent.Client {
-	// Create an ent.Client with the configured database
-	client, err := ent.Open(config.Database.Driver, config.Database.Source)
+func Connect(config *utils.Config) *pgx.Conn {
+	client, err := pgx.Connect(context.Background(), config.Database.Source)
 	if err != nil {
-		log.Fatalf("failed opening connection to database: %v", err)
-	}
-
-	// Run the automatic migration tool to create all schema resources.
-	if err = client.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+		utils.Logger.Fatal("failed opening connection to database: %v", zap.Error(err))
 	}
 
 	return client

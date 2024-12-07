@@ -2,167 +2,228 @@ package services
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/rustic-beans/spotify-viewer/ent"
+	"github.com/rustic-beans/spotify-viewer/internal/database"
 	"github.com/rustic-beans/spotify-viewer/internal/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
+type IDatabase interface {
+	GetAlbums(ctx context.Context) ([]*models.Album, error)
+	GetAlbumById(ctx context.Context, id string) (*models.Album, error)
+	CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs []string, artistIDs []string) (*models.Album, error)
+
+	GetArtists(ctx context.Context) ([]*models.Artist, error)
+	GetArtistById(ctx context.Context, id string) (*models.Artist, error)
+	CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error)
+
+	GetImages(ctx context.Context) ([]*models.Image, error)
+	GetImageByUrl(ctx context.Context, url string) (*models.Image, error)
+	CreateImages(ctx context.Context, image []*database.CreateImageParams) ([]*models.Image, error)
+
+	GetTracks(ctx context.Context) ([]*models.Track, error)
+	GetTrackById(ctx context.Context, id string) (*models.Track, error)
+	CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (*models.Track, error)
+}
+
 type Database struct {
-	client *ent.Client
+	*database.Queries
+	client *pgx.Conn
 }
 
-func NewDatabase(client *ent.Client) *Database {
-	return &Database{client: client}
+func NewDatabase(client *pgx.Conn) IDatabase {
+	return &Database{
+		Queries: database.New(client),
+		client:  client,
+	}
 }
 
-func (d *Database) GetArtist(ctx context.Context, id string) (*models.Artist, error) {
-	artist, err := d.client.Artist.Get(ctx, id)
-	if err != nil && !ent.IsNotFound(err) {
-		return nil, err
+func wrapOneQueryError[T any](result *T, err error) (*T, error) {
+	if err == pgx.ErrNoRows {
+		return nil, nil
 	}
 
-	return artist, nil
+	return result, err
 }
 
-func (d *Database) GetAlbum(ctx context.Context, id string) (*models.Album, error) {
-	album, err := d.client.Album.Get(ctx, id)
-	if err != nil && !ent.IsNotFound(err) {
-		return nil, err
+func wrapManyQueryError[T any](result []*T, err error) ([]*T, error) {
+	if err == pgx.ErrNoRows {
+		return nil, nil
 	}
 
-	return album, nil
+	return result, err
 }
 
-func (d *Database) GetTrack(ctx context.Context, id string) (*models.Track, error) {
-	track, err := d.client.Track.Get(ctx, id)
-	if err != nil && !ent.IsNotFound(err) {
-		return nil, err
-	}
-
-	return track, nil
-}
-
-func (d *Database) SaveArtist(ctx context.Context, artist *models.Artist, images []*models.Image) (*models.Artist, error) {
-	if err := d.UpsertImages(ctx, images); err != nil {
-		return nil, err
-	}
-
-	artistModel, err := d.client.Artist.Create().
-		SetID(artist.ID).
-		SetExternalUrls(artist.ExternalUrls).
-		SetHref(artist.Href).
-		SetName(artist.Name).
-		SetURI(artist.URI).
-		SetGenres(artist.Genres).
-		AddImages(images...).
-		Save(ctx)
+func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error) error {
+	tx, err := d.client.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	qtx := d.Queries.WithTx(tx)
+	if err := fn(qtx); err != nil {
+		err := fmt.Errorf("error with transaction: %w", err)
+		return err
 	}
 
-	return artistModel, nil
-}
-
-func (d *Database) SaveAlbum(ctx context.Context, album *models.Album, images []*models.Image, artistIDs []string) (*models.Album, error) {
-	if err := d.UpsertImages(ctx, images); err != nil {
-		return nil, err
-	}
-
-	albumModel, err := d.client.Album.Create().
-		SetID(album.ID).
-		SetAlbumType(album.AlbumType).
-		SetTotalTracks(album.TotalTracks).
-		SetExternalUrls(album.ExternalUrls).
-		SetHref(album.Href).
-		SetName(album.Name).
-		SetReleaseDate(album.ReleaseDate).
-		SetReleaseDatePrecision(album.ReleaseDatePrecision).
-		SetURI(album.URI).
-		SetGenres(album.Genres).
-		AddImages(images...).
-		AddArtistIDs(artistIDs...).
-		Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return albumModel, nil
-}
-
-func (d *Database) UpsertImages(ctx context.Context, images []*models.Image) error {
-	builders := make([]*ent.ImageCreate, len(images))
-
-	for i, image := range images {
-		builders[i] = d.client.Image.Create().
-			SetID(image.ID).
-			SetHeight(image.Height).
-			SetWidth(image.Width).
-			SetURL(image.URL)
-	}
-
-	err := d.client.Image.
-		CreateBulk(builders...).
-		OnConflict().
-		UpdateNewValues().
-		Exec(ctx)
-
-	return err
-}
-
-func (d *Database) SaveTrack(ctx context.Context, track *models.Track, artistIDs []string) (*models.Track, error) {
-	trackModel, err := d.client.Track.Create().
-		SetID(track.ID).
-		SetAlbumID(track.AlbumID).
-		SetDiscNumber(track.DiscNumber).
-		SetDurationMs(track.DurationMs).
-		SetExternalUrls(track.ExternalUrls).
-		SetHref(track.Href).
-		SetName(track.Name).
-		SetPopularity(track.Popularity).
-		SetPreviewURL(track.PreviewURL).
-		SetTrackNumber(track.TrackNumber).
-		SetURI(track.URI).
-		AddArtistIDs(artistIDs...).
-		Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return trackModel, nil
-}
-
-func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
-	tracks, err := d.client.Track.Query().All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return tracks, nil
+	return tx.Commit(ctx)
 }
 
 func (d *Database) GetAlbums(ctx context.Context) ([]*models.Album, error) {
-	albums, err := d.client.Album.Query().All(ctx)
+	res, err := d.Queries.GetAlbums(ctx)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetAlbumById(ctx context.Context, id string) (*models.Album, error) {
+	res, err := d.Queries.GetAlbumById(ctx, id)
+	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs []string, artistIDs []string) (*models.Album, error) {
+	var a *models.Album
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		var err error
+		a, err = q.CreateAlbum(ctx, album)
+		if err != nil {
+			return err
+		}
+
+		for _, url := range imageURLs {
+			err = q.SetAlbumImage(ctx, &database.SetAlbumImageParams{
+				AlbumID:  a.ID,
+				ImageUrl: url,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, id := range artistIDs {
+			err = q.SetArtistAlbum(ctx, &database.SetArtistAlbumParams{
+				AlbumID:  a.ID,
+				ArtistID: id,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return albums, nil
+	return a, nil
 }
 
 func (d *Database) GetArtists(ctx context.Context) ([]*models.Artist, error) {
-	artists, err := d.client.Artist.Query().All(ctx)
+	res, err := d.Queries.GetArtists(ctx)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetArtistById(ctx context.Context, id string) (*models.Artist, error) {
+	res, err := d.Queries.GetArtistById(ctx, id)
+	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error) {
+	var a *models.Artist
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		var err error
+		a, err = q.CreateArtist(ctx, artist)
+		if err != nil {
+			return err
+		}
+
+		for _, url := range imageURLs {
+			err = q.SetArtistImage(ctx, &database.SetArtistImageParams{
+				ArtistID: a.ID,
+				ImageUrl: url,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return artists, nil
+	return a, nil
 }
 
 func (d *Database) GetImages(ctx context.Context) ([]*models.Image, error) {
-	images, err := d.client.Image.Query().All(ctx)
+	res, err := d.Queries.GetImages(ctx)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetImageByUrl(ctx context.Context, url string) (*models.Image, error) {
+	res, err := d.Queries.GetImageByUrl(ctx, url)
+	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) CreateImages(ctx context.Context, images []*database.CreateImageParams) ([]*models.Image, error) {
+	var imgs []*models.Image
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		imgs = make([]*models.Image, 0, len(images))
+		for _, img := range images {
+			i, err := q.CreateImage(ctx, img)
+			if err != nil {
+				return err
+			}
+
+			imgs = append(imgs, i)
+		}
+
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return images, nil
+	return imgs, nil
+}
+
+func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
+	res, err := d.Queries.GetTracks(ctx)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetTrackById(ctx context.Context, id string) (*models.Track, error) {
+	res, err := d.Queries.GetTrackById(ctx, id)
+	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (*models.Track, error) {
+	var t *models.Track
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		var err error
+		t, err = q.CreateTrack(ctx, track)
+		if err != nil {
+			return err
+		}
+
+		for _, id := range artistIDs {
+			err = q.SetArtistTrack(ctx, &database.SetArtistTrackParams{
+				ArtistID: id,
+				TrackID:  t.ID,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return t, nil
 }

@@ -3,17 +3,17 @@ package models
 import (
 	"fmt"
 
-	"github.com/rustic-beans/spotify-viewer/ent"
-	"github.com/rustic-beans/spotify-viewer/ent/album"
+	"github.com/rustic-beans/spotify-viewer/internal/database"
 )
 
-type Album = ent.Album
-type AlbumType = album.AlbumType
+type Album = database.Album
+type CreateAlbumParams = database.CreateAlbumParams
+type AlbumType = database.AlbumType
 
 const (
-	AlbumTypeAlbum       = album.AlbumTypeAlbum
-	AlbumTypeCompilation = album.AlbumTypeCompilation
-	AlbumTypeSingle      = album.AlbumTypeSingle
+	AlbumTypeAlbum       = database.AlbumTypeAlbum
+	AlbumTypeCompilation = database.AlbumTypeCompilation
+	AlbumTypeSingle      = database.AlbumTypeSingle
 )
 
 var albumMap = map[string]AlbumType{
@@ -31,12 +31,12 @@ func StringToAlbumType(s string) (albumType AlbumType, _ error) {
 	return albumType, nil
 }
 
-type AlbumReleaseDatePrecision = album.ReleaseDatePrecision
+type AlbumReleaseDatePrecision = database.AlbumReleaseDatePrecision
 
 const (
-	ReleaseDatePrecisionDay   = album.ReleaseDatePrecisionDay
-	ReleaseDatePrecisionMonth = album.ReleaseDatePrecisionMonth
-	ReleaseDatePrecisionYear  = album.ReleaseDatePrecisionYear
+	ReleaseDatePrecisionDay   = database.AlbumReleaseDatePrecisionDay
+	ReleaseDatePrecisionMonth = database.AlbumReleaseDatePrecisionMonth
+	ReleaseDatePrecisionYear  = database.AlbumReleaseDatePrecisionYear
 )
 
 var releaseDatePrecisionMap = map[string]AlbumReleaseDatePrecision{

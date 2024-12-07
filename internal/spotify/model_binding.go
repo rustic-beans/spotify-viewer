@@ -5,83 +5,73 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
-func mapToStringMap(m map[string]string) *models.StringMap {
-	if m == nil {
-		return nil
-	}
-
-	sm := make(models.StringMap)
-	for k, v := range m {
-		sm[k] = v
-	}
-
-	return &sm
-}
-
-func ImageToModel(i *spotify.Image) *models.Image {
-	return &models.Image{
-		ID:     i.URL,
-		URL:    i.URL,
-		Width:  int(i.Width),
-		Height: int(i.Height),
+func ImageToParams(i *spotify.Image) *models.CreateImageParams {
+	return &models.CreateImageParams{
+		Url:    i.URL,
+		Width:  int64(i.Width),
+		Height: int64(i.Height),
 	}
 }
 
-func ImageSliceToModelSlice(images []spotify.Image) []*models.Image {
+func ImageSliceToModelParams(images []spotify.Image) []*models.CreateImageParams {
 	if images == nil {
 		return nil
 	}
 
-	models := make([]*models.Image, len(images))
+	imgModels := make([]*models.CreateImageParams, len(images))
 	for i, image := range images {
-		models[i] = ImageToModel(&image)
+		imgModels[i] = ImageToParams(&image)
 	}
 
-	return models
+	return imgModels
 }
 
-func FullArtistToModel(a *spotify.FullArtist) *models.Artist {
-	return &models.Artist{
-		ExternalUrls: mapToStringMap(a.ExternalURLs),
+func FullArtistToParams(a *spotify.FullArtist) *models.CreateArtistParams {
+	return &models.CreateArtistParams{
+		ExternalUrls: a.ExternalURLs,
 		Href:         a.Endpoint,
 		ID:           string(a.ID),
 		Name:         a.Name,
-		URI:          string(a.URI),
+		Uri:          string(a.URI),
 		Genres:       a.Genres,
 	}
 }
 
-func FullAlbumToModel(a *spotify.FullAlbum) *models.Album {
+func FullAlbumToParams(a *spotify.FullAlbum) *models.CreateAlbumParams {
 	albumType, _ := models.StringToAlbumType(a.AlbumType)
 	releaseDatePrecision, _ := models.StringToAlbumReleaseDatePrecision(a.ReleaseDatePrecision)
 
-	return &models.Album{
+	return &models.CreateAlbumParams{
 		ID:                   string(a.ID),
 		AlbumType:            albumType,
-		TotalTracks:          int(a.Tracks.Total),
-		ExternalUrls:         mapToStringMap(a.ExternalURLs),
+		TotalTracks:          int64(a.Tracks.Total),
+		ExternalUrls:         a.ExternalURLs,
 		Href:                 a.Endpoint,
 		Name:                 a.Name,
 		ReleaseDate:          a.ReleaseDate,
 		ReleaseDatePrecision: releaseDatePrecision,
-		URI:                  string(a.URI),
+		Uri:                  string(a.URI),
 		Genres:               a.Genres,
 	}
 }
 
-func FullTrackToModel(t *spotify.FullTrack) *models.Track {
-	return &models.Track{
+func FullTrackToParams(t *spotify.FullTrack) *models.CreateTrackParams {
+	var previewURL *string
+	if t.PreviewURL != "" {
+		previewURL = &t.PreviewURL
+	}
+
+	return &models.CreateTrackParams{
 		ID:           string(t.ID),
 		AlbumID:      string(t.Album.ID),
-		DiscNumber:   int(t.DiscNumber),
-		DurationMs:   int(t.Duration),
+		DurationMs:   int64(t.Duration),
 		Explicit:     t.Explicit,
-		ExternalUrls: mapToStringMap(t.ExternalURLs),
+		ExternalUrls: t.ExternalURLs,
 		Href:         t.Endpoint,
 		Name:         t.Name,
-		Popularity:   int(t.Popularity),
-		PreviewURL:   t.PreviewURL,
-		TrackNumber:  int(t.TrackNumber),
-		URI:          string(t.URI),
+		Popularity:   int64(t.Popularity),
+		PreviewUrl:   previewURL,
+		TrackNumber:  int64(t.TrackNumber),
+		Uri:          string(t.URI),
 	}
 }

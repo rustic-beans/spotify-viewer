@@ -9,28 +9,42 @@ import (
 )
 
 type Shared struct {
-	databaseService *Database
+	databaseService IDatabase
 	spotifyService  *Spotify
 	client          *spotify.Spotify
 }
 
-func NewShared(databaseService *Database, spotifyService *Spotify, client *spotify.Spotify) *Shared {
+func NewShared(databaseService IDatabase, spotifyService *Spotify, client *spotify.Spotify) *Shared {
 	return &Shared{databaseService: databaseService, spotifyService: spotifyService, client: client}
 }
 
+func getImageUrls(images []*models.Image) []string {
+	urls := make([]string, 0, len(images))
+	for _, image := range images {
+		urls = append(urls, image.Url)
+	}
+
+	return urls
+}
+
 func (s *Shared) GetArtist(ctx context.Context, id string) (*models.Artist, error) {
-	artist, err := s.databaseService.GetArtist(ctx, id)
+	artist, err := s.databaseService.GetArtistById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	if artist == nil {
-		artist, images, err := s.spotifyService.GetArtist(ctx, id)
+		artistParams, imageParams, err := s.spotifyService.GetArtist(ctx, id)
 		if err != nil {
 			return nil, err
 		}
 
-		artist, err = s.databaseService.SaveArtist(ctx, artist, images)
+		images, err := s.databaseService.CreateImages(ctx, imageParams)
+		if err != nil {
+			return nil, err
+		}
+
+		artist, err = s.databaseService.CreateArtist(ctx, artistParams, getImageUrls(images))
 		if err != nil {
 			return nil, err
 		}
@@ -40,23 +54,25 @@ func (s *Shared) GetArtist(ctx context.Context, id string) (*models.Artist, erro
 }
 
 func (s *Shared) GetAlbum(ctx context.Context, id string) (*models.Album, error) {
-	album, err := s.databaseService.GetAlbum(ctx, id)
+	album, err := s.databaseService.GetAlbumById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	if album == nil {
-		album, images, artistIDs, err := s.spotifyService.GetAlbum(ctx, id)
+		albumParams, imageParams, artistIDs, err := s.spotifyService.GetAlbum(ctx, id)
 		if err != nil {
 			return nil, err
 		}
+
+		images, err := s.databaseService.CreateImages(ctx, imageParams)
 
 		_, err = s.checkArtists(ctx, artistIDs)
 		if err != nil {
 			return nil, err
 		}
 
-		album, err = s.databaseService.SaveAlbum(ctx, album, images, artistIDs)
+		album, err = s.databaseService.CreateAlbum(ctx, albumParams, getImageUrls(images), artistIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -66,13 +82,13 @@ func (s *Shared) GetAlbum(ctx context.Context, id string) (*models.Album, error)
 }
 
 func (s *Shared) GetTrack(ctx context.Context, id string) (*models.Track, error) {
-	track, err := s.databaseService.GetTrack(ctx, id)
+	track, err := s.databaseService.GetTrackById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	if track == nil {
-		track, artistIDs, err := s.spotifyService.GetTrack(ctx, id)
+		trackParams, artistIDs, err := s.spotifyService.GetTrack(ctx, id)
 		if err != nil {
 			return nil, err
 		}
@@ -82,12 +98,12 @@ func (s *Shared) GetTrack(ctx context.Context, id string) (*models.Track, error)
 			return nil, err
 		}
 
-		_, err = s.GetAlbum(ctx, track.AlbumID)
+		_, err = s.GetAlbum(ctx, trackParams.AlbumID)
 		if err != nil {
 			return nil, err
 		}
 
-		track, err = s.databaseService.SaveTrack(ctx, track, artistIDs)
+		track, err = s.databaseService.CreateTrack(ctx, trackParams, artistIDs)
 		if err != nil {
 			return nil, err
 		}
