@@ -88,6 +88,18 @@ SELECT *
 FROM tracks
 WHERE id = $1;
 
+-- name: GetTrackAlbum :one
+SELECT albums.*
+FROM albums
+JOIN tracks ON albums.id = tracks.album_id
+WHERE tracks.id = $1;
+
+-- name: GetTrackArtists :many
+SELECT artists.*
+FROM artists
+JOIN artist_tracks ON artists.id = artist_tracks.artist_id
+WHERE artist_tracks.track_id = $1;
+
 -- name: CreateTrack :one
 INSERT INTO tracks (id, duration_ms, explicit, external_urls, href, name, popularity, preview_url, track_number, uri, album_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)

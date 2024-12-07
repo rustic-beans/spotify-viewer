@@ -6,8 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/rustic-beans/spotify-viewer/generated"
 	"github.com/rustic-beans/spotify-viewer/internal/database"
@@ -19,39 +17,19 @@ func (r *queryResolver) Tracks(ctx context.Context) ([]*database.Track, error) {
 	return r.SharedService.GetTracks(ctx)
 }
 
-// CreatedAt is the resolver for the createdAt field.
-func (r *trackResolver) CreatedAt(ctx context.Context, obj *database.Track) (*time.Time, error) {
-	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
-}
-
-// UpdatedAt is the resolver for the updatedAt field.
-func (r *trackResolver) UpdatedAt(ctx context.Context, obj *database.Track) (*time.Time, error) {
-	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
-}
-
-// DiscNumber is the resolver for the discNumber field.
-func (r *trackResolver) DiscNumber(ctx context.Context, obj *database.Track) (*int, error) {
-	panic(fmt.Errorf("not implemented: DiscNumber - discNumber"))
-}
-
 // ExternalUrls is the resolver for the externalUrls field.
 func (r *trackResolver) ExternalUrls(ctx context.Context, obj *database.Track) (models.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalUrls - externalUrls"))
-}
-
-// PreviewURL is the resolver for the previewURL field.
-func (r *trackResolver) PreviewURL(ctx context.Context, obj *database.Track) (*string, error) {
-	panic(fmt.Errorf("not implemented: PreviewURL - previewURL"))
+	return obj.ExternalUrls, nil
 }
 
 // Artists is the resolver for the artists field.
 func (r *trackResolver) Artists(ctx context.Context, obj *database.Track) ([]*database.Artist, error) {
-	panic(fmt.Errorf("not implemented: Artists - artists"))
+	return r.SharedService.GetTrackArtists(ctx, obj.ID)
 }
 
 // Album is the resolver for the album field.
 func (r *trackResolver) Album(ctx context.Context, obj *database.Track) (*database.Album, error) {
-	panic(fmt.Errorf("not implemented: Album - album"))
+	return r.SharedService.GetTrackAlbum(ctx, obj.ID)
 }
 
 // Track returns generated.TrackResolver implementation.

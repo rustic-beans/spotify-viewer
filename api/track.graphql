@@ -3,16 +3,10 @@ type Track {
   The Spotify ID for the track
   """
   id: ID!
-  createdAt: Time!
-  updatedAt: Time!
   """
   The album on which the track appears
   """
   albumID: ID!
-  """
-  The disc number
-  """
-  discNumber: Int
   """
   The track length in milliseconds
   """

@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rustic-beans/spotify-viewer/generated"
 	"github.com/rustic-beans/spotify-viewer/internal/database"

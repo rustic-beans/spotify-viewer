@@ -156,10 +156,6 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 	return model, nil
 }
 
-func (s *Shared) GetTracks(ctx context.Context) ([]*models.Track, error) {
-	return s.databaseService.GetTracks(ctx)
-}
-
 func (s *Shared) GetAlbums(ctx context.Context) ([]*models.Album, error) {
 	return s.databaseService.GetAlbums(ctx)
 }
@@ -194,4 +190,16 @@ func (s *Shared) GetArtistTracks(ctx context.Context, id string) ([]*models.Trac
 
 func (s *Shared) GetImages(ctx context.Context) ([]*models.Image, error) {
 	return s.databaseService.GetImages(ctx)
+}
+
+func (s *Shared) GetTracks(ctx context.Context) ([]*models.Track, error) {
+	return s.databaseService.GetTracks(ctx)
+}
+
+func (s *Shared) GetTrackAlbum(ctx context.Context, id string) (*models.Album, error) {
+	return s.databaseService.GetTrackAlbum(ctx, id)
+}
+
+func (s *Shared) GetTrackArtists(ctx context.Context, id string) ([]*models.Artist, error) {
+	return s.databaseService.GetTrackArtists(ctx, id)
 }

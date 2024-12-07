@@ -32,6 +32,8 @@ type IDatabase interface {
 
 	GetTracks(ctx context.Context) ([]*models.Track, error)
 	GetTrackById(ctx context.Context, id string) (*models.Track, error)
+	GetTrackAlbum(ctx context.Context, id string) (*models.Album, error)
+	GetTrackArtists(ctx context.Context, id string) ([]*models.Artist, error)
 	CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (*models.Track, error)
 }
 
@@ -235,6 +237,16 @@ func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
 func (d *Database) GetTrackById(ctx context.Context, id string) (*models.Track, error) {
 	res, err := d.Queries.GetTrackById(ctx, id)
 	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) GetTrackAlbum(ctx context.Context, id string) (*models.Album, error) {
+	res, err := d.Queries.GetTrackAlbum(ctx, id)
+	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) GetTrackArtists(ctx context.Context, id string) ([]*models.Artist, error) {
+	res, err := d.Queries.GetTrackArtists(ctx, id)
+	return wrapManyQueryError(res, err)
 }
 
 func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (*models.Track, error) {

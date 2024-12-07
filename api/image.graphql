@@ -2,9 +2,6 @@ type Image {
   url: String!
   width: Int!
   height: Int!
-
-  albums: [Album!]
-  artists: [Artist!]
 }
 
 extend type Query {

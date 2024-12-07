@@ -6,28 +6,11 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/rustic-beans/spotify-viewer/generated"
 	"github.com/rustic-beans/spotify-viewer/internal/database"
 )
-
-// Albums is the resolver for the albums field.
-func (r *imageResolver) Albums(ctx context.Context, obj *database.Image) ([]*database.Album, error) {
-	panic(fmt.Errorf("not implemented: Albums - albums"))
-}
-
-// Artists is the resolver for the artists field.
-func (r *imageResolver) Artists(ctx context.Context, obj *database.Image) ([]*database.Artist, error) {
-	panic(fmt.Errorf("not implemented: Artists - artists"))
-}
 
 // Images is the resolver for the images field.
 func (r *queryResolver) Images(ctx context.Context) ([]*database.Image, error) {
 	return r.SharedService.GetImages(ctx)
 }
-
-// Image returns generated.ImageResolver implementation.
-func (r *Resolver) Image() generated.ImageResolver { return &imageResolver{r} }
-
-type imageResolver struct{ *Resolver }
