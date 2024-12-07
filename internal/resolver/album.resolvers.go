@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rustic-beans/spotify-viewer/generated"
 	"github.com/rustic-beans/spotify-viewer/internal/database"
@@ -15,22 +14,22 @@ import (
 
 // ExternalUrls is the resolver for the externalUrls field.
 func (r *albumResolver) ExternalUrls(ctx context.Context, obj *database.Album) (models.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalUrls - externalUrls"))
+	return obj.ExternalUrls, nil
 }
 
 // Images is the resolver for the images field.
 func (r *albumResolver) Images(ctx context.Context, obj *database.Album) ([]*database.Image, error) {
-	panic(fmt.Errorf("not implemented: Images - images"))
+	return r.SharedService.GetAlbumImages(ctx, obj.ID)
 }
 
 // Artists is the resolver for the artists field.
 func (r *albumResolver) Artists(ctx context.Context, obj *database.Album) ([]*database.Artist, error) {
-	panic(fmt.Errorf("not implemented: Tracks - tracks"))
+	return r.SharedService.GetAlbumArtists(ctx, obj.ID)
 }
 
 // Tracks is the resolver for the tracks field.
 func (r *albumResolver) Tracks(ctx context.Context, obj *database.Album) ([]*database.Track, error) {
-	panic(fmt.Errorf("not implemented: Tracks - tracks"))
+	return r.SharedService.GetAlbumTracks(ctx, obj.ID)
 }
 
 // Albums is the resolver for the albums field.

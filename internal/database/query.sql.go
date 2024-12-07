@@ -163,6 +163,40 @@ func (q *Queries) CreateTrack(ctx context.Context, arg *CreateTrackParams) (*Tra
 	return &i, err
 }
 
+const getAlbumArtists = `-- name: GetAlbumArtists :many
+SELECT artists.id, artists.external_urls, artists.href, artists.name, artists.uri, artists.genres
+FROM artists
+JOIN artist_albums ON artists.id = artist_albums.artist_id
+WHERE artist_albums.album_id = $1
+`
+
+func (q *Queries) GetAlbumArtists(ctx context.Context, albumID string) ([]*Artist, error) {
+	rows, err := q.db.Query(ctx, getAlbumArtists, albumID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Artist
+	for rows.Next() {
+		var i Artist
+		if err := rows.Scan(
+			&i.ID,
+			&i.ExternalUrls,
+			&i.Href,
+			&i.Name,
+			&i.Uri,
+			&i.Genres,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAlbumById = `-- name: GetAlbumById :one
 SELECT id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres
 FROM albums
@@ -187,6 +221,71 @@ func (q *Queries) GetAlbumById(ctx context.Context, id string) (*Album, error) {
 	return &i, err
 }
 
+const getAlbumImages = `-- name: GetAlbumImages :many
+SELECT images.url, images.width, images.height
+FROM images
+JOIN album_images ON images.url = album_images.image_url
+WHERE album_images.album_id = $1
+`
+
+func (q *Queries) GetAlbumImages(ctx context.Context, albumID string) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getAlbumImages, albumID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Image
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAlbumTracks = `-- name: GetAlbumTracks :many
+SELECT id, duration_ms, explicit, external_urls, href, name, popularity, preview_url, track_number, uri, album_id
+FROM tracks
+WHERE album_id = $1
+`
+
+func (q *Queries) GetAlbumTracks(ctx context.Context, albumID string) ([]*Track, error) {
+	rows, err := q.db.Query(ctx, getAlbumTracks, albumID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Track
+	for rows.Next() {
+		var i Track
+		if err := rows.Scan(
+			&i.ID,
+			&i.DurationMs,
+			&i.Explicit,
+			&i.ExternalUrls,
+			&i.Href,
+			&i.Name,
+			&i.Popularity,
+			&i.PreviewUrl,
+			&i.TrackNumber,
+			&i.Uri,
+			&i.AlbumID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAlbums = `-- name: GetAlbums :many
 SELECT id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres
 FROM albums
@@ -195,6 +294,44 @@ ORDER BY name
 
 func (q *Queries) GetAlbums(ctx context.Context) ([]*Album, error) {
 	rows, err := q.db.Query(ctx, getAlbums)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Album
+	for rows.Next() {
+		var i Album
+		if err := rows.Scan(
+			&i.ID,
+			&i.AlbumType,
+			&i.TotalTracks,
+			&i.ExternalUrls,
+			&i.Href,
+			&i.Name,
+			&i.ReleaseDate,
+			&i.ReleaseDatePrecision,
+			&i.Uri,
+			&i.Genres,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getArtistAlbums = `-- name: GetArtistAlbums :many
+SELECT albums.id, albums.album_type, albums.total_tracks, albums.external_urls, albums.href, albums.name, albums.release_date, albums.release_date_precision, albums.uri, albums.genres
+FROM albums
+JOIN artist_albums ON albums.id = artist_albums.album_id
+WHERE artist_albums.artist_id = $1
+`
+
+func (q *Queries) GetArtistAlbums(ctx context.Context, artistID string) ([]*Album, error) {
+	rows, err := q.db.Query(ctx, getArtistAlbums, artistID)
 	if err != nil {
 		return nil, err
 	}

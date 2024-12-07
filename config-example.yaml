@@ -7,4 +7,4 @@ server:
   port: 8080
 database:
   driver: sqlite3
-  source: "file:ent?mode=memory&cache=shared&_fk=1"
+  source: "postgres://admin:root@0.0.0.0:5432/spotify_db?sslmode=disable"

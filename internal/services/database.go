@@ -8,11 +8,15 @@ import (
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type IDatabase interface {
 	GetAlbums(ctx context.Context) ([]*models.Album, error)
 	GetAlbumById(ctx context.Context, id string) (*models.Album, error)
+	GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error)
+	GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error)
+	GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error)
 	CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs []string, artistIDs []string) (*models.Album, error)
 
 	GetArtists(ctx context.Context) ([]*models.Artist, error)
@@ -30,10 +34,10 @@ type IDatabase interface {
 
 type Database struct {
 	*database.Queries
-	client *pgx.Conn
+	client *pgxpool.Pool
 }
 
-func NewDatabase(client *pgx.Conn) IDatabase {
+func NewDatabase(client *pgxpool.Pool) IDatabase {
 	return &Database{
 		Queries: database.New(client),
 		client:  client,
@@ -80,6 +84,21 @@ func (d *Database) GetAlbums(ctx context.Context) ([]*models.Album, error) {
 func (d *Database) GetAlbumById(ctx context.Context, id string) (*models.Album, error) {
 	res, err := d.Queries.GetAlbumById(ctx, id)
 	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error) {
+	res, err := d.Queries.GetAlbumArtists(ctx, id)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error) {
+	res, err := d.Queries.GetAlbumImages(ctx, id)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error) {
+	res, err := d.Queries.GetAlbumTracks(ctx, id)
+	return wrapManyQueryError(res, err)
 }
 
 func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs []string, artistIDs []string) (*models.Album, error) {

@@ -164,6 +164,18 @@ func (s *Shared) GetAlbums(ctx context.Context) ([]*models.Album, error) {
 	return s.databaseService.GetAlbums(ctx)
 }
 
+func (s *Shared) GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error) {
+	return s.databaseService.GetAlbumArtists(ctx, id)
+}
+
+func (s *Shared) GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error) {
+	return s.databaseService.GetAlbumImages(ctx, id)
+}
+
+func (s *Shared) GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error) {
+	return s.databaseService.GetAlbumTracks(ctx, id)
+}
+
 func (s *Shared) GetArtists(ctx context.Context) ([]*models.Artist, error) {
 	return s.databaseService.GetArtists(ctx)
 }
