@@ -180,6 +180,18 @@ func (s *Shared) GetArtists(ctx context.Context) ([]*models.Artist, error) {
 	return s.databaseService.GetArtists(ctx)
 }
 
+func (s *Shared) GetArtistAlbums(ctx context.Context, id string) ([]*models.Album, error) {
+	return s.databaseService.GetArtistAlbums(ctx, id)
+}
+
+func (s *Shared) GetArtistImages(ctx context.Context, id string) ([]*models.Image, error) {
+	return s.databaseService.GetArtistImages(ctx, id)
+}
+
+func (s *Shared) GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error) {
+	return s.databaseService.GetArtistTracks(ctx, id)
+}
+
 func (s *Shared) GetImages(ctx context.Context) ([]*models.Image, error) {
 	return s.databaseService.GetImages(ctx)
 }

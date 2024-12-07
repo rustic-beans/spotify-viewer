@@ -381,6 +381,72 @@ func (q *Queries) GetArtistById(ctx context.Context, id string) (*Artist, error)
 	return &i, err
 }
 
+const getArtistImages = `-- name: GetArtistImages :many
+SELECT images.url, images.width, images.height
+FROM images
+JOIN artist_images ON images.url = artist_images.image_url
+WHERE artist_images.artist_id = $1
+`
+
+func (q *Queries) GetArtistImages(ctx context.Context, artistID string) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getArtistImages, artistID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Image
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getArtistTracks = `-- name: GetArtistTracks :many
+SELECT tracks.id, tracks.duration_ms, tracks.explicit, tracks.external_urls, tracks.href, tracks.name, tracks.popularity, tracks.preview_url, tracks.track_number, tracks.uri, tracks.album_id
+FROM tracks
+JOIN artist_tracks ON tracks.id = artist_tracks.track_id
+WHERE artist_tracks.artist_id = $1
+`
+
+func (q *Queries) GetArtistTracks(ctx context.Context, artistID string) ([]*Track, error) {
+	rows, err := q.db.Query(ctx, getArtistTracks, artistID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Track
+	for rows.Next() {
+		var i Track
+		if err := rows.Scan(
+			&i.ID,
+			&i.DurationMs,
+			&i.Explicit,
+			&i.ExternalUrls,
+			&i.Href,
+			&i.Name,
+			&i.Popularity,
+			&i.PreviewUrl,
+			&i.TrackNumber,
+			&i.Uri,
+			&i.AlbumID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getArtists = `-- name: GetArtists :many
 SELECT id, external_urls, href, name, uri, genres
 FROM artists

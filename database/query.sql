@@ -40,6 +40,24 @@ SELECT *
 FROM artists
 WHERE id = $1;
 
+-- name: GetArtistAlbums :many
+SELECT albums.*
+FROM albums
+JOIN artist_albums ON albums.id = artist_albums.album_id
+WHERE artist_albums.artist_id = $1;
+
+-- name: GetArtistImages :many
+SELECT images.*
+FROM images
+JOIN artist_images ON images.url = artist_images.image_url
+WHERE artist_images.artist_id = $1;
+
+-- name: GetArtistTracks :many
+SELECT tracks.*
+FROM tracks
+JOIN artist_tracks ON tracks.id = artist_tracks.track_id
+WHERE artist_tracks.artist_id = $1;
+
 -- name: CreateArtist :one
 INSERT INTO artists (id, external_urls, href, name, uri, genres)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -78,12 +96,6 @@ RETURNING *;
 -- name: SetAlbumImage :exec
 INSERT INTO album_images (album_id, image_url)
 VALUES ($1, $2);
-
--- name: GetArtistAlbums :many
-SELECT albums.*
-FROM albums
-JOIN artist_albums ON albums.id = artist_albums.album_id
-WHERE artist_albums.artist_id = $1;
 
 -- name: SetArtistAlbum :exec
 INSERT INTO artist_albums (artist_id, album_id)

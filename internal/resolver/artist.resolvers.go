@@ -15,22 +15,22 @@ import (
 
 // ExternalUrls is the resolver for the externalUrls field.
 func (r *artistResolver) ExternalUrls(ctx context.Context, obj *database.Artist) (models.StringMap, error) {
-	panic(fmt.Errorf("not implemented: ExternalUrls - externalUrls"))
+	return obj.ExternalUrls, nil
 }
 
 // Albums is the resolver for the albums field.
 func (r *artistResolver) Albums(ctx context.Context, obj *database.Artist) ([]*database.Album, error) {
-	return r.SharedService.GetAlbums(ctx)
+	return r.SharedService.GetArtistAlbums(ctx, obj.ID)
 }
 
 // Tracks is the resolver for the tracks field.
 func (r *artistResolver) Tracks(ctx context.Context, obj *database.Artist) ([]*database.Track, error) {
-	panic(fmt.Errorf("not implemented: Tracks - tracks"))
+	return r.SharedService.GetArtistTracks(ctx, obj.ID)
 }
 
 // Images is the resolver for the images field.
 func (r *artistResolver) Images(ctx context.Context, obj *database.Artist) ([]*database.Image, error) {
-	panic(fmt.Errorf("not implemented: Images - images"))
+	return r.SharedService.GetArtistImages(ctx, obj.ID)
 }
 
 // Artists is the resolver for the artists field.

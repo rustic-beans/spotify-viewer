@@ -21,6 +21,9 @@ type IDatabase interface {
 
 	GetArtists(ctx context.Context) ([]*models.Artist, error)
 	GetArtistById(ctx context.Context, id string) (*models.Artist, error)
+	GetArtistAlbums(ctx context.Context, id string) ([]*models.Album, error)
+	GetArtistImages(ctx context.Context, id string) ([]*models.Image, error)
+	GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error)
 	CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error)
 
 	GetImages(ctx context.Context) ([]*models.Image, error)
@@ -147,6 +150,21 @@ func (d *Database) GetArtists(ctx context.Context) ([]*models.Artist, error) {
 func (d *Database) GetArtistById(ctx context.Context, id string) (*models.Artist, error) {
 	res, err := d.Queries.GetArtistById(ctx, id)
 	return wrapOneQueryError(res, err)
+}
+
+func (d *Database) GetArtistAlbums(ctx context.Context, id string) ([]*models.Album, error) {
+	res, err := d.Queries.GetArtistAlbums(ctx, id)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetArtistImages(ctx context.Context, id string) ([]*models.Image, error) {
+	res, err := d.Queries.GetArtistImages(ctx, id)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error) {
+	res, err := d.Queries.GetArtistTracks(ctx, id)
+	return wrapManyQueryError(res, err)
 }
 
 func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error) {
