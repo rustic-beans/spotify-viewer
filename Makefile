@@ -5,3 +5,7 @@ generate:
 start:
 	go run ./cmd/main.go
 
+setup:
+	docker-compose up -d
+	go mod tidy
+	$(MAKE) generate
