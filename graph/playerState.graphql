@@ -1,7 +1,0 @@
-extend type Query {
-  playerState: PlayerState!
-}
-
-extend type Subscription {
-  playerState: PlayerState!
-}

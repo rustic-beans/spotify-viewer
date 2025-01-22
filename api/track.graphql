@@ -1,0 +1,52 @@
+type Track {
+  """
+  The Spotify ID for the track
+  """
+  id: ID!
+  """
+  The album on which the track appears
+  """
+  albumID: ID!
+  """
+  The track length in milliseconds
+  """
+  durationMs: Int!
+  """
+  Whether or not the track has explicit lyrics
+  """
+  explicit: Boolean!
+  """
+  Known external URLs for this track
+  """
+  externalUrls: StringMap!
+  """
+  A link to the Web API endpoint providing full details of the track
+  """
+  href: String!
+  """
+  The name of the track
+  """
+  name: String!
+  """
+  The popularity of the track
+  """
+  popularity: Int!
+  """
+  A link to a 30 second preview of the track
+  """
+  previewURL: String
+  """
+  The number of the track
+  """
+  trackNumber: Int!
+  """
+  The Spotify URI for the track
+  """
+  uri: String!
+  artists: [Artist!]!
+  album: Album!
+}
+
+extend type Query {
+  tracks: [Track!]!
+}
