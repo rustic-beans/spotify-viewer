@@ -6,5 +6,5 @@ server:
   host: localhost
   port: 8080
 database:
-  driver: sqlite3
-  source: "postgres://admin:root@0.0.0.0:5432/spotify_db?sslmode=disable"
+  driver: postgres
+  source: "postgres://postgres:root@0.0.0.0:5432/spotify_db?sslmode=disable"

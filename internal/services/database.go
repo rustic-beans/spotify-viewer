@@ -13,25 +13,25 @@ import (
 
 type IDatabase interface {
 	GetAlbums(ctx context.Context) ([]*models.Album, error)
-	GetAlbumById(ctx context.Context, id string) (*models.Album, error)
+	GetAlbumsById(ctx context.Context, id []string) ([]*models.Album, error)
 	GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error)
 	GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error)
 	GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error)
 	CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs []string, artistIDs []string) (*models.Album, error)
 
 	GetArtists(ctx context.Context) ([]*models.Artist, error)
-	GetArtistById(ctx context.Context, id string) (*models.Artist, error)
+	GetArtistsById(ctx context.Context, id []string) ([]*models.Artist, error)
 	GetArtistAlbums(ctx context.Context, id string) ([]*models.Album, error)
 	GetArtistImages(ctx context.Context, id string) ([]*models.Image, error)
 	GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error)
 	CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error)
 
 	GetImages(ctx context.Context) ([]*models.Image, error)
-	GetImageByUrl(ctx context.Context, url string) (*models.Image, error)
+	GetImagesByUrl(ctx context.Context, url []string) ([]*models.Image, error)
 	CreateImages(ctx context.Context, image []*database.CreateImageParams) ([]*models.Image, error)
 
 	GetTracks(ctx context.Context) ([]*models.Track, error)
-	GetTrackById(ctx context.Context, id string) (*models.Track, error)
+	GetTracksById(ctx context.Context, id []string) ([]*models.Track, error)
 	GetTrackAlbum(ctx context.Context, id string) (*models.Album, error)
 	GetTrackArtists(ctx context.Context, id string) ([]*models.Artist, error)
 	CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (*models.Track, error)
@@ -86,9 +86,9 @@ func (d *Database) GetAlbums(ctx context.Context) ([]*models.Album, error) {
 	return wrapManyQueryError(res, err)
 }
 
-func (d *Database) GetAlbumById(ctx context.Context, id string) (*models.Album, error) {
-	res, err := d.Queries.GetAlbumById(ctx, id)
-	return wrapOneQueryError(res, err)
+func (d *Database) GetAlbumsById(ctx context.Context, id []string) ([]*models.Album, error) {
+	res, err := d.Queries.GetAlbumsById(ctx, id)
+	return wrapManyQueryError(res, err)
 }
 
 func (d *Database) GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error) {
@@ -149,9 +149,9 @@ func (d *Database) GetArtists(ctx context.Context) ([]*models.Artist, error) {
 	return wrapManyQueryError(res, err)
 }
 
-func (d *Database) GetArtistById(ctx context.Context, id string) (*models.Artist, error) {
-	res, err := d.Queries.GetArtistById(ctx, id)
-	return wrapOneQueryError(res, err)
+func (d *Database) GetArtistsById(ctx context.Context, id []string) ([]*models.Artist, error) {
+	res, err := d.Queries.GetArtistsById(ctx, id)
+	return wrapManyQueryError(res, err)
 }
 
 func (d *Database) GetArtistAlbums(ctx context.Context, id string) ([]*models.Album, error) {
@@ -202,9 +202,9 @@ func (d *Database) GetImages(ctx context.Context) ([]*models.Image, error) {
 	return wrapManyQueryError(res, err)
 }
 
-func (d *Database) GetImageByUrl(ctx context.Context, url string) (*models.Image, error) {
-	res, err := d.Queries.GetImageByUrl(ctx, url)
-	return wrapOneQueryError(res, err)
+func (d *Database) GetImagesByUrl(ctx context.Context, url []string) ([]*models.Image, error) {
+	res, err := d.Queries.GetImagesByUrl(ctx, url)
+	return wrapManyQueryError(res, err)
 }
 
 func (d *Database) CreateImages(ctx context.Context, images []*database.CreateImageParams) ([]*models.Image, error) {
@@ -234,9 +234,9 @@ func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
 	return wrapManyQueryError(res, err)
 }
 
-func (d *Database) GetTrackById(ctx context.Context, id string) (*models.Track, error) {
-	res, err := d.Queries.GetTrackById(ctx, id)
-	return wrapOneQueryError(res, err)
+func (d *Database) GetTracksById(ctx context.Context, id []string) ([]*models.Track, error) {
+	res, err := d.Queries.GetTracksById(ctx, id)
+	return wrapManyQueryError(res, err)
 }
 
 func (d *Database) GetTrackAlbum(ctx context.Context, id string) (*models.Album, error) {
