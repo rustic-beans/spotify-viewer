@@ -3,7 +3,7 @@ SELECT *
 FROM albums
 ORDER BY name;
 
--- name: GetAlbumsById :many
+-- name: GetAlbumsByID :many
 SELECT *
 FROM albums
 WHERE id = ANY($1::text[]);
@@ -35,7 +35,7 @@ SELECT *
 FROM artists
 ORDER BY name;
 
--- name: GetArtistsById :many
+-- name: GetArtistsByID :many
 SELECT *
 FROM artists
 WHERE id = ANY($1::text[]);
@@ -68,7 +68,7 @@ SELECT *
 FROM images
 ORDER BY url;
 
--- name: GetImagesByUrl :many
+-- name: GetImagesByURL :many
 SELECT *
 FROM images
 WHERE url = ANY($1::text[]);
@@ -83,7 +83,7 @@ SELECT *
 FROM tracks
 ORDER BY name;
 
--- name: GetTracksById :many
+-- name: GetTracksByID :many
 SELECT *
 FROM tracks
 WHERE id = ANY($1::text[]);

@@ -28,8 +28,8 @@ func getImageUrls(images []*models.Image) []string {
 	return urls
 }
 
-func (s *Shared) GetArtistsById(ctx context.Context, ids []string) ([]*models.Artist, []error) {
-	artists, err := s.databaseService.GetArtistsById(ctx, ids)
+func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Artist, []error) {
+	artists, err := s.databaseService.GetArtistsByID(ctx, ids)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -42,6 +42,7 @@ func (s *Shared) GetArtistsById(ctx context.Context, ids []string) ([]*models.Ar
 
 	for _, id := range ids {
 		found := false
+
 		for _, artist := range artists {
 			if artist.ID == id {
 				found = true
@@ -81,8 +82,8 @@ func (s *Shared) GetArtistsById(ctx context.Context, ids []string) ([]*models.Ar
 	return artists, errs
 }
 
-func (s *Shared) GetAlbumsById(ctx context.Context, ids []string) ([]*models.Album, []error) {
-	albums, err := s.databaseService.GetAlbumsById(ctx, ids)
+func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Album, []error) {
+	albums, err := s.databaseService.GetAlbumsByID(ctx, ids)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -95,6 +96,7 @@ func (s *Shared) GetAlbumsById(ctx context.Context, ids []string) ([]*models.Alb
 
 	for _, id := range ids {
 		found := false
+
 		for _, album := range albums {
 			if album.ID == id {
 				found = true
@@ -113,10 +115,14 @@ func (s *Shared) GetAlbumsById(ctx context.Context, ids []string) ([]*models.Alb
 		}
 
 		images, err := s.databaseService.CreateImages(ctx, imageParams)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
 
-		_, errs := s.GetArtistsById(ctx, artistIDs)
-		if errs != nil {
-			errs = append(errs, errs...)
+		_, newErrs := s.GetArtistsByID(ctx, artistIDs)
+		if newErrs != nil {
+			errs = append(errs, newErrs...)
 			continue
 		}
 
@@ -129,11 +135,15 @@ func (s *Shared) GetAlbumsById(ctx context.Context, ids []string) ([]*models.Alb
 		albums = append(albums, album)
 	}
 
-	return albums, nil
+	if len(errs) == 0 {
+		return albums, nil
+	}
+
+	return albums, errs
 }
 
-func (s *Shared) GetTracksById(ctx context.Context, ids []string) ([]*models.Track, []error) {
-	tracks, err := s.databaseService.GetTracksById(ctx, ids)
+func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Track, []error) {
+	tracks, err := s.databaseService.GetTracksByID(ctx, ids)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -146,6 +156,7 @@ func (s *Shared) GetTracksById(ctx context.Context, ids []string) ([]*models.Tra
 
 	for _, id := range ids {
 		found := false
+
 		for _, track := range tracks {
 			if track.ID == id {
 				found = true
@@ -163,15 +174,15 @@ func (s *Shared) GetTracksById(ctx context.Context, ids []string) ([]*models.Tra
 			continue
 		}
 
-		_, errs := s.GetArtistsById(ctx, artistIDs)
+		_, errs = s.GetArtistsByID(ctx, artistIDs)
 		if errs != nil {
 			errs = append(errs, errs...)
 			continue
 		}
 
-		_, errs = s.GetAlbumsById(ctx, []string{trackParams.AlbumID})
-		if err != nil {
-			errs = append(errs, err)
+		_, newErrs := s.GetAlbumsByID(ctx, []string{trackParams.AlbumID})
+		if newErrs != nil {
+			errs = append(errs, newErrs...)
 			continue
 		}
 
@@ -184,7 +195,11 @@ func (s *Shared) GetTracksById(ctx context.Context, ids []string) ([]*models.Tra
 		tracks = append(tracks, track)
 	}
 
-	return tracks, nil
+	if len(errs) == 0 {
+		return tracks, nil
+	}
+
+	return tracks, errs
 }
 
 func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error) {
@@ -194,10 +209,10 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 	}
 
 	model := &models.PlayerState{
-		ContextType: string(playerState.PlaybackContext.Type),
+		ContextType: playerState.PlaybackContext.Type,
 		ContextURI:  string(playerState.PlaybackContext.URI),
 
-		Timestamp:  int64(playerState.Timestamp),
+		Timestamp:  playerState.Timestamp,
 		ProgressMs: int64(playerState.Progress),
 		IsPlaying:  playerState.Playing,
 	}
@@ -207,7 +222,7 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 		return model, nil
 	}
 
-	tracks, errs := s.GetTracksById(ctx, []string{string(playerState.Item.ID)})
+	tracks, errs := s.GetTracksByID(ctx, []string{string(playerState.Item.ID)})
 	if errs != nil {
 		for _, err := range errs {
 			utils.Logger.Error("Failed to get track", zap.Error(err))

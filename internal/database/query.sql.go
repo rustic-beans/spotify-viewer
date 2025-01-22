@@ -299,14 +299,14 @@ func (q *Queries) GetAlbums(ctx context.Context) ([]*Album, error) {
 	return items, nil
 }
 
-const getAlbumsById = `-- name: GetAlbumsById :many
+const getAlbumsByID = `-- name: GetAlbumsByID :many
 SELECT id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres
 FROM albums
 WHERE id = ANY($1::text[])
 `
 
-func (q *Queries) GetAlbumsById(ctx context.Context, dollar_1 []string) ([]*Album, error) {
-	rows, err := q.db.Query(ctx, getAlbumsById, dollar_1)
+func (q *Queries) GetAlbumsByID(ctx context.Context, dollar_1 []string) ([]*Album, error) {
+	rows, err := q.db.Query(ctx, getAlbumsByID, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -473,14 +473,14 @@ func (q *Queries) GetArtists(ctx context.Context) ([]*Artist, error) {
 	return items, nil
 }
 
-const getArtistsById = `-- name: GetArtistsById :many
+const getArtistsByID = `-- name: GetArtistsByID :many
 SELECT id, external_urls, href, name, uri, genres
 FROM artists
 WHERE id = ANY($1::text[])
 `
 
-func (q *Queries) GetArtistsById(ctx context.Context, dollar_1 []string) ([]*Artist, error) {
-	rows, err := q.db.Query(ctx, getArtistsById, dollar_1)
+func (q *Queries) GetArtistsByID(ctx context.Context, dollar_1 []string) ([]*Artist, error) {
+	rows, err := q.db.Query(ctx, getArtistsByID, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -532,14 +532,14 @@ func (q *Queries) GetImages(ctx context.Context) ([]*Image, error) {
 	return items, nil
 }
 
-const getImagesByUrl = `-- name: GetImagesByUrl :many
+const getImagesByURL = `-- name: GetImagesByURL :many
 SELECT url, width, height
 FROM images
 WHERE url = ANY($1::text[])
 `
 
-func (q *Queries) GetImagesByUrl(ctx context.Context, dollar_1 []string) ([]*Image, error) {
-	rows, err := q.db.Query(ctx, getImagesByUrl, dollar_1)
+func (q *Queries) GetImagesByURL(ctx context.Context, dollar_1 []string) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getImagesByURL, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -655,14 +655,14 @@ func (q *Queries) GetTracks(ctx context.Context) ([]*Track, error) {
 	return items, nil
 }
 
-const getTracksById = `-- name: GetTracksById :many
+const getTracksByID = `-- name: GetTracksByID :many
 SELECT id, duration_ms, explicit, external_urls, href, name, popularity, preview_url, track_number, uri, album_id
 FROM tracks
 WHERE id = ANY($1::text[])
 `
 
-func (q *Queries) GetTracksById(ctx context.Context, dollar_1 []string) ([]*Track, error) {
-	rows, err := q.db.Query(ctx, getTracksById, dollar_1)
+func (q *Queries) GetTracksByID(ctx context.Context, dollar_1 []string) ([]*Track, error) {
+	rows, err := q.db.Query(ctx, getTracksByID, dollar_1)
 	if err != nil {
 		return nil, err
 	}

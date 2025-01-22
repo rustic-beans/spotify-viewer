@@ -65,7 +65,7 @@ func (w *Watcher) StartPlayerStateLoop() {
 	}
 }
 
-func (w *Watcher) checkUpdate(ctx context.Context, playerState *models.PlayerState) bool {
+func (w *Watcher) checkUpdate(_ context.Context, playerState *models.PlayerState) bool {
 	lastPlayerState := w.lastPlayerState
 
 	// Check if the track has just changed and if so add it to the db
@@ -84,6 +84,7 @@ func (w *Watcher) checkUpdate(ctx context.Context, playerState *models.PlayerSta
 	// Check if last track update duration is more than 50% done and if current progress is less than 05% into the track
 	// This is what constitutes as a replay
 	if (trackDuration/lastTrackDurationPercentage)*100 < lastPlayerProgress &&
+		//nolint:mnd // Magic number is fine here
 		playerProgress <= (trackDuration/replayTrackDurationPercentage)*int64(100) {
 		utils.Logger.Debug("Track has been replayed")
 
