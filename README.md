@@ -18,7 +18,7 @@ This project is a basic server-client application that allows users to view what
 ## Dependencies
 We use `sqlc` to generate the database code, you can install it by running
 ```bash
-go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 ```
 
 ## Usage
