@@ -1,0 +1,59 @@
+type Album {
+  id: ID!
+  """
+  The type of the album
+  """
+  albumType: AlbumType!
+  """
+  The number of tracks in the album
+  """
+  totalTracks: Int!
+  """
+  Known external URLs for this artist
+  """
+  externalUrls: StringMap!
+  """
+  A link to the Web API endpoint providing full details of the album
+  """
+  href: String!
+  """
+  The name of the album
+  """
+  name: String!
+  """
+  The date the album was first released
+  """
+  releaseDate: String!
+  """
+  The precision with which release_date value is known
+  """
+  releaseDatePrecision: AlbumReleaseDatePrecision!
+  """
+  The Spotify URI for the album
+  """
+  uri: String!
+  """
+  A list of the genres the album is associated with
+  """
+  genres: [String!]!
+
+  images: [Image!]!
+  artists: [Artist!]
+  tracks: [Track!]
+}
+
+enum AlbumType {
+  album
+  single
+  compilation
+}
+
+enum AlbumReleaseDatePrecision {
+  year
+  month
+  day
+}
+
+extend type Query {
+  albums: [Album!]!
+}

@@ -1,0 +1,17 @@
+type PlayerState {
+  contextType: String!
+  contextUri: String!
+
+  timestamp: Int!
+  progressMs: Int!
+  isPlaying: Boolean!
+  track: Track
+}
+
+extend type Query {
+  playerState: PlayerState!
+}
+
+extend type Subscription {
+  playerState: PlayerState!
+}

@@ -1,0 +1,9 @@
+type Image {
+  url: String!
+  width: Int!
+  height: Int!
+}
+
+extend type Query {
+  images: [Image!]!
+}
