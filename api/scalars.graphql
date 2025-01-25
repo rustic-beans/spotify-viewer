@@ -1,0 +1,5 @@
+scalar StringMap
+scalar Time
+
+type Subscription
+type Query

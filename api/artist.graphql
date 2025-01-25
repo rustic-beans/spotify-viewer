@@ -1,0 +1,34 @@
+type Artist {
+  """
+  The Spotify ID for the artist
+  """
+  id: ID!
+  """
+  Known external URLs for this artist
+  """
+  externalUrls: StringMap!
+  """
+  A link to the Web API endpoint providing full details of the artist
+  """
+  href: String!
+  """
+  The name of the artist
+  """
+  name: String!
+  """
+  The Spotify URI for the artist
+  """
+  uri: String!
+  """
+  A list of genres the artist is associated with.  For example, "Prog Rock" or "Post-Grunge".  If not yet classified, the slice is empty.
+  """
+  genres: [String!]!
+
+  albums: [Album!]
+  tracks: [Track!]
+  images: [Image!]!
+}
+
+extend type Query {
+  artists: [Artist!]!
+}
