@@ -145,3 +145,5 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/linux,windows,macos,visualstudiocode,vim,go
 
 
+go.work
+go.work.sum
