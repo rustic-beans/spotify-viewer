@@ -10,13 +10,17 @@ import (
 
 type SpotifyViewer struct{}
 
-func (m *SpotifyViewer) BuildNodeEnv(source *dagger.Directory) *dagger.Container {
+func (m *SpotifyViewer) BuildNodeEnv(
+	// +ignore=["web/node_modules"]
+	source *dagger.Directory,
+) *dagger.Container {
 	nodeCache := dag.CacheVolume("node")
 	return dag.Container().
 		From("node:22").
-		WithDirectory("/source", source.Directory("./web")).
+		WithDirectory("/source/web", source.Directory("./web")).
+		WithDirectory("/source/api", source.Directory("./api")).
 		WithMountedCache("/root/.npm", nodeCache).
-		WithWorkdir("/source").
+		WithWorkdir("/source/web").
 		WithExec([]string{"npm", "install"})
 }
 
@@ -69,13 +73,13 @@ func (m *SpotifyViewer) Publish(ctx context.Context, source *dagger.Directory) (
 	web := m.BuildWeb(source)
 
 	return dag.Container().From("debian:bookworm-slim").
+		WithExec([]string{"apt-get", "update"}).
+		WithExec([]string{"apt-get", "install", "-y", "ca-certificates"}).
+		WithExec([]string{"update-ca-certificates"}).
 		WithFile("/app/backend", bin.File("backend")).
 		WithDirectory("/app/web", web).
 		WithWorkdir("/app").
 		WithEntrypoint([]string{"/app/backend"}).
 		WithExposedPort(8080).
 		Publish(ctx, fmt.Sprintf("ttl.sh/spotify-viewer-%.0f", math.Floor(rand.Float64()*1000000000)))
-
-	// build the application
-
 }

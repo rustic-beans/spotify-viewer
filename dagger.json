@@ -9,5 +9,11 @@
       "pin": "d9ba06776c4c1ccf6f329bd862b9b439c4582ab6"
     }
   ],
-  "source": "dagger"
+  "source": "dagger",
+  "exclude": [
+    "**/node_modules",
+    "**/dist",
+    "token.json",
+    "config.yaml"
+  ]
 }
