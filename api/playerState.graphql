@@ -1,5 +1,5 @@
 type PlayerStateContext {
-  id: String
+  id: String!
   type: String!
   name: String
   imageUrl: String
