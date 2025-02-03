@@ -143,6 +143,19 @@ type Image struct {
 	Height int64  `json:"height"`
 }
 
+type Playlist struct {
+	ID           string            `json:"id"`
+	ExternalUrls map[string]string `json:"external_urls"`
+	Href         string            `json:"href"`
+	Name         string            `json:"name"`
+	Uri          string            `json:"uri"`
+}
+
+type PlaylistImage struct {
+	PlaylistID string `json:"playlist_id"`
+	ImageUrl   string `json:"image_url"`
+}
+
 type Track struct {
 	ID           string            `json:"id"`
 	DurationMs   int64             `json:"duration_ms"`

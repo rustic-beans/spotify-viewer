@@ -75,3 +75,13 @@ func FullTrackToParams(t *spotify.FullTrack) *models.CreateTrackParams {
 		Uri:          string(t.URI),
 	}
 }
+
+func FullPlaylistToParams(p *spotify.FullPlaylist) *models.CreatePlaylistParams {
+	return &models.CreatePlaylistParams{
+		ID:           string(p.ID),
+		ExternalUrls: p.ExternalURLs,
+		Href:         p.Endpoint,
+		Name:         p.Name,
+		Uri:          string(p.URI),
+	}
+}
