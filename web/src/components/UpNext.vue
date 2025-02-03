@@ -1,6 +1,6 @@
 <template>
   <!-- Up Next -->
-  <div class="absolute top-6 right-6 bg-neutral-800/90 rounded p-3 flex items-center gap-3 backdrop-blur-lg">
+  <div class="absolute top-6 right-6 backdrop-blur-lg bg-neutral-800/40 rounded p-3 flex items-center gap-3">
     <img
       src="https://picsum.photos/seed/next/60"
       alt="Next Track"
