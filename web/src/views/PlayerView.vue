@@ -11,11 +11,15 @@ const { result, loading, error } = useSubscription(graphql(/* GraphQL */ `
   subscription playerState {
     playerState {
       ...PlayerState
+      context {
+        ...Context
+      }
     }
   }
 `));
 
 const playerState = computed(() => result?.value?.playerState);
+const context = computed(() => playerState.value?.context);
 </script>
 
 <template>
@@ -24,7 +28,7 @@ const playerState = computed(() => result?.value?.playerState);
       <Player :fragment="playerState" />
 
       <UpNext />
-      <Context />
+      <Context :fragment="context" />
     </div>
     <div
       class="text-center"

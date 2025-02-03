@@ -37,6 +37,11 @@ type IDatabase interface {
 	GetTrackAlbum(ctx context.Context, id string) (*models.Album, error)
 	GetTrackArtists(ctx context.Context, id string) ([]*models.Artist, error)
 	CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (*models.Track, error)
+
+	GetPlaylists(ctx context.Context) ([]*models.Playlist, error)
+	GetPlaylistsByID(ctx context.Context, id []string) ([]*models.Playlist, error)
+	GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error)
+	CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (*models.Playlist, error)
 }
 
 type Database struct {
@@ -291,4 +296,49 @@ func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackP
 	}
 
 	return t, nil
+}
+
+func (d *Database) GetPlaylists(ctx context.Context) ([]*models.Playlist, error) {
+	res, err := d.Queries.GetPlaylists(ctx)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetPlaylistsByID(ctx context.Context, id []string) ([]*models.Playlist, error) {
+	res, err := d.Queries.GetPlaylistsByID(ctx, id)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error) {
+	res, err := d.Queries.GetPlaylistImages(ctx, id)
+	return wrapManyQueryError(res, err)
+}
+
+func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (*models.Playlist, error) {
+	var p *models.Playlist
+
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		var err error
+
+		p, err = q.CreatePlaylist(ctx, playlist)
+		if err != nil {
+			return err
+		}
+
+		for _, url := range imageURLs {
+			err = q.SetPlaylistImage(ctx, &database.SetPlaylistImageParams{
+				PlaylistID: p.ID,
+				ImageUrl:   url,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return p, nil
 }

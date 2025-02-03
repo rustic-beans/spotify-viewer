@@ -1,11 +1,17 @@
-type PlayerState {
-  contextType: String!
-  contextUri: String!
+type PlayerStateContext {
+  id: String!
+  type: String!
+  name: String
+  imageUrl: String
+  href: String!
+}
 
+type PlayerState {
   timestamp: Int!
   progressMs: Int!
   isPlaying: Boolean!
   track: Track
+  context: PlayerStateContext
 }
 
 extend type Query {

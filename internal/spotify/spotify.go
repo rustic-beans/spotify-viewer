@@ -101,3 +101,15 @@ func (s *Spotify) GetTrack(ctx context.Context, id string) (*spotifyLib.FullTrac
 
 	return track, nil
 }
+
+func (s *Spotify) GetPlaylist(ctx context.Context, id string) (*spotifyLib.FullPlaylist, error) {
+	playlist, err := callSpotify(s, func() (*spotifyLib.FullPlaylist, error) {
+		return s.Client.GetPlaylist(ctx, spotifyLib.ID(id))
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return playlist, nil
+}

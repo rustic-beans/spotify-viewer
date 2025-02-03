@@ -120,3 +120,28 @@ VALUES ($1, $2);
 -- name: SetArtistImage :exec
 INSERT INTO artist_images (artist_id, image_url)
 VALUES ($1, $2);
+
+-- name: GetPlaylists :many
+SELECT *
+FROM playlists
+ORDER BY name;
+
+-- name: GetPlaylistsByID :many
+SELECT *
+FROM playlists
+WHERE id = ANY($1::text[]);
+
+-- name: GetPlaylistImages :many
+SELECT images.*
+FROM images
+JOIN playlist_images ON images.url = playlist_images.image_url
+WHERE playlist_images.playlist_id = $1;
+
+-- name: CreatePlaylist :one
+INSERT INTO playlists (id, external_urls, href, name, uri)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+
+-- name: SetPlaylistImage :exec
+INSERT INTO playlist_images (playlist_id, image_url)
+VALUES ($1, $2);
