@@ -6,10 +6,8 @@ import (
 
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
-	"github.com/rustic-beans/spotify-viewer/internal/utils"
 
 	spotifyLib "github.com/zmb3/spotify/v2"
-	"go.uber.org/zap"
 )
 
 type Spotify struct {
@@ -27,7 +25,6 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 	}
 
 	context := s.getContext(string(playerState.PlaybackContext.URI))
-	utils.Logger.Debug("context", zap.Any("context", playerState.PlaybackContext))
 	context.Href = playerState.PlaybackContext.ExternalURLs["spotify"]
 
 	model := &models.PlayerState{
