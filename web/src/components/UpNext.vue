@@ -7,8 +7,8 @@
       class="w-12 h-12 rounded object-cover"
     >
     <div class="pr-3">
-      <div class="text-xs text-gray-400 uppercase tracking-wider">UP NEXT</div>
-      <div class="text-white font-medium">This section</div>
+      <div class="text-xs uppercase tracking-wider opacity-75">UP NEXT</div>
+      <div class="font-medium">This section</div>
     </div>
   </div>
 </template>
