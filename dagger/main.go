@@ -55,7 +55,7 @@ func (m *SpotifyViewer) Test(ctx context.Context, source *dagger.Directory) (str
 
 // Build the application container
 // To Export please call it with ... export --path=./dist from the source folder
-func (m *SpotifyViewer) Build_Bin(source *dagger.Directory) *dagger.Directory {
+func (m *SpotifyViewer) BuildGoBin(source *dagger.Directory) *dagger.Directory {
 	return m.BuildGoEnv(source).
 		WithExec([]string{"go", "build", "-C", "cmd", "-o", "../dist/backend"}).
 		Directory("./dist")
@@ -69,7 +69,7 @@ func (m *SpotifyViewer) Publish(ctx context.Context, source *dagger.Directory) (
 		return "", err
 	}
 
-	bin := m.Build_Bin(source)
+	bin := m.BuildGoBin(source)
 	web := m.BuildWeb(source)
 
 	return dag.Container().From("debian:bookworm-slim").
