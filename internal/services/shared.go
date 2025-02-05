@@ -233,6 +233,7 @@ func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.P
 			errs = append(errs, err)
 			continue
 		}
+
 		if playlistParams == nil {
 			continue
 		}
@@ -270,9 +271,13 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 		return playerState, nil
 	}
 
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	//nolint:mnd // There can only be 2 channels
 	channel := make(chan error, 2)
 
-	go func() {
+	go func(ctx context.Context) {
 		tracks, errs := s.GetTracksByID(ctx, []string{playerState.TrackID})
 		if errs != nil {
 			for _, err := range errs {
@@ -285,10 +290,10 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 
 		playerState.Track = tracks[0]
 		channel <- nil
-	}()
+	}(ctx)
 
 	go func() {
-		context, err := s.getContext(ctx, playerState.Context)
+		playerStateContext, err := s.getContext(ctx, playerState.Context)
 		if err != nil {
 			utils.Logger.Error("Failed to get context", zap.Error(err))
 			channel <- err
@@ -296,7 +301,7 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 			return
 		}
 
-		playerState.Context = context
+		playerState.Context = playerStateContext
 		channel <- nil
 	}()
 

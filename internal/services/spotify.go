@@ -44,12 +44,13 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 	return model, nil
 }
 
-func (s *Spotify) getContext(contextUri string) *models.PlayerStateContext {
-	if contextUri == "" {
+func (s *Spotify) getContext(contextURI string) *models.PlayerStateContext {
+	if contextURI == "" {
 		return &models.PlayerStateContext{}
 	}
 
-	context := strings.Split(contextUri, ":")
+	context := strings.Split(contextURI, ":")
+	//nolint:mnd // Magic number is fine here
 	if len(context) != 3 {
 		return &models.PlayerStateContext{}
 	}
