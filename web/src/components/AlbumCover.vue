@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { type FragmentType, useFragment, graphql } from '@/__generated__';
 
 const ImagesFragment = graphql(/* GraphQL */ `
-  fragment Images on Album {
+  fragment AlbumImages on Album {
     externalUrls
     images {
       url
