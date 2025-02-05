@@ -29,3 +29,6 @@ sql:
           - column: "tracks.external_urls"
             go_type:
               type: "map[string]string"
+          - column: "playlists.external_urls"
+            go_type:
+              type: "map[string]string"
