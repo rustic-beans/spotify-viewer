@@ -24,11 +24,11 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 		return nil, err
 	}
 
-	context := s.getContext(string(playerState.PlaybackContext.URI))
-	context.Href = playerState.PlaybackContext.ExternalURLs["spotify"]
+	playerStateContext := s.getContext(string(playerState.PlaybackContext.URI))
+	playerStateContext.Href = playerState.PlaybackContext.ExternalURLs["spotify"]
 
 	model := &models.PlayerState{
-		Context: context,
+		Context: playerStateContext,
 
 		Timestamp:  playerState.Timestamp,
 		ProgressMs: int64(playerState.Progress),
@@ -49,15 +49,15 @@ func (s *Spotify) getContext(contextURI string) *models.PlayerStateContext {
 		return &models.PlayerStateContext{}
 	}
 
-	context := strings.Split(contextURI, ":")
+	splitContext := strings.Split(contextURI, ":")
 	//nolint:mnd // Magic number is fine here
-	if len(context) != 3 {
+	if len(splitContext) != 3 {
 		return &models.PlayerStateContext{}
 	}
 
 	return &models.PlayerStateContext{
-		Type: context[1],
-		ID:   context[2],
+		Type: splitContext[1],
+		ID:   splitContext[2],
 	}
 }
 
