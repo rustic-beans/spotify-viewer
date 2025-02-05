@@ -27,8 +27,10 @@ func NewConfig() *Config {
 }
 
 func ReadConfig() (*Config, error) {
-	viper.SetConfigFile("config.yaml")
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("./config")
 
 	err := viper.ReadInConfig()
 	if err != nil {

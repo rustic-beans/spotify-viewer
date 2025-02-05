@@ -38,18 +38,33 @@ Then run the backend with the following command:
 make start
 ```
 
-### Test
-TODO
-
 ### Frontend 
 ### Development
 ```
-cd frontend
+cd web
 npm i
 npm run generate
 npm run dev
 ```
 
-## Host
-TODO
+### Build
+```
+cd web
+npm i
+npm run build
+```
 
+## CI
+
+This project primarily uses Dagger for CI. To run the CI locally you can use the following command:
+```bash
+dagger call publish --source=.
+```
+
+And then run the resulting container with:
+```bash
+mkdir dockerdata
+cp config.yaml dockerdata/config.yaml
+cp token.json dockerdata/token.json
+docker run -v $(pwd)/dockerdata:/app/config -p 8080:8080 <container url> 
+```
