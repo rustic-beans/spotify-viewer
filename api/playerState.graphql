@@ -11,7 +11,7 @@ type PlayerState {
   progressMs: Int!
   isPlaying: Boolean!
   track: Track
-  context: PlayerStateContext
+  context: PlayerStateContext!
 }
 
 extend type Query {

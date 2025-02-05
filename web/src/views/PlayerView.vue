@@ -24,11 +24,11 @@ const context = computed(() => playerState.value?.context);
 
 <template>
   <main>
-    <div v-if="!loading && playerState">
+    <div v-if="!loading && playerState && context">
       <Player :fragment="playerState" />
 
       <UpNext />
-      <Context :fragment="context" />
+      <Context :fragment="context!" />
     </div>
     <div
       class="text-center"

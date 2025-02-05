@@ -3,11 +3,10 @@ import { computed } from 'vue';
 import { type FragmentType, useFragment, graphql } from '@/__generated__';
 
 /* TODO: Change this to be the artist image from a different spotify api call later
- This requires changes to the current graphql types so for now we will just use a placeholder image 
+ This requires changes to the current graphql types so for now we will just use a placeholder image
 (the same as the album cover) ) */
 const ImagesFragment = graphql(/* GraphQL */ `
-  fragment Images on SimpleAlbum {
-    external_urls
+  fragment BackgroundImages on Album {
     images {
       url
     }
@@ -32,9 +31,9 @@ const backgroundUrl = computed(() => {
 </script>
 
 <template>
-    <img
-      :src="backgroundUrl"
-      alt="Background image"
-      class="w-24 h-24 rounded shadow-2xl"
-    >
+  <img
+    :src="backgroundUrl"
+    alt="Background image"
+    class="w-24 h-24 rounded shadow-2xl"
+  >
 </template>

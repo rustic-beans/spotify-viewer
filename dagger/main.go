@@ -77,7 +77,7 @@ func (m *SpotifyViewer) Publish(ctx context.Context, source *dagger.Directory) (
 		WithExec([]string{"apt-get", "install", "-y", "ca-certificates"}).
 		WithExec([]string{"update-ca-certificates"}).
 		WithFile("/app/backend", bin.File("backend")).
-		WithDirectory("/app/web", web).
+		WithDirectory("/app/web/dist", web).
 		WithWorkdir("/app").
 		WithEntrypoint([]string{"/app/backend"}).
 		WithExposedPort(8080).
