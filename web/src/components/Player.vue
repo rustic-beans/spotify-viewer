@@ -43,31 +43,29 @@ var color = "#821271";
     <div class="object-cover h-full w-full blur " :style="{'background-color': color}" >
       <div class="object-cover h-full w-full bg-gradient-to-tr from-neutral-600 to-neutral-900 opacity-25 blur-lg"></div>
     </div>
-    <div class="absolute bottom-0 left-0 right-0 p-12">
-      <div class="flex flex-row items-end gap-6">
-        <AlbumCover
-          v-if="imagesObj"
-          :fragment="imagesObj"
-        />
-        <TrackInfo
-          v-if="trackObj"
-          :fragment="trackObj"
-        />
-        <Controls
-          class="ml-auto"
-          :fragment="playerStateObj"
-        />
-      </div>
+    <div class="absolute bottom-0 left-0 right-0 w-full h-96">
+      <div
+        class="absolute h-full w-full bg-gradient-to-b from-transparent via-neutral-800/00 to-neutral-800/100 backdrop-blur"
+        style="mask-image: linear-gradient(to bottom, transparent, black 40%, black);"
+      />
+      <div class="absolute z-10 bottom-0 left-0 right-0 p-6">
+        <div class="flex flex-row items-end gap-6">
+          <AlbumCover
+            v-if="imagesObj"
+            :fragment="imagesObj"
+          />
+          <TrackInfo
+            v-if="trackObj"
+            :fragment="trackObj"
+          />
+          <Controls
+            class="ml-auto"
+            :fragment="playerStateObj"
+          />
+        </div>
 
-      <ProgressBar :fragment="playerStateObj" />
+        <ProgressBar :fragment="playerStateObj" />
+      </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.from-neutral-800 {
-  --tw-gradient-from: rgb(38 38 38);
-  --tw-gradient-to: rgb(23 23 23);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-</style>
