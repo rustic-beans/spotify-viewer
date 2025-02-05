@@ -112,6 +112,39 @@ func (q *Queries) CreateImage(ctx context.Context, arg *CreateImageParams) (*Ima
 	return &i, err
 }
 
+const createPlaylist = `-- name: CreatePlaylist :one
+INSERT INTO playlists (id, external_urls, href, name, uri)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, external_urls, href, name, uri
+`
+
+type CreatePlaylistParams struct {
+	ID           string            `json:"id"`
+	ExternalUrls map[string]string `json:"external_urls"`
+	Href         string            `json:"href"`
+	Name         string            `json:"name"`
+	Uri          string            `json:"uri"`
+}
+
+func (q *Queries) CreatePlaylist(ctx context.Context, arg *CreatePlaylistParams) (*Playlist, error) {
+	row := q.db.QueryRow(ctx, createPlaylist,
+		arg.ID,
+		arg.ExternalUrls,
+		arg.Href,
+		arg.Name,
+		arg.Uri,
+	)
+	var i Playlist
+	err := row.Scan(
+		&i.ID,
+		&i.ExternalUrls,
+		&i.Href,
+		&i.Name,
+		&i.Uri,
+	)
+	return &i, err
+}
+
 const createTrack = `-- name: CreateTrack :one
 INSERT INTO tracks (id, duration_ms, explicit, external_urls, href, name, popularity, preview_url, track_number, uri, album_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -558,6 +591,97 @@ func (q *Queries) GetImagesByURL(ctx context.Context, dollar_1 []string) ([]*Ima
 	return items, nil
 }
 
+const getPlaylistImages = `-- name: GetPlaylistImages :many
+SELECT images.url, images.width, images.height
+FROM images
+JOIN playlist_images ON images.url = playlist_images.image_url
+WHERE playlist_images.playlist_id = $1
+`
+
+func (q *Queries) GetPlaylistImages(ctx context.Context, playlistID string) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getPlaylistImages, playlistID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Image
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPlaylists = `-- name: GetPlaylists :many
+SELECT id, external_urls, href, name, uri
+FROM playlists
+ORDER BY name
+`
+
+func (q *Queries) GetPlaylists(ctx context.Context) ([]*Playlist, error) {
+	rows, err := q.db.Query(ctx, getPlaylists)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Playlist
+	for rows.Next() {
+		var i Playlist
+		if err := rows.Scan(
+			&i.ID,
+			&i.ExternalUrls,
+			&i.Href,
+			&i.Name,
+			&i.Uri,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPlaylistsByID = `-- name: GetPlaylistsByID :many
+SELECT id, external_urls, href, name, uri
+FROM playlists
+WHERE id = ANY($1::text[])
+`
+
+func (q *Queries) GetPlaylistsByID(ctx context.Context, dollar_1 []string) ([]*Playlist, error) {
+	rows, err := q.db.Query(ctx, getPlaylistsByID, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Playlist
+	for rows.Next() {
+		var i Playlist
+		if err := rows.Scan(
+			&i.ID,
+			&i.ExternalUrls,
+			&i.Href,
+			&i.Name,
+			&i.Uri,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTrackAlbum = `-- name: GetTrackAlbum :one
 SELECT albums.id, albums.album_type, albums.total_tracks, albums.external_urls, albums.href, albums.name, albums.release_date, albums.release_date_precision, albums.uri, albums.genres
 FROM albums
@@ -750,5 +874,20 @@ type SetArtistTrackParams struct {
 
 func (q *Queries) SetArtistTrack(ctx context.Context, arg *SetArtistTrackParams) error {
 	_, err := q.db.Exec(ctx, setArtistTrack, arg.ArtistID, arg.TrackID)
+	return err
+}
+
+const setPlaylistImage = `-- name: SetPlaylistImage :exec
+INSERT INTO playlist_images (playlist_id, image_url)
+VALUES ($1, $2)
+`
+
+type SetPlaylistImageParams struct {
+	PlaylistID string `json:"playlist_id"`
+	ImageUrl   string `json:"image_url"`
+}
+
+func (q *Queries) SetPlaylistImage(ctx context.Context, arg *SetPlaylistImageParams) error {
+	_, err := q.db.Exec(ctx, setPlaylistImage, arg.PlaylistID, arg.ImageUrl)
 	return err
 }
