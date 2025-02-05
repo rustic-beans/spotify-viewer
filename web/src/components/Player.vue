@@ -14,7 +14,8 @@ const PlayerStateFragment = graphql(/* GraphQL */ `
     track {
       ... Track
       album {
-        ...Images
+        ...AlbumImages
+        ...BackgroundImages
       }
     }
   }
@@ -36,12 +37,17 @@ var color = "#821271";
 
 <template>
   <div class="fixed inset-0">
-    <Background class="object-cover h-full w-full "
+    <Background
+      class="object-cover h-full w-full "
       v-if="backgroundObj"
       :fragment="backgroundObj"
     />
-    <div class="object-cover h-full w-full blur " :style="{'background-color': color}" >
-      <div class="object-cover h-full w-full bg-gradient-to-tr from-neutral-600 to-neutral-900 opacity-25 blur-lg"></div>
+    <div
+      class="object-cover h-full w-full blur "
+      :style="{ 'background-color': color }"
+    >
+      <div class="object-cover h-full w-full bg-gradient-to-tr from-neutral-600 to-neutral-900 opacity-25 blur-lg">
+      </div>
     </div>
     <div class="absolute bottom-0 left-0 right-0 p-12">
       <div class="flex flex-row items-end gap-6">
