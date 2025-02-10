@@ -15,7 +15,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.21
 	github.com/zmb3/spotify/v2 v2.4.3
 	go.uber.org/zap v1.27.0
-	golang.org/x/oauth2 v0.25.0
+	golang.org/x/oauth2 v0.26.0
 )
 
 require (
