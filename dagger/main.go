@@ -61,12 +61,12 @@ func (m *SpotifyViewer) BuildGoBin(source *dagger.Directory) *dagger.Directory {
 		Directory("./dist")
 }
 
-func (m *SpotifyViewer) Publish(ctx context.Context, source *dagger.Directory) (string, error) {
+func (m *SpotifyViewer) Build(ctx context.Context, source *dagger.Directory) (*dagger.Container, error) {
 	// Publish the application to the cloud
 	// test the application
 	_, err := m.Test(ctx, source)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	bin := m.BuildGoBin(source)
@@ -80,6 +80,44 @@ func (m *SpotifyViewer) Publish(ctx context.Context, source *dagger.Directory) (
 		WithDirectory("/app/web/dist", web).
 		WithWorkdir("/app").
 		WithEntrypoint([]string{"/app/backend"}).
-		WithExposedPort(8080).
-		Publish(ctx, fmt.Sprintf("ttl.sh/spotify-viewer-%.0f", math.Floor(rand.Float64()*1000000000)))
+		WithExposedPort(8080), nil
+}
+
+func (m *SpotifyViewer) PublishTTL(ctx context.Context, source *dagger.Directory) (string, error) {
+	container, err := m.Build(ctx, source)
+	if err != nil {
+		return "", err
+	}
+
+	containerUrl := fmt.Sprintf("ttl.sh/spotify-viewer-%.0f", math.Floor(rand.Float64()*1000000000))
+
+	return container.Publish(ctx, containerUrl)
+}
+
+func (m *SpotifyViewer) PublishGithub(
+	ctx context.Context,
+	source *dagger.Directory,
+	registry,
+	imageName,
+	tag,
+	username string,
+	password *dagger.Secret,
+) (string, error) {
+	container, err := m.Build(ctx, source)
+	if err != nil {
+		return "", err
+	}
+
+	containerUrl := fmt.Sprintf("%s/%s", registry, imageName)
+	containerTag := fmt.Sprintf("%s:%s", containerUrl, tag)
+	containerLatest := fmt.Sprintf("%s:latest", containerUrl)
+
+	authed := container.WithRegistryAuth(registry, username, password)
+
+	_, err = authed.Publish(ctx, containerTag)
+	if err != nil {
+		return "", err
+	}
+
+	return authed.Publish(ctx, containerLatest)
 }

@@ -2,6 +2,12 @@
   "name": "spotify-viewer",
   "engineVersion": "v0.15.3",
   "sdk": "go",
+  "exclude": [
+    "**/node_modules",
+    "**/dist",
+    "token.json",
+    "config.yaml"
+  ],
   "dependencies": [
     {
       "name": "go",
@@ -9,11 +15,5 @@
       "pin": "d9ba06776c4c1ccf6f329bd862b9b439c4582ab6"
     }
   ],
-  "source": "dagger",
-  "exclude": [
-    "**/node_modules",
-    "**/dist",
-    "token.json",
-    "config.yaml"
-  ]
+  "source": "dagger"
 }
