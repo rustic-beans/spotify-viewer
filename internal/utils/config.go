@@ -2,23 +2,24 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Spotify struct {
-		ClientID     string `yaml:"clientId"`
-		ClientSecret string `yaml:"clientSecret"`
-		TokenFile    string `yaml:"tokenFile"`
+		ClientID     string `mapstructure:"clientId"`
+		ClientSecret string `mapstructure:"clientSecret"`
+		TokenFile    string `mapstructure:"tokenFile"`
 	}
 	Server struct {
-		Host string `yaml:"host"`
-		Port int    `yaml:"port"`
-	} `yaml:"server"`
+		Host string `mapstructure:"host"`
+		Port int    `mapstructure:"port"`
+	} `mapstructure:"server"`
 	Database struct {
-		Driver string `yaml:"driver"`
-		Source string `yaml:"source"`
+		Driver string `mapstructure:"driver"`
+		Source string `mapstructure:"source"`
 	}
 }
 
@@ -31,6 +32,8 @@ func ReadConfig() (*Config, error) {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("./config")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
+	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
