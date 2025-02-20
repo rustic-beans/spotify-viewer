@@ -7,16 +7,18 @@ import { provideApolloClient } from '@vue/apollo-composable';
 // Cache implementation
 const cache = new InMemoryCache();
 
+const host = (import.meta.env.MODE === 'production') ? window.location.host : '127.0.0.1:8080'
+
 // HTTP connection to the API
 const httpLink = createHttpLink({
   // TODO: Change this to the real URL
-  uri: 'http://127.0.0.1:8080/query',
+  uri: `http://${host}/query`,
 });
 
 // HTTP connection to the API
 const wsLink = new GraphQLWsLink(createClient({
   // TODO: Change this to the real URL
-  url: 'ws://127.0.0.1:8080/query',
+  url: `ws://${host}/query`,
 }));
 
 const splitLink = split(
