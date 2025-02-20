@@ -1,0 +1,27 @@
+name: publish
+on: 
+  push:
+    branches: [master]
+
+jobs:
+  backend:
+    name: Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4  
+      - name: Call Backend Publish Function
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.15.3"
+          verb: call
+          args: publish-github --source=. --registry=$DOCKER_REGISTRY --image-name=$DOCKER_IMAGE_NAME --username=$DOCKER_USERNAME --password=env:DOCKER_PASSWORD --tag=$DOCKER_TAG
+        env:
+          DOCKER_REGISTRY: ghcr.io
+          DOCKER_IMAGE_NAME: ${{ github.repository }}
+          DOCKER_USERNAME: ${{ github.actor }}
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_TAG: ${{ github.sha }}
