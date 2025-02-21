@@ -7,7 +7,10 @@ import { provideApolloClient } from '@vue/apollo-composable';
 // Cache implementation
 const cache = new InMemoryCache();
 
-const host = (import.meta.env.MODE === 'production') ? window.location.host : '127.0.0.1:8080'
+const isProduction = import.meta.env.MODE === 'production';
+const host = isProduction ? window.location.host : '127.0.0.1:8080'
+const wsProtocol = isProduction ? 'wss' : 'ws';
+const httpProtocol = isProduction ? 'https' : 'http';
 
 // HTTP connection to the API
 const httpLink = createHttpLink({
