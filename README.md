@@ -68,3 +68,6 @@ cp config.yaml dockerdata/config.yaml
 cp token.json dockerdata/token.json
 docker run -v $(pwd)/dockerdata:/app/config -p 8080:8080 <container url> 
 ```
+
+## Configuration
+Most configuration is done through a yaml file called `config.yaml`, an example file is provided in `config-example.yaml`. All variables can be overridden by environment variables, but due to a limitation in the config library, they must still be present in the config file. When overriding nested variables, use a `_` to separate the levels. For example, to override the `clientId` variable in the `spotify` section, you would set the environment variable `SPOTIFY_CLIENTID`. 
