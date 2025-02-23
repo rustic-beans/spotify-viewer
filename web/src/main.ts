@@ -9,7 +9,6 @@ import { DefaultApolloClient } from '@vue/apollo-composable';
 
 // Plugins
 import router from './router'
-import { createPinia } from 'pinia'
 import apolloClient from './graphql/apolloClient';
 
 const app = createApp({
@@ -21,7 +20,6 @@ const app = createApp({
 });
 
 app.use(router);
-app.use(createPinia());
 
 app.mount('#app');
 
