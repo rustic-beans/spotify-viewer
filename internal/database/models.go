@@ -7,6 +7,8 @@ package database
 import (
 	"database/sql/driver"
 	"fmt"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AlbumReleaseDatePrecision string
@@ -154,6 +156,14 @@ type Playlist struct {
 type PlaylistImage struct {
 	PlaylistID string `json:"playlist_id"`
 	ImageUrl   string `json:"image_url"`
+}
+
+type Token struct {
+	ID           int32            `json:"id"`
+	AccessToken  string           `json:"access_token"`
+	TokenType    string           `json:"token_type"`
+	RefreshToken string           `json:"refresh_token"`
+	Expiry       pgtype.Timestamp `json:"expiry"`
 }
 
 type Track struct {
