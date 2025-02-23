@@ -61,7 +61,7 @@ func (s *Spotify) getContext(contextURI string) *models.PlayerStateContext {
 	}
 }
 
-func (s *Spotify) GetArtist(ctx context.Context, id string) (*models.CreateArtistParams, []*models.CreateImageParams, error) {
+func (s *Spotify) GetArtist(ctx context.Context, id string) (artistParams *models.CreateArtistParams, imageParams []*models.CreateImageParams, err error) {
 	artist, err := s.client.GetArtist(ctx, id)
 	if err != nil {
 		return nil, nil, err
@@ -71,13 +71,13 @@ func (s *Spotify) GetArtist(ctx context.Context, id string) (*models.CreateArtis
 }
 
 // TODO: This is kind bad. Use a DTO or CreateInput from gqlgen instead
-func (s *Spotify) GetAlbum(ctx context.Context, id string) (*models.CreateAlbumParams, []*models.CreateImageParams, []string, error) {
+func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.CreateAlbumParams, imageParams []*models.CreateImageParams, artistIDs []string, err error) {
 	album, err := s.client.GetAlbum(ctx, id)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	artistIDs := make([]string, 0, len(album.Artists))
+	artistIDs = make([]string, 0, len(album.Artists))
 	for _, artist := range album.Artists {
 		artistIDs = append(artistIDs, string(artist.ID))
 	}
@@ -85,13 +85,13 @@ func (s *Spotify) GetAlbum(ctx context.Context, id string) (*models.CreateAlbumP
 	return spotify.FullAlbumToParams(album), spotify.ImageSliceToModelParams(album.Images), artistIDs, nil
 }
 
-func (s *Spotify) GetTrack(ctx context.Context, id string) (*models.CreateTrackParams, []string, error) {
+func (s *Spotify) GetTrack(ctx context.Context, id string) (trackParams *models.CreateTrackParams, artistIDs []string, err error) {
 	track, err := s.client.GetTrack(ctx, id)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	artistIDs := make([]string, 0, len(track.Artists))
+	artistIDs = make([]string, 0, len(track.Artists))
 	for _, artist := range track.Artists {
 		artistIDs = append(artistIDs, string(artist.ID))
 	}
@@ -99,7 +99,7 @@ func (s *Spotify) GetTrack(ctx context.Context, id string) (*models.CreateTrackP
 	return spotify.FullTrackToParams(track), artistIDs, nil
 }
 
-func (s *Spotify) GetPlaylist(ctx context.Context, id string) (*models.CreatePlaylistParams, []*models.CreateImageParams, error) {
+func (s *Spotify) GetPlaylist(ctx context.Context, id string) (playlistParams *models.CreatePlaylistParams, imageParams []*models.CreateImageParams, err error) {
 	playlist, err := s.client.GetPlaylist(ctx, id)
 
 	if err != nil {
