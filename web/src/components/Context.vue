@@ -26,12 +26,12 @@ const contextType = computed(() => contextObj.value.type.toUpperCase() || 'PLAYI
     :href="contextObj.href"
     target="_blank"
   >
-    <div class="absolute top-6 left-6 backdrop-blur-lg bg-neutral-800/40 rounded p-3 flex items-center gap-3 ">
+    <div class="absolute top-6 left-6 backdrop-blur-lg bg-neutral-800/40 rounded-sm p-3 flex items-center gap-3 ">
       <img
         v-if="contextObj.imageUrl"
         :src="contextObj.imageUrl"
         alt="Context Image"
-        class="w-12 h-12 rounded object-cover"
+        class="w-12 h-12 rounded-sm object-cover"
       >
       <div class="pr-3">
         <div class="text-xs uppercase tracking-wider opacity-75">{{ contextType }}</div>
