@@ -2,10 +2,8 @@ package spotify
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
@@ -16,13 +14,14 @@ import (
 )
 
 type Auth struct {
-	auth      *spotifyAuth.Authenticator
-	state     string
-	ch        chan *spotifyLib.Client
-	tokenFile string
+	auth          *spotifyAuth.Authenticator
+	state         string
+	ch            chan *spotifyLib.Client
+	token         *oauth2.Token
+	tokenSaveFunc func(*oauth2.Token) error
 }
 
-func newAuth(config *utils.Config) *Auth {
+func newAuth(config *utils.Config, token *oauth2.Token, tokenSaveFunc func(*oauth2.Token) error) *Auth {
 	redirectURL := fmt.Sprintf("http://%s/callback", config.GetURL())
 
 	auth := spotifyAuth.New(
@@ -33,10 +32,11 @@ func newAuth(config *utils.Config) *Auth {
 	)
 
 	return &Auth{
-		state:     "state", // TODO: unique state string to identify the session, should be random
-		auth:      auth,
-		ch:        make(chan *spotifyLib.Client),
-		tokenFile: config.Spotify.TokenFile,
+		state:         "state", // TODO: unique state string to identify the session, should be random
+		auth:          auth,
+		ch:            make(chan *spotifyLib.Client),
+		token:         token,
+		tokenSaveFunc: tokenSaveFunc,
 	}
 }
 
@@ -48,15 +48,10 @@ func (sa *Auth) createClient(ctx context.Context, token *oauth2.Token) *spotifyL
 		utils.Logger.Error("failed getting token", zap.Error(err))
 	}
 
-	jsonData, err := json.Marshal(token)
+	// save the token for future use
+	err = sa.tokenSaveFunc(token)
 	if err != nil {
-		utils.Logger.Error("failed marshalling token", zap.Error(err))
-	}
-
-	//nolint:mnd // 0o600 is the file permission
-	err = os.WriteFile(sa.tokenFile, jsonData, 0o600)
-	if err != nil {
-		utils.Logger.Error("failed writing token to file", zap.Error(err))
+		utils.Logger.Error("failed saving token", zap.Error(err))
 	}
 
 	return client
@@ -111,30 +106,11 @@ func (sa *Auth) setupAuthRoutes(e *echo.Echo) {
 	e.GET("/callback", sa.finalizeAuth())
 }
 
-func (sa *Auth) attemptToReadTokenFromFile() *oauth2.Token {
-	data, err := os.ReadFile(sa.tokenFile)
-	if err != nil {
-		utils.Logger.Error("failed reading token file", zap.Error(err))
-		return nil
-	}
-
-	var token oauth2.Token
-
-	err = json.Unmarshal(data, &token)
-	if err != nil {
-		utils.Logger.Error("failed unmarshalling token", zap.Error(err))
-		return nil
-	}
-
-	return &token
-}
-
 func (sa *Auth) authenticate() {
-	token := sa.attemptToReadTokenFromFile()
-	if token != nil {
-		utils.Logger.Info("attempting to use token from file")
+	if sa.token != nil {
+		utils.Logger.Info("attempting to use saved token")
 
-		client := sa.createClient(context.Background(), token)
+		client := sa.createClient(context.Background(), sa.token)
 
 		sa.ch <- client
 
