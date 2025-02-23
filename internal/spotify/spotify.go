@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	spotifyLib "github.com/zmb3/spotify/v2"
+	"golang.org/x/oauth2"
 )
 
 type Spotify struct {
@@ -14,9 +15,9 @@ type Spotify struct {
 	auth   *Auth
 }
 
-func NewSpotify(config *utils.Config) *Spotify {
+func NewSpotify(config *utils.Config, token *oauth2.Token, tokenSaveFunc func(*oauth2.Token) error) *Spotify {
 	s := &Spotify{
-		auth: newAuth(config),
+		auth: newAuth(config, token, tokenSaveFunc),
 	}
 
 	return s
