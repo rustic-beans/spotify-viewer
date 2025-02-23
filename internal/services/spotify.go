@@ -71,7 +71,7 @@ func (s *Spotify) GetArtist(ctx context.Context, id string) (artistParams *model
 }
 
 // TODO: This is kind bad. Use a DTO or CreateInput from gqlgen instead
-func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.CreateAlbumParams, imagePrams []*models.CreateImageParams, artistIDs []string, err error) {
+func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.CreateAlbumParams, imageParams []*models.CreateImageParams, artistIDs []string, err error) {
 	album, err := s.client.GetAlbum(ctx, id)
 	if err != nil {
 		return nil, nil, nil, err
