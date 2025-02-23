@@ -1,9 +1,9 @@
 spotify:
-  clientId: dwa
-  clientSecret: dwa
-  tokenFile: token.json
+  clientId: ""
+  clientSecret: ""
+  tokenFile: database
 server:
-  host: localhost
+  host: 0.0.0.0
   port: 8080
 database:
   driver: postgres
