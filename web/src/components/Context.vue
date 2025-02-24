@@ -18,6 +18,7 @@ const props = defineProps<{
 const contextObj = computed(() => useFragment(ContextFragment, props.fragment));
 const contextName = computed(() => contextObj.value.name || 'Name could not be found');
 const contextType = computed(() => contextObj.value.type.toUpperCase() || 'PLAYING FROM SOMEWHERE');
+const contextImage = computed(() => contextObj.value.imageUrl || '/placeholder.png');
 </script>
 
 <template>
@@ -28,8 +29,7 @@ const contextType = computed(() => contextObj.value.type.toUpperCase() || 'PLAYI
   >
     <div class="absolute top-6 left-6 backdrop-blur-lg bg-neutral-800/40 rounded-sm p-3 flex items-center gap-3 ">
       <img
-        v-if="contextObj.imageUrl"
-        :src="contextObj.imageUrl"
+        :src="contextImage"
         alt="Context Image"
         class="w-12 h-12 rounded-sm object-cover"
       >
