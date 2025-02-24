@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/rustic-beans/spotify-viewer/internal/database"
@@ -14,6 +15,8 @@ import (
 )
 
 type IDatabase interface {
+	HealthCheck(ctx context.Context) error
+
 	GetAlbums(ctx context.Context) ([]*models.Album, error)
 	GetAlbumsByID(ctx context.Context, id []string) ([]*models.Album, error)
 	GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error)
@@ -42,6 +45,9 @@ type IDatabase interface {
 	GetPlaylistsByID(ctx context.Context, id []string) ([]*models.Playlist, error)
 	GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error)
 	CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (*models.Playlist, error)
+
+	UpsertToken(ctx context.Context, token *database.UpsertTokenParams) (*models.Token, error)
+	GetToken(ctx context.Context) (*models.Token, error)
 }
 
 type Database struct {
@@ -54,6 +60,10 @@ func NewDatabase(client *pgxpool.Pool) IDatabase {
 		Queries: database.New(client),
 		client:  client,
 	}
+}
+
+func (d *Database) HealthCheck(ctx context.Context) error {
+	return d.client.Ping(ctx)
 }
 
 func wrapOneQueryError[T any](result *T, err error) (*T, error) {
@@ -81,6 +91,10 @@ func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error)
 	defer func() {
 		err = tx.Rollback(ctx)
 		if err != nil {
+			if errors.Is(err, pgx.ErrTxClosed) {
+				return
+			}
+
 			utils.Logger.Error("error rolling back transaction", zap.Error(err))
 		}
 	}()
@@ -341,4 +355,14 @@ func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.Create
 	}
 
 	return p, nil
+}
+
+func (d *Database) UpsertToken(ctx context.Context, token *database.UpsertTokenParams) (*models.Token, error) {
+	t, err := d.Queries.UpsertToken(ctx, token)
+	return wrapOneQueryError(t, err)
+}
+
+func (d *Database) GetToken(ctx context.Context) (*models.Token, error) {
+	t, err := d.Queries.GetToken(ctx)
+	return wrapOneQueryError(t, err)
 }

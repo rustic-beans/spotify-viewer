@@ -368,7 +368,6 @@ func (s *Shared) getContext(ctx context.Context, contextModel *models.PlayerStat
 
 		if len(playlists) == 0 {
 			contextModel.Name = "Probably Radio"
-			contextModel.ImageURL = "https://lh4.googleusercontent.com/aTELIyAqK-EZd6cS1x215RRkpCpnylY2VXQQ9xFUdmRCbJkpCxgBLA1oRw068CAoeFlBu6QGR2LWuK8vGY1Qzto=w1280"
 		} else {
 			images, err := s.GetPlaylistImages(ctx, contextModel.ID)
 			if err != nil {

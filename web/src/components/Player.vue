@@ -43,15 +43,15 @@ var color = "#821271";
       :fragment="backgroundObj"
     />
     <div
-      class="object-cover h-full w-full blur "
+      class="object-cover h-full w-full blur-sm "
       :style="{ 'background-color': color }"
     >
-      <div class="object-cover h-full w-full bg-gradient-to-tr from-neutral-600 to-neutral-900 opacity-25 blur-lg">
+      <div class="object-cover h-full w-full bg-linear-to-tr from-neutral-600 to-neutral-900 opacity-25 blur-lg">
       </div>
     </div>
     <div class="absolute bottom-0 left-0 right-0 w-full h-96">
       <div
-        class="absolute h-full w-full bg-gradient-to-b from-transparent via-neutral-800/00 to-neutral-800/100 backdrop-blur"
+        class="absolute h-full w-full bg-linear-to-b from-transparent via-neutral-800/00 to-neutral-800/100 backdrop-blur-sm"
         style="mask-image: linear-gradient(to bottom, transparent, black 40%, black);"
       />
       <div class="absolute z-10 bottom-0 left-0 right-0 p-6">

@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAlbum = `-- name: CreateAlbum :one
@@ -682,6 +684,25 @@ func (q *Queries) GetPlaylistsByID(ctx context.Context, dollar_1 []string) ([]*P
 	return items, nil
 }
 
+const getToken = `-- name: GetToken :one
+SELECT id, access_token, token_type, refresh_token, expiry
+FROM token
+WHERE id = 1
+`
+
+func (q *Queries) GetToken(ctx context.Context) (*Token, error) {
+	row := q.db.QueryRow(ctx, getToken)
+	var i Token
+	err := row.Scan(
+		&i.ID,
+		&i.AccessToken,
+		&i.TokenType,
+		&i.RefreshToken,
+		&i.Expiry,
+	)
+	return &i, err
+}
+
 const getTrackAlbum = `-- name: GetTrackAlbum :one
 SELECT albums.id, albums.album_type, albums.total_tracks, albums.external_urls, albums.href, albums.name, albums.release_date, albums.release_date_precision, albums.uri, albums.genres
 FROM albums
@@ -890,4 +911,37 @@ type SetPlaylistImageParams struct {
 func (q *Queries) SetPlaylistImage(ctx context.Context, arg *SetPlaylistImageParams) error {
 	_, err := q.db.Exec(ctx, setPlaylistImage, arg.PlaylistID, arg.ImageUrl)
 	return err
+}
+
+const upsertToken = `-- name: UpsertToken :one
+INSERT INTO token (id, access_token, token_type, expiry, refresh_token)
+VALUES (1, $1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE
+SET access_token = $1, token_type = $2, expiry = $3, refresh_token = $4
+RETURNING id, access_token, token_type, refresh_token, expiry
+`
+
+type UpsertTokenParams struct {
+	AccessToken  string           `json:"access_token"`
+	TokenType    string           `json:"token_type"`
+	Expiry       pgtype.Timestamp `json:"expiry"`
+	RefreshToken string           `json:"refresh_token"`
+}
+
+func (q *Queries) UpsertToken(ctx context.Context, arg *UpsertTokenParams) (*Token, error) {
+	row := q.db.QueryRow(ctx, upsertToken,
+		arg.AccessToken,
+		arg.TokenType,
+		arg.Expiry,
+		arg.RefreshToken,
+	)
+	var i Token
+	err := row.Scan(
+		&i.ID,
+		&i.AccessToken,
+		&i.TokenType,
+		&i.RefreshToken,
+		&i.Expiry,
+	)
+	return &i, err
 }

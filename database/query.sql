@@ -145,3 +145,15 @@ RETURNING *;
 -- name: SetPlaylistImage :exec
 INSERT INTO playlist_images (playlist_id, image_url)
 VALUES ($1, $2);
+
+-- name: UpsertToken :one
+INSERT INTO token (id, access_token, token_type, expiry, refresh_token)
+VALUES (1, $1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE
+SET access_token = $1, token_type = $2, expiry = $3, refresh_token = $4
+RETURNING *;
+
+-- name: GetToken :one
+SELECT *
+FROM token
+WHERE id = 1;
