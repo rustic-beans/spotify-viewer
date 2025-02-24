@@ -10,8 +10,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4  
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+      - name: Env
+        run: |
+          # ACTIONS_RUNTIME_TOKEN, ACTIONS_RUNTIME_URL should be exposed
+          env|sort
       - name: Call Backend Test Function
         uses: dagger/dagger-for-github@v7
+        env:
+            _EXPERIMENTAL_DAGGER_CACHE_CONFIG: "type=gha,mode=max,url=$ACTIONS_RUNTIME_URL,token=$ACTIONS_RUNTIME_TOKEN"
         with:
           version: "0.15.3"
           verb: call
