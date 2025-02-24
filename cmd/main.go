@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 
+	"github.com/labstack/echo/v4"
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/services"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
@@ -55,6 +57,7 @@ func main() {
 
 	go watcherService.StartPlayerStateLoop()
 
+	healthCheck(e, databaseService)
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)))
 }
 
@@ -102,4 +105,17 @@ func getTokenSaveFunc(config *utils.Config, databaseService services.IDatabase) 
 
 		return nil
 	}
+}
+
+// TODO: move to a separate file (a little hard without getting circular imports)
+func healthCheck(e *echo.Echo, databaseService services.IDatabase) {
+	e.GET("/health", func(c echo.Context) error {
+		err := databaseService.HealthCheck(context.Background())
+		if err != nil {
+			utils.Logger.Error("database health check failed", zap.Error(err))
+			return c.String(http.StatusInternalServerError, "database health check failed")
+		}
+
+		return c.String(http.StatusOK, "healthy")
+	})
 }
