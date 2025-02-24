@@ -34,6 +34,6 @@ const backgroundUrl = computed(() => {
   <img
     :src="backgroundUrl"
     alt="Background image"
-    class="w-24 h-24 rounded shadow-2xl"
+    class="w-24 h-24 rounded-sm shadow-2xl"
   >
 </template>
