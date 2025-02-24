@@ -3,42 +3,48 @@ package http
 import (
 	"sync"
 
-	"github.com/google/uuid"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
 )
 
 type WebsocketHandler[M any] struct {
-	mu          sync.Mutex
-	connections map[string]chan<- M
+	mu         sync.RWMutex
+	numOfConn  int
+	connection chan M
 }
 
 func NewWebsocketHandler[M any]() *WebsocketHandler[M] {
 	return &WebsocketHandler[M]{
-		connections: make(map[string]chan<- M),
+		connection: make(chan M),
 	}
 }
 
-func (w *WebsocketHandler[M]) AddConnection(c chan<- M) string {
+func (w *WebsocketHandler[M]) AddConnection() chan M {
+	utils.Logger.Info("Adding connection")
+
 	w.mu.Lock()
-	defer w.mu.Unlock()
+	w.numOfConn++
+	w.mu.Unlock()
 
-	id := uuid.New().String()
-	w.connections[id] = c
+	utils.Logger.Info("Connection added")
 
-	return id
+	return w.connection
 }
 
-func (w *WebsocketHandler[M]) RemoveConnection(id string) {
+func (w *WebsocketHandler[M]) RemoveConnection() {
 	w.mu.Lock()
-	defer w.mu.Unlock()
-
-	delete(w.connections, id)
+	w.numOfConn--
+	w.mu.Unlock()
 }
 
 func (w *WebsocketHandler[M]) Broadcast(m M) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+	utils.Logger.Info("Broadcasting message")
 
-	for _, c := range w.connections {
-		c <- m
+	w.mu.RLock()
+	defer w.mu.RUnlock()
+
+	for range w.numOfConn {
+		w.connection <- m
 	}
+
+	utils.Logger.Info("Message broadcasted")
 }
