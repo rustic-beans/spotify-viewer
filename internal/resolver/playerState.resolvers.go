@@ -6,9 +6,10 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rustic-beans/spotify-viewer/internal/models"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
+	"go.uber.org/zap"
 )
 
 // PlayerState is the resolver for the playerState field.
@@ -18,20 +19,15 @@ func (r *queryResolver) PlayerState(ctx context.Context) (*models.PlayerState, e
 
 // PlayerState is the resolver for the playerState field.
 func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *models.PlayerState, error) {
-	ch := make(chan *models.PlayerState, 1)
-	id := r.PlayerStateWebsocketHandler.AddConnection(ch)
+	utils.Logger.Info("Adding PlayerState subscription", zap.Any("context", ctx))
+	ch := r.PlayerStateWebsocketHandler.AddConnection()
+	utils.Logger.Info("PlayerState subscription added", zap.Any("context", ctx))
 
 	go func() {
 		<-ctx.Done()
-		r.PlayerStateWebsocketHandler.RemoveConnection(id)
-		close(ch)
+		r.PlayerStateWebsocketHandler.RemoveConnection()
+		utils.Logger.Info("PlayerState subscription closed", zap.Any("context", ctx))
 	}()
-	state, err := r.SharedService.GetPlayerState(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get player state: %w", err)
-	}
-
-	ch <- state
 
 	return ch, nil
 }

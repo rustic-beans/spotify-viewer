@@ -22,6 +22,13 @@ const httpLink = createHttpLink({
 const wsLink = new GraphQLWsLink(createClient({
   // TODO: Change this to the real URL
   url: `${wsProtocol}://${host}/query`,
+  on: {
+    error: (error) => console.error('Websocket error', error),
+  },
+  retryAttempts: 10,
+  shouldRetry(_) {
+    return true;
+  }
 }));
 
 const splitLink = split(
