@@ -31,7 +31,6 @@ func NewWatcher(sharedService *Shared, playerStateWebsocketHandler *models.Playe
 }
 
 func (w *Watcher) StartPlayerStateLoop() {
-	//TODO: Add a loop restart if error occours
 	w.ctx = context.Background()
 
 	for {
