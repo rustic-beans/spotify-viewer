@@ -15,6 +15,8 @@ import (
 )
 
 type IDatabase interface {
+	HealthCheck(ctx context.Context) error
+
 	GetAlbums(ctx context.Context) ([]*models.Album, error)
 	GetAlbumsByID(ctx context.Context, id []string) ([]*models.Album, error)
 	GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error)
@@ -58,6 +60,10 @@ func NewDatabase(client *pgxpool.Pool) IDatabase {
 		Queries: database.New(client),
 		client:  client,
 	}
+}
+
+func (d *Database) HealthCheck(ctx context.Context) error {
+	return d.client.Ping(ctx)
 }
 
 func wrapOneQueryError[T any](result *T, err error) (*T, error) {
