@@ -22,7 +22,7 @@ jobs:
         with:
           version: "0.15.3"
           verb: call
-          args: build --source=.
+          args: build --source=. -vvv
           cache_config: "type=gha,mode=max,url=${{ env.ACTIONS_CACHE_URL }},token=${{ env.ACTIONS_RUNTIME_TOKEN }}"
           # Maybe add this back if we want to see cool output
           #cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
