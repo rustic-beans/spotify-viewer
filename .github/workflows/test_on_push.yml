@@ -27,6 +27,7 @@ jobs:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           export_logs: "true"
           # Maybe add this back if we want to see cool output
+          #
           #cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           #
           
