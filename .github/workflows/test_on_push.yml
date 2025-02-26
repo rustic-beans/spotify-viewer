@@ -18,7 +18,7 @@ jobs:
           env|sort
       - name: Call Backend Test Function
         # Pin at some point
-        uses: rustic-beans/dagger-for-github
+        uses: rustic-beans/dagger-for-github@main
         with:
           version: "0.15.3"
           verb: call
