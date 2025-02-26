@@ -17,13 +17,13 @@ jobs:
           # ACTIONS_RUNTIME_TOKEN, ACTIONS_RUNTIME_URL should be exposed
           env|sort
       - name: Call Backend Test Function
-        uses: dagger/dagger-for-github@v7
-        env:
-            _EXPERIMENTAL_DAGGER_CACHE_CONFIG: "type=gha,mode=max,url=${{ env.ACTIONS_CACHE_URL }},token=${{ env.ACTIONS_RUNTIME_TOKEN }}"
+        # Pin at some point
+        uses: rustic-beans/dagger-for-github
         with:
           version: "0.15.3"
           verb: call
           args: build --source=.
+          cache_config: "type=gha,mode=max,url=${{ env.ACTIONS_CACHE_URL }},token=${{ env.ACTIONS_RUNTIME_TOKEN }}"
           # Maybe add this back if we want to see cool output
           #cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           #
