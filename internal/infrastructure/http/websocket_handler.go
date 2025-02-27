@@ -43,6 +43,7 @@ func (w *WebsocketHandler[M]) Broadcast(m M) {
 	defer w.mu.RUnlock()
 
 	for range w.numOfConn {
+		utils.Logger.Debug("Broadcasting message to connection")
 		w.connection <- m
 	}
 
