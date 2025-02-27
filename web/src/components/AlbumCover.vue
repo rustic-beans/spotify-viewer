@@ -35,6 +35,7 @@ const spotifyUrl = computed(() => {
   <a
     :href="spotifyUrl"
     target="_blank"
+    class="hidden md:block"
   >
     <img
       :src="albumUrl"

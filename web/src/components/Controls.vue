@@ -17,7 +17,7 @@ const isPlaying = computed(() => controlObj.value.isPlaying);
 </script>
 
 <template>
-  <div>
+  <div class="hidden md:block">
     <button class="w-16 h-16">
       <svg
         v-if="isPlaying"
