@@ -14,7 +14,7 @@ type WebsocketHandler[M any] struct {
 
 func NewWebsocketHandler[M any]() *WebsocketHandler[M] {
 	return &WebsocketHandler[M]{
-		connection: make(chan M),
+		connection: make(chan M, 2000),
 	}
 }
 
@@ -41,7 +41,7 @@ func (w *WebsocketHandler[M]) Broadcast(m M) {
 
 	w.mu.RLock()
 	defer w.mu.RUnlock()
-
+	
 	for range w.numOfConn {
 		w.connection <- m
 	}
