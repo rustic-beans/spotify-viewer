@@ -54,7 +54,7 @@ function min(a: number, b: number): number {
 </script>
 
 <template>
-  <div class="mt-12">
+  <div class="mt-5">
     <div class="relative w-full h-1 bg-neutral-700/50 rounded-full overflow-hidden group cursor-pointer">
       <div
         class="absolute inset-y-0 left-0 bg-white group-hover:bg-green-500 transition-colors"

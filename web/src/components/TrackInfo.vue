@@ -38,7 +38,8 @@ const trackLink = computed(() => {
       :href="trackLink"
       target="_blank"
     >
-      <h1 class="text-6xl font-bold text-white mb-2">{{ trackObj.name }}</h1>
+    <!-- TODO: mb-0 does nothing because web development is cursed... figure out if this is possible as it looks kinda ass -->
+      <h1 class="text-6xl font-bold text-white mb-2 max-xl: text-xl mb-0">{{ trackObj.name }}</h1>
     </a>
 
     <p class="text-xl text-gray-400">
@@ -49,6 +50,7 @@ const trackLink = computed(() => {
         <template v-if="index > 0">, </template>
         <a
           :href="artist.link"
+          class="max-xl: text-sm"
           target="_blank"
         >
           {{ artist.name }}

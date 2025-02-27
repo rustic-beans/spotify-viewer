@@ -6,6 +6,7 @@ import Controls from '@/components/Controls.vue';
 import ProgressBar from '@/components/ProgressBar.vue';
 import { type FragmentType, useFragment, graphql } from '@/__generated__';
 import { computed } from 'vue';
+import { useWindowSize } from '@vueuse/core';
 
 const PlayerStateFragment = graphql(/* GraphQL */ `
   fragment PlayerState on PlayerState {
@@ -29,6 +30,9 @@ const playerStateObj = computed(() => useFragment(PlayerStateFragment, props.fra
 const trackObj = computed(() => playerStateObj.value.track);
 const imagesObj = computed(() => trackObj.value?.album);
 const backgroundObj = computed(() => trackObj.value?.album);
+const { width } = useWindowSize();
+// Used only for if an object should render styling is done using tailwind breakpoints
+const isMobile = computed(() => width.value <= 768);
 //TODO: once we have the artist image from the spotify api call, we can use the obj dominant color for this
 var color = "#821271";
 
@@ -52,12 +56,18 @@ var color = "#821271";
     <div class="absolute bottom-0 left-0 right-0 w-full h-96">
       <div
         class="absolute h-full w-full bg-linear-to-b from-transparent via-neutral-800/00 to-neutral-800/100 backdrop-blur-sm"
+        v-if="!isMobile"
         style="mask-image: linear-gradient(to bottom, transparent, black 40%, black);"
+      />
+      <div
+        class="absolute h-full w-full bg-linear-to-b from-transparent via-neutral-800/00 to-neutral-800/100 backdrop-blur-sm"
+        v-if="isMobile"
+        style="mask-image: linear-gradient(to bottom, transparent 20%, black 70%, black);"
       />
       <div class="absolute z-10 bottom-0 left-0 right-0 p-6">
         <div class="flex flex-row items-end gap-6">
           <AlbumCover
-            v-if="imagesObj"
+            v-if="imagesObj && !isMobile"
             :fragment="imagesObj"
           />
           <TrackInfo
@@ -66,6 +76,7 @@ var color = "#821271";
           />
           <Controls
             class="ml-auto"
+            v-if="!isMobile"
             :fragment="playerStateObj"
           />
         </div>

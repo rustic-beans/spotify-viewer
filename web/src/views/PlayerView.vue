@@ -20,14 +20,14 @@ const { result, loading, error } = useSubscription(graphql(/* GraphQL */ `
 
 const playerState = computed(() => result?.value?.playerState);
 const context = computed(() => playerState.value?.context);
+const isMobile = computed(() => window.innerWidth <= 768);
 </script>
 
 <template>
   <main>
     <div v-if="!loading && playerState && context">
       <Player :fragment="playerState" />
-
-      <UpNext />
+      <UpNext  v-if="!isMobile"/>
       <Context :fragment="context!" />
     </div>
     <div
@@ -43,5 +43,4 @@ const context = computed(() => playerState.value?.context);
       Loading....
     </div>
   </main>
-
 </template>
