@@ -3,15 +3,20 @@ package services
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
+	"go.uber.org/zap"
 
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
 type Spotify struct {
-	client *spotify.Spotify
+	client            *spotify.Spotify
+	cachedPlayerState *models.PlayerState
+	cacheExpiry       time.Time
 }
 
 func NewSpotify(client *spotify.Spotify) *Spotify {
@@ -19,6 +24,11 @@ func NewSpotify(client *spotify.Spotify) *Spotify {
 }
 
 func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, error) {
+	if s.cachedPlayerState != nil && time.Now().Before(s.cacheExpiry) {
+		utils.Logger.Info("Using cached player state", zap.Time("expiry", s.cacheExpiry))
+		return s.cachedPlayerState, nil
+	}
+
 	playerState, err := s.client.GetPlayerState(ctx)
 	if err != nil {
 		return nil, err
@@ -34,6 +44,9 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 		ProgressMs: int64(playerState.Progress),
 		IsPlaying:  playerState.Playing,
 	}
+
+	s.cachedPlayerState = model
+	s.cacheExpiry = time.Now().Add(5 * time.Second)
 
 	if playerState.Item == nil {
 		return model, nil

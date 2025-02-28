@@ -29,5 +29,13 @@ func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *models.
 		utils.Logger.Info("PlayerState subscription closed", zap.Any("context", ctx))
 	}()
 
+	utils.Logger.Debug("Getting PlayerState")
+	playerState, err := r.SharedService.GetPlayerState(ctx)
+	if err != nil {
+		return nil, err
+	}
+	utils.Logger.Debug("Got PlayerState, broadcasting", zap.Any("playerState", playerState))
+	r.PlayerStateWebsocketHandler.Broadcast(playerState)
+
 	return ch, nil
 }
