@@ -6,7 +6,6 @@ toolchain go1.23.2
 
 require (
 	github.com/99designs/gqlgen v0.17.66
-	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/labstack/echo/v4 v4.13.3
@@ -15,7 +14,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.22
 	github.com/zmb3/spotify/v2 v2.4.3
 	go.uber.org/zap v1.27.0
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.27.0
 )
 
 require (
@@ -32,6 +31,7 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/google/cel-go v0.22.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
