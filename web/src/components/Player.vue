@@ -51,8 +51,8 @@ var color = "#821271";
     </div>
     <div class="absolute bottom-0 left-0 right-0 w-full h-96">
       <div
-        class="absolute h-full w-full bg-linear-to-b from-transparent via-neutral-800/00 to-neutral-800/100 backdrop-blur-sm"
-        style="mask-image: linear-gradient(to bottom, transparent, black 40%, black);"
+        class="absolute h-full w-full bg-linear-to-b from-transparent via-neutral-800/00 to-neutral-800/100 backdrop-blur-sm bottom-blur-gradient"
+        style=""
       />
       <div class="absolute z-10 bottom-0 left-0 right-0 p-6">
         <div class="flex flex-row items-end gap-6">
@@ -75,3 +75,9 @@ var color = "#821271";
     </div>
   </div>
 </template>
+
+<style type="scss" scoped>
+.bottom-blur-gradient {
+  mask-image: linear-gradient(to bottom, transparent, black 40%, black);
+}
+</style>
