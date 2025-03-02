@@ -32,7 +32,7 @@ func main() {
 		utils.Logger.Fatal("failed reading config", zap.Error(err))
 	}
 
-	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*models.PlayerState]()
+	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*models.PlayerState](config.Server.QueueSize)
 
 	dbClient := database.Connect(config)
 	databaseService := services.NewDatabase(dbClient)

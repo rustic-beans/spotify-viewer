@@ -17,8 +17,9 @@ type Config struct {
 		TokenLocation string `mapstructure:"tokenLocation"`
 	}
 	Server struct {
-		Host string `mapstructure:"host"`
-		Port int    `mapstructure:"port"`
+		Host      string `mapstructure:"host"`
+		Port      int    `mapstructure:"port"`
+		QueueSize int    `mapstructure:"queueSize"`
 	} `mapstructure:"server"`
 	Database struct {
 		Driver string `mapstructure:"driver"`
