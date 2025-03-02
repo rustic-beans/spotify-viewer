@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
+	"go.uber.org/zap"
 )
 
 type WebsocketHandler[M any] struct {
@@ -12,9 +13,9 @@ type WebsocketHandler[M any] struct {
 	connection chan M
 }
 
-func NewWebsocketHandler[M any]() *WebsocketHandler[M] {
+func NewWebsocketHandler[M any](messageQueueSize int) *WebsocketHandler[M] {
 	return &WebsocketHandler[M]{
-		connection: make(chan M),
+		connection: make(chan M, messageQueueSize),
 	}
 }
 
@@ -41,6 +42,8 @@ func (w *WebsocketHandler[M]) Broadcast(m M) {
 
 	w.mu.RLock()
 	defer w.mu.RUnlock()
+
+	utils.Logger.Info("Lock acquired", zap.Int("numOfConn", w.numOfConn), zap.Int("Queue length", len(w.connection)))
 
 	for range w.numOfConn {
 		w.connection <- m

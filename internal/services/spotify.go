@@ -3,22 +3,34 @@ package services
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
+	"github.com/rustic-beans/spotify-viewer/internal/utils"
+	"go.uber.org/zap"
 
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
 type Spotify struct {
-	client *spotify.Spotify
+	client           *spotify.Spotify
+	playerStateCache *utils.SingleValueCache[*models.PlayerState]
 }
 
 func NewSpotify(client *spotify.Spotify) *Spotify {
-	return &Spotify{client: client}
+	return &Spotify{
+		client:           client,
+		playerStateCache: utils.NewSingleValueCache[*models.PlayerState](),
+	}
 }
 
 func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, error) {
+	if playerState, ok := s.playerStateCache.Get(); ok {
+		utils.Logger.Info("Using cached player state", zap.Duration("time_to_expiry", s.playerStateCache.TimeToExpiry()))
+		return playerState, nil
+	}
+
 	playerState, err := s.client.GetPlayerState(ctx)
 	if err != nil {
 		return nil, err
@@ -34,6 +46,10 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 		ProgressMs: int64(playerState.Progress),
 		IsPlaying:  playerState.Playing,
 	}
+
+	//nolint:mnd // Magic number is fine here
+	// The cache is set to expire after 6 seconds, such that there is about 1 second of overlap for in case we have perform some VERY slow network calls. But this is unlikely.
+	s.playerStateCache.SetWithExpiry(model, 6*time.Second)
 
 	if playerState.Item == nil {
 		return model, nil
