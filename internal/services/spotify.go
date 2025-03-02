@@ -14,19 +14,21 @@ import (
 )
 
 type Spotify struct {
-	client            *spotify.Spotify
-	cachedPlayerState *models.PlayerState
-	cacheExpiry       time.Time
+	client           *spotify.Spotify
+	playerStateCache *utils.SingleValueCache[*models.PlayerState]
 }
 
 func NewSpotify(client *spotify.Spotify) *Spotify {
-	return &Spotify{client: client}
+	return &Spotify{
+		client:           client,
+		playerStateCache: utils.NewSingleValueCache[*models.PlayerState](),
+	}
 }
 
 func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, error) {
-	if s.cachedPlayerState != nil && time.Now().Before(s.cacheExpiry) {
-		utils.Logger.Info("Using cached player state", zap.Time("expiry", s.cacheExpiry))
-		return s.cachedPlayerState, nil
+	if playerState, ok := s.playerStateCache.Get(); ok {
+		utils.Logger.Info("Using cached player state", zap.Duration("time_to_expiry", s.playerStateCache.TimeToExpiry()))
+		return playerState, nil
 	}
 
 	playerState, err := s.client.GetPlayerState(ctx)
@@ -45,8 +47,9 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 		IsPlaying:  playerState.Playing,
 	}
 
-	s.cachedPlayerState = model
-	s.cacheExpiry = time.Now().Add(5 * time.Second)
+	//nolint:mnd // Magic number is fine here
+	// The cache is set to expire after 6 seconds, such that there is about 1 second of overlap for in case we have perform some VERY slow network calls. But this is unlikely.
+	s.playerStateCache.SetWithExpiry(model, 6*time.Second)
 
 	if playerState.Item == nil {
 		return model, nil
