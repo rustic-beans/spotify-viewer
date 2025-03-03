@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"sync"
 
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
@@ -28,236 +29,343 @@ func getImageUrls(images []*models.Image) []string {
 	return urls
 }
 
-func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Artist, []error) {
+func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Artist, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
 	artists, err := s.databaseService.GetArtistsByID(ctx, ids)
 	if err != nil {
-		return nil, []error{err}
+		return nil, err
 	}
 
 	if len(artists) == len(ids) {
 		return artists, nil
 	}
 
-	errs := make([]error, 0, len(ids))
+	existingArtists := make(map[string]*models.Artist, len(artists))
+	for _, artist := range artists {
+		existingArtists[artist.ID] = artist
+	}
+
+	errs := utils.NewEmptyMultiError()
+	var mu sync.Mutex
+	var wg sync.WaitGroup
 
 	for _, id := range ids {
-		found := false
+		if _, exists := existingArtists[id]; exists {
+			continue
+		}
 
-		for _, artist := range artists {
-			if artist.ID == id {
-				found = true
-				break
+		wg.Add(1)
+		go func(artistID string) {
+			defer wg.Done()
+
+			artist, err := s.fetchAndCreateArtist(ctx, artistID)
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				errs.Add(err)
+				return
 			}
-		}
 
-		if found {
-			continue
-		}
-
-		artistParams, imageParams, err := s.spotifyService.GetArtist(ctx, id)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		images, err := s.databaseService.CreateImages(ctx, imageParams)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		artist, err := s.databaseService.CreateArtist(ctx, artistParams, getImageUrls(images))
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		artists = append(artists, artist)
+			artists = append(artists, artist)
+		}(id)
 	}
 
-	if len(errs) == 0 {
-		return artists, nil
+	wg.Wait()
+
+	if errs.HasErrors() {
+		return nil, errs
 	}
 
-	return artists, errs
+	return artists, nil
 }
 
-func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Album, []error) {
+func (s *Shared) fetchAndCreateArtist(ctx context.Context, id string) (*models.Artist, error) {
+	artistParams, imageParams, err := s.spotifyService.GetArtist(ctx, id)
+	if err != nil {
+		utils.Logger.Error("Failed to get artist from Spotify", zap.String("artistID", id), zap.Error(err))
+		return nil, err
+	}
+
+	images, err := s.databaseService.CreateImages(ctx, imageParams)
+	if err != nil {
+		utils.Logger.Error("Failed to create artist images", zap.String("artistID", id), zap.Error(err))
+		return nil, err
+	}
+
+	artist, err := s.databaseService.CreateArtist(ctx, artistParams, getImageUrls(images))
+	if err != nil {
+		utils.Logger.Error("Failed to create artist", zap.String("artistID", id), zap.Error(err))
+		return nil, err
+	}
+
+	return artist, nil
+}
+
+func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Album, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
 	albums, err := s.databaseService.GetAlbumsByID(ctx, ids)
 	if err != nil {
-		return nil, []error{err}
+		return nil, err
 	}
 
 	if len(albums) == len(ids) {
 		return albums, nil
 	}
 
-	errs := make([]error, 0, len(ids))
+	existingAlbums := make(map[string]*models.Album, len(albums))
+	for _, album := range albums {
+		existingAlbums[album.ID] = album
+	}
+
+	errs := utils.NewEmptyMultiError()
+	var mu sync.Mutex
+	var wg sync.WaitGroup
 
 	for _, id := range ids {
-		found := false
+		if _, exists := existingAlbums[id]; exists {
+			continue
+		}
 
-		for _, album := range albums {
-			if album.ID == id {
-				found = true
-				break
+		wg.Add(1)
+		go func(albumID string) {
+			defer wg.Done()
+
+			album, err := s.fetchAndCreateAlbum(ctx, albumID)
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				errs.Add(err)
+				return
 			}
-		}
 
-		if found {
-			continue
-		}
-
-		albumParams, imageParams, artistIDs, err := s.spotifyService.GetAlbum(ctx, id)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		images, err := s.databaseService.CreateImages(ctx, imageParams)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		_, newErrs := s.GetArtistsByID(ctx, artistIDs)
-		if newErrs != nil {
-			errs = append(errs, newErrs...)
-			continue
-		}
-
-		album, err := s.databaseService.CreateAlbum(ctx, albumParams, getImageUrls(images), artistIDs)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		albums = append(albums, album)
+			albums = append(albums, album)
+		}(id)
 	}
 
-	if len(errs) == 0 {
-		return albums, nil
+	wg.Wait()
+
+	if errs.HasErrors() {
+		return nil, errs
 	}
 
-	return albums, errs
+	return albums, nil
 }
 
-func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Track, []error) {
+func (s *Shared) fetchAndCreateAlbum(ctx context.Context, id string) (*models.Album, error) {
+	albumParams, imageParams, artistIDs, err := s.spotifyService.GetAlbum(ctx, id)
+	if err != nil {
+		utils.Logger.Error("Failed to get album from Spotify", zap.String("albumID", id), zap.Error(err))
+		return nil, err
+	}
+
+	fetchCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var images []*models.Image
+	errs := utils.NewEmptyMultiError()
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		images, err = s.databaseService.CreateImages(fetchCtx, imageParams)
+		if err != nil {
+			utils.Logger.Error("Failed to create album images", zap.String("albumID", id), zap.Error(err))
+			mu.Lock()
+			errs.Add(err)
+			mu.Unlock()
+			cancel()
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.GetArtistsByID(fetchCtx, artistIDs)
+		if err != nil {
+			utils.Logger.Error("Failed to get artists for album", zap.String("albumID", id), zap.Error(err))
+			mu.Lock()
+			errs.Add(err)
+			mu.Unlock()
+			cancel()
+		}
+	}()
+
+	wg.Wait()
+
+	if errs.HasErrors() {
+		return nil, errs
+	}
+
+	album, err := s.databaseService.CreateAlbum(ctx, albumParams, getImageUrls(images), artistIDs)
+	if err != nil {
+		utils.Logger.Error("Failed to create album", zap.String("albumID", id), zap.Error(err))
+		return nil, err
+	}
+
+	return album, nil
+}
+
+func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Track, error) {
 	tracks, err := s.databaseService.GetTracksByID(ctx, ids)
 	if err != nil {
-		return nil, []error{err}
+		return nil, err
 	}
 
 	if len(tracks) == len(ids) {
 		return tracks, nil
 	}
 
-	errs := make([]error, 0, len(ids))
+	existingTracks := make(map[string]*models.Track, len(tracks))
+	for _, track := range tracks {
+		existingTracks[track.ID] = track
+	}
+
+	errs := utils.NewEmptyMultiError()
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
 
 	for _, id := range ids {
-		found := false
+		if _, exists := existingTracks[id]; exists {
+			continue
+		}
 
-		for _, track := range tracks {
-			if track.ID == id {
-				found = true
-				break
+		wg.Add(1)
+		go func(trackID string) {
+			defer wg.Done()
+
+			track, err := s.fetchAndCreateTrack(ctx, trackID)
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				errs.Add(err)
+				return
 			}
-		}
 
-		if found {
-			continue
-		}
-
-		trackParams, artistIDs, err := s.spotifyService.GetTrack(ctx, id)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		_, errs = s.GetArtistsByID(ctx, artistIDs)
-		if errs != nil {
-			errs = append(errs, errs...)
-			continue
-		}
-
-		_, newErrs := s.GetAlbumsByID(ctx, []string{trackParams.AlbumID})
-		if newErrs != nil {
-			errs = append(errs, newErrs...)
-			continue
-		}
-
-		track, err := s.databaseService.CreateTrack(ctx, trackParams, artistIDs)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		tracks = append(tracks, track)
+			tracks = append(tracks, track)
+		}(id)
 	}
 
-	if len(errs) == 0 {
-		return tracks, nil
+	wg.Wait()
+
+	if errs.HasErrors() {
+		return nil, errs
 	}
 
-	return tracks, errs
+	return tracks, nil
 }
 
-func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.Playlist, []error) {
+func (s *Shared) fetchAndCreateTrack(ctx context.Context, id string) (*models.Track, error) {
+	trackParams, artistIDs, err := s.spotifyService.GetTrack(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.GetArtistsByID(ctx, artistIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.GetAlbumsByID(ctx, []string{trackParams.AlbumID})
+	if err != nil {
+		return nil, err
+	}
+
+	track, err := s.databaseService.CreateTrack(ctx, trackParams, artistIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return track, nil
+}
+
+func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.Playlist, error) {
 	playlists, err := s.databaseService.GetPlaylistsByID(ctx, ids)
 	if err != nil {
-		return nil, []error{err}
+		return nil, err
 	}
 
 	if len(playlists) == len(ids) {
 		return playlists, nil
 	}
 
-	errs := make([]error, 0, len(ids))
+	existingPlaylists := make(map[string]*models.Playlist, len(playlists))
+	for _, playlist := range playlists {
+		existingPlaylists[playlist.ID] = playlist
+	}
+
+	errs := utils.NewEmptyMultiError()
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
 
 	for _, id := range ids {
-		found := false
+		if _, exists := existingPlaylists[id]; exists {
+			continue
+		}
 
-		for _, playlist := range playlists {
-			if playlist.ID == id {
-				found = true
-				break
+		wg.Add(1)
+		go func(playlistID string) {
+			defer wg.Done()
+
+			playlist, err := s.fetchAndCreatePlaylist(ctx, playlistID)
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				errs.Add(err)
+				return
 			}
-		}
 
-		if found {
-			continue
-		}
-
-		playlistParams, imageParams, err := s.spotifyService.GetPlaylist(ctx, id)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		if playlistParams == nil {
-			continue
-		}
-
-		images, err := s.databaseService.CreateImages(ctx, imageParams)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		playlist, err := s.databaseService.CreatePlaylist(ctx, playlistParams, getImageUrls(images))
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		playlists = append(playlists, playlist)
+			playlists = append(playlists, playlist)
+		}(id)
 	}
 
-	if len(errs) == 0 {
-		return playlists, nil
+	if errs.HasErrors() {
+		return nil, errs
 	}
 
-	return playlists, errs
+	return playlists, nil
+}
+
+func (s *Shared) fetchAndCreatePlaylist(ctx context.Context, id string) (*models.Playlist, error) {
+	playlistParams, imageParams, err := s.spotifyService.GetPlaylist(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if playlistParams == nil {
+		return nil, nil
+	}
+
+	images, err := s.databaseService.CreateImages(ctx, imageParams)
+	if err != nil {
+		return nil, err
+	}
+
+	playlist, err := s.databaseService.CreatePlaylist(ctx, playlistParams, getImageUrls(images))
+	if err != nil {
+		return nil, err
+	}
+
+	return playlist, nil
 }
 
 func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error) {
@@ -278,12 +386,9 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 	channel := make(chan error, 2)
 
 	go func(ctx context.Context) {
-		tracks, errs := s.GetTracksByID(ctx, []string{playerState.TrackID})
-		if errs != nil {
-			for _, err := range errs {
-				utils.Logger.Error("Failed to get track", zap.Error(err))
-			}
-			channel <- errs[0]
+		tracks, err := s.GetTracksByID(ctx, []string{playerState.TrackID})
+		if err != nil {
+			channel <- err
 
 			return
 		}
@@ -321,13 +426,9 @@ func (s *Shared) getContext(ctx context.Context, contextModel *models.PlayerStat
 
 	switch contextModel.Type {
 	case "artist":
-		artists, errs := s.GetArtistsByID(ctx, []string{contextModel.ID})
-		if errs != nil {
-			for _, err := range errs {
-				utils.Logger.Error("Failed to get artist", zap.Error(err))
-			}
-
-			return nil, errs[0]
+		artists, err := s.GetArtistsByID(ctx, []string{contextModel.ID})
+		if err != nil {
+			return nil, err
 		}
 
 		images, err := s.GetArtistImages(ctx, contextModel.ID)
@@ -339,13 +440,9 @@ func (s *Shared) getContext(ctx context.Context, contextModel *models.PlayerStat
 		contextModel.Name = artists[0].Name
 		contextModel.ImageURL = images[0].Url
 	case "album":
-		albums, errs := s.GetAlbumsByID(ctx, []string{contextModel.ID})
-		if errs != nil {
-			for _, err := range errs {
-				utils.Logger.Error("Failed to get album", zap.Error(err))
-			}
-
-			return nil, errs[0]
+		albums, err := s.GetAlbumsByID(ctx, []string{contextModel.ID})
+		if err != nil {
+			return nil, err
 		}
 
 		images, err := s.GetAlbumImages(ctx, contextModel.ID)
@@ -357,13 +454,9 @@ func (s *Shared) getContext(ctx context.Context, contextModel *models.PlayerStat
 		contextModel.Name = albums[0].Name
 		contextModel.ImageURL = images[0].Url
 	case "playlist":
-		playlists, errs := s.GetPlaylistByID(ctx, []string{contextModel.ID})
-		if errs != nil {
-			for _, err := range errs {
-				utils.Logger.Error("Failed to get playlist", zap.Error(err))
-			}
-
-			return nil, errs[0]
+		playlists, err := s.GetPlaylistByID(ctx, []string{contextModel.ID})
+		if err != nil {
+			return nil, err
 		}
 
 		if len(playlists) == 0 {
