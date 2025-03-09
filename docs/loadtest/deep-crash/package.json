@@ -1,0 +1,21 @@
+{
+  "name": "load_test",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "build": "node-gyp rebuild",
+    "install": "node-gyp rebuild"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "graphql": "^16.10.0",
+    "graphql-tag": "^2.12.6",
+    "graphql-ws": "^6.0.4",
+    "node-gyp": "^11.1.0",
+    "ws": "^8.18.1"
+  }
+}
