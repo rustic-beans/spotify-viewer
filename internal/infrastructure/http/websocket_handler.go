@@ -3,37 +3,42 @@ package http
 import (
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
 )
 
 type WebsocketHandler[M any] struct {
-	mu         sync.RWMutex
-	numOfConn  int
-	connection chan M
+	mu               sync.RWMutex
+	messageQueueSize int
+	connections      map[string]chan M
 }
 
 func NewWebsocketHandler[M any](messageQueueSize int) *WebsocketHandler[M] {
 	return &WebsocketHandler[M]{
-		connection: make(chan M, messageQueueSize),
+		connections:      make(map[string]chan M),
+		messageQueueSize: messageQueueSize,
 	}
 }
 
-func (w *WebsocketHandler[M]) AddConnection() chan M {
+func (w *WebsocketHandler[M]) AddConnection() (string, chan M) {
 	utils.Logger.Info("Adding connection")
 
+	id := uuid.New().String()
+	c := make(chan M, w.messageQueueSize)
+
 	w.mu.Lock()
-	w.numOfConn++
+	w.connections[id] = c
 	w.mu.Unlock()
 
 	utils.Logger.Info("Connection added")
 
-	return w.connection
+	return id, c
 }
 
-func (w *WebsocketHandler[M]) RemoveConnection() {
+func (w *WebsocketHandler[M]) RemoveConnection(id string) {
 	w.mu.Lock()
-	w.numOfConn--
+	delete(w.connections, id)
 	w.mu.Unlock()
 }
 
@@ -43,10 +48,10 @@ func (w *WebsocketHandler[M]) Broadcast(m M) {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
-	utils.Logger.Info("Lock acquired", zap.Int("numOfConn", w.numOfConn), zap.Int("Queue length", len(w.connection)))
+	utils.Logger.Info("Lock acquired", zap.Int("numOfConn", len(w.connections)))
 
-	for range w.numOfConn {
-		w.connection <- m
+	for _, c := range w.connections {
+		c <- m
 	}
 
 	utils.Logger.Info("Message broadcasted")
