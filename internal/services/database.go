@@ -23,6 +23,7 @@ type IDatabase interface {
 	GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error)
 	GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error)
 	CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs []string, artistIDs []string) (*models.Album, error)
+	CreateAlbums(ctx context.Context, params []*utils.Triple[*database.CreateAlbumParams, []string, []string]) ([]*models.Album, error)
 
 	GetArtists(ctx context.Context) ([]*models.Artist, error)
 	GetArtistsByID(ctx context.Context, id []string) ([]*models.Artist, error)
@@ -30,6 +31,7 @@ type IDatabase interface {
 	GetArtistImages(ctx context.Context, id string) ([]*models.Image, error)
 	GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error)
 	CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error)
+	CreateArtists(ctx context.Context, params []*utils.Pair[*database.CreateArtistParams, []string]) ([]*models.Artist, error)
 
 	GetImages(ctx context.Context) ([]*models.Image, error)
 	GetImagesByURL(ctx context.Context, url []string) ([]*models.Image, error)
@@ -45,6 +47,7 @@ type IDatabase interface {
 	GetPlaylistsByID(ctx context.Context, id []string) ([]*models.Playlist, error)
 	GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error)
 	CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (*models.Playlist, error)
+	CreatePlaylists(ctx context.Context, params []*utils.Pair[*database.CreatePlaylistParams, []string]) ([]*models.Playlist, error)
 
 	UpsertToken(ctx context.Context, token *database.UpsertTokenParams) (*models.Token, error)
 	GetToken(ctx context.Context) (*models.Token, error)
@@ -53,6 +56,7 @@ type IDatabase interface {
 type Database struct {
 	*database.Queries
 	client *pgxpool.Pool
+	tx     *pgx.Tx
 }
 
 func NewDatabase(client *pgxpool.Pool) IDatabase {
@@ -83,7 +87,18 @@ func wrapManyQueryError[T any](result []*T, err error) ([]*T, error) {
 }
 
 func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error) error {
-	tx, err := d.client.Begin(ctx)
+	var tx pgx.Tx
+	var err error
+
+	if d.tx == nil {
+		tx, err = d.client.Begin(ctx)
+
+		d.tx = &tx
+	} else {
+		tx = *d.tx
+		tx, err = tx.Begin(ctx)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -100,7 +115,7 @@ func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error)
 	}()
 
 	qtx := d.Queries.WithTx(tx)
-	if err = fn(qtx); err != nil {
+	if err := fn(qtx); err != nil {
 		err = fmt.Errorf("error with transaction: %w", err)
 		return err
 	}
@@ -173,6 +188,32 @@ func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumP
 	return a, nil
 }
 
+func (d *Database) CreateAlbums(ctx context.Context, params []*utils.Triple[*database.CreateAlbumParams, []string, []string]) ([]*models.Album, error) {
+	albums := make([]*models.Album, 0, len(params))
+
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		errs := utils.NewEmptyMultiError()
+
+		for _, triple := range params {
+			model, err := d.CreateAlbum(ctx, triple.First, triple.Second, triple.Third)
+			if err != nil {
+				errs.Add(err)
+				continue
+			}
+
+			albums = append(albums, model)
+		}
+
+		return errs.SelfOrNil()
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return albums, nil
+}
+
 func (d *Database) GetArtists(ctx context.Context) ([]*models.Artist, error) {
 	res, err := d.Queries.GetArtists(ctx)
 	return wrapManyQueryError(res, err)
@@ -226,6 +267,32 @@ func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArti
 	}
 
 	return a, nil
+}
+
+func (d *Database) CreateArtists(ctx context.Context, params []*utils.Pair[*database.CreateArtistParams, []string]) ([]*models.Artist, error) {
+	artists := make([]*models.Artist, 0, len(params))
+
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		errs := utils.NewEmptyMultiError()
+
+		for _, pair := range params {
+			model, err := d.CreateArtist(ctx, pair.First, pair.Second)
+			if err != nil {
+				errs.Add(err)
+				continue
+			}
+
+			artists = append(artists, model)
+		}
+
+		return errs.SelfOrNil()
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return artists, nil
 }
 
 func (d *Database) GetImages(ctx context.Context) ([]*models.Image, error) {
@@ -355,6 +422,32 @@ func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.Create
 	}
 
 	return p, nil
+}
+
+func (d *Database) CreatePlaylists(ctx context.Context, params []*utils.Pair[*database.CreatePlaylistParams, []string]) ([]*models.Playlist, error) {
+	playlists := make([]*models.Playlist, 0, len(params))
+
+	err := d.withTX(ctx, func(q *database.Queries) error {
+		errs := utils.NewEmptyMultiError()
+
+		for _, pair := range params {
+			model, err := d.CreatePlaylist(ctx, pair.First, pair.Second)
+			if err != nil {
+				errs.Add(err)
+				continue
+			}
+
+			playlists = append(playlists, model)
+		}
+
+		return errs.SelfOrNil()
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return playlists, nil
 }
 
 func (d *Database) UpsertToken(ctx context.Context, token *database.UpsertTokenParams) (*models.Token, error) {

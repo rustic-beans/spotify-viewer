@@ -24,7 +24,7 @@ type HasID interface {
 	GetID() string
 }
 
-func getImageUrls(images []*models.Image) []string {
+func getImageUrls(images []*models.CreateImageParams) []string {
 	urls := make([]string, 0, len(images))
 	for _, image := range images {
 		urls = append(urls, image.Url)
@@ -49,6 +49,40 @@ func getToCreateIDs[T HasID](ids []string, existing []T) []string {
 	return toGetIDs
 }
 
+func parallelRetrieve(ctx context.Context, ids []string, retriever func(context.Context, string) error) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	errs := utils.NewEmptyMultiError()
+
+	var wg sync.WaitGroup
+
+	var mu sync.Mutex
+
+	for _, id := range ids {
+		wg.Add(1)
+
+		go func(id string) {
+			defer wg.Done()
+
+			err := retriever(ctx, id)
+			if err != nil {
+				mu.Lock()
+				defer mu.Unlock()
+
+				errs.Add(err)
+
+				return
+			}
+		}(id)
+	}
+
+	wg.Wait()
+
+	return errs.SelfOrNil()
+}
+
 func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Artist, error) {
 	if len(ids) == 0 {
 		return nil, nil
@@ -64,59 +98,37 @@ func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Ar
 	}
 
 	toGetIDs := getToCreateIDs(ids, artists)
-
-	errs := utils.NewEmptyMultiError()
 	var mu sync.Mutex
-	var wg sync.WaitGroup
 
-	for _, id := range toGetIDs {
-		wg.Add(1)
-		go func(artistID string) {
-			defer wg.Done()
+	artistParams := make([]*utils.Pair[*models.CreateArtistParams, []string], 0, len(toGetIDs))
+	imageParams := make([]*models.CreateImageParams, 0, len(toGetIDs))
 
-			artist, err := s.fetchAndCreateArtist(ctx, artistID)
+	errs := parallelRetrieve(ctx, toGetIDs, func(ctx context.Context, id string) error {
+		ap, ips, err := s.spotifyService.GetArtist(ctx, id)
+		if err != nil {
+			utils.Logger.Error("Failed to get artist from Spotify", zap.String("artistID", id), zap.Error(err))
+			return err
+		}
 
-			mu.Lock()
-			defer mu.Unlock()
+		mu.Lock()
+		defer mu.Unlock()
 
-			if err != nil {
-				errs.Add(err)
-				return
-			}
+		artistParams = append(artistParams, utils.NewPair(ap, getImageUrls(ips)))
+		imageParams = append(imageParams, ips...)
 
-			artists = append(artists, artist)
-		}(id)
-	}
+		return nil
+	})
 
-	wg.Wait()
-
-	if errs.HasErrors() {
+	if errs != nil {
 		return nil, errs
 	}
 
-	return artists, nil
-}
-
-func (s *Shared) fetchAndCreateArtist(ctx context.Context, id string) (*models.Artist, error) {
-	artistParams, imageParams, err := s.spotifyService.GetArtist(ctx, id)
+	_, err = s.databaseService.CreateImages(ctx, imageParams)
 	if err != nil {
-		utils.Logger.Error("Failed to get artist from Spotify", zap.String("artistID", id), zap.Error(err))
 		return nil, err
 	}
 
-	images, err := s.databaseService.CreateImages(ctx, imageParams)
-	if err != nil {
-		utils.Logger.Error("Failed to create artist images", zap.String("artistID", id), zap.Error(err))
-		return nil, err
-	}
-
-	artist, err := s.databaseService.CreateArtist(ctx, artistParams, getImageUrls(images))
-	if err != nil {
-		utils.Logger.Error("Failed to create artist", zap.String("artistID", id), zap.Error(err))
-		return nil, err
-	}
-
-	return artist, nil
+	return s.databaseService.CreateArtists(ctx, artistParams)
 }
 
 func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Album, error) {
@@ -135,94 +147,44 @@ func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Alb
 
 	toGetIDs := getToCreateIDs(ids, albums)
 
-	errs := utils.NewEmptyMultiError()
 	var mu sync.Mutex
-	var wg sync.WaitGroup
 
-	for _, id := range toGetIDs {
-		wg.Add(1)
-		go func(albumID string) {
-			defer wg.Done()
+	albumParams := make([]*utils.Triple[*models.CreateAlbumParams, []string, []string], 0, len(toGetIDs))
+	imageParams := make([]*models.CreateImageParams, 0, len(toGetIDs))
+	artistIDs := make([]string, 0, len(toGetIDs))
 
-			album, err := s.fetchAndCreateAlbum(ctx, albumID)
+	err = parallelRetrieve(ctx, toGetIDs, func(ctx context.Context, id string) error {
+		ap, ips, aids, err := s.spotifyService.GetAlbum(ctx, id)
+		if err != nil {
+			utils.Logger.Error("Failed to get album from Spotify", zap.String("albumID", id), zap.Error(err))
+			return err
+		}
 
-			mu.Lock()
-			defer mu.Unlock()
+		mu.Lock()
+		defer mu.Unlock()
 
-			if err != nil {
-				errs.Add(err)
-				return
-			}
+		albumParams = append(albumParams, utils.NewTriple(ap, getImageUrls(ips), aids))
+		imageParams = append(imageParams, ips...)
+		artistIDs = append(artistIDs, aids...)
 
-			albums = append(albums, album)
-		}(id)
-	}
+		return nil
+	})
 
-	wg.Wait()
-
-	if errs.HasErrors() {
-		return nil, errs
-	}
-
-	return albums, nil
-}
-
-func (s *Shared) fetchAndCreateAlbum(ctx context.Context, id string) (*models.Album, error) {
-	albumParams, imageParams, artistIDs, err := s.spotifyService.GetAlbum(ctx, id)
 	if err != nil {
-		utils.Logger.Error("Failed to get album from Spotify", zap.String("albumID", id), zap.Error(err))
 		return nil, err
 	}
 
-	fetchCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	var images []*models.Image
-	errs := utils.NewEmptyMultiError()
-
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		images, err = s.databaseService.CreateImages(fetchCtx, imageParams)
-		if err != nil {
-			utils.Logger.Error("Failed to create album images", zap.String("albumID", id), zap.Error(err))
-			mu.Lock()
-			errs.Add(err)
-			mu.Unlock()
-			cancel()
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		_, err := s.GetArtistsByID(fetchCtx, artistIDs)
-		if err != nil {
-			utils.Logger.Error("Failed to get artists for album", zap.String("albumID", id), zap.Error(err))
-			mu.Lock()
-			errs.Add(err)
-			mu.Unlock()
-			cancel()
-		}
-	}()
-
-	wg.Wait()
-
-	if errs.HasErrors() {
-		return nil, errs
-	}
-
-	album, err := s.databaseService.CreateAlbum(ctx, albumParams, getImageUrls(images), artistIDs)
+	_, err = s.databaseService.CreateImages(ctx, imageParams)
 	if err != nil {
-		utils.Logger.Error("Failed to create album", zap.String("albumID", id), zap.Error(err))
 		return nil, err
 	}
 
-	return album, nil
+	_, err = s.GetArtistsByID(ctx, artistIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.databaseService.CreateAlbums(ctx, albumParams)
 }
 
 func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Track, error) {
@@ -264,11 +226,7 @@ func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Tra
 
 	wg.Wait()
 
-	if errs.HasErrors() {
-		return nil, errs
-	}
-
-	return tracks, nil
+	return tracks, errs.SelfOrNil()
 }
 
 func (s *Shared) fetchAndCreateTrack(ctx context.Context, id string) (*models.Track, error) {
@@ -307,58 +265,36 @@ func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.P
 
 	toGetIDs := getToCreateIDs(ids, playlists)
 
-	errs := utils.NewEmptyMultiError()
+	playlistParams := make([]*utils.Pair[*models.CreatePlaylistParams, []string], 0, len(toGetIDs))
+	imageParams := make([]*models.CreateImageParams, 0, len(toGetIDs))
 
-	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	for _, id := range toGetIDs {
-		wg.Add(1)
-		go func(playlistID string) {
-			defer wg.Done()
+	err = parallelRetrieve(ctx, toGetIDs, func(ctx context.Context, id string) error {
+		p, ips, err := s.spotifyService.GetPlaylist(ctx, id)
+		if err != nil {
+			return err
+		}
 
-			playlist, err := s.fetchAndCreatePlaylist(ctx, playlistID)
+		mu.Lock()
+		defer mu.Unlock()
 
-			mu.Lock()
-			defer mu.Unlock()
+		playlistParams = append(playlistParams, utils.NewPair(p, getImageUrls(ips)))
+		imageParams = append(imageParams, ips...)
 
-			if err != nil {
-				errs.Add(err)
-				return
-			}
+		return nil
+	})
 
-			playlists = append(playlists, playlist)
-		}(id)
-	}
-
-	if errs.HasErrors() {
-		return nil, errs
-	}
-
-	return playlists, nil
-}
-
-func (s *Shared) fetchAndCreatePlaylist(ctx context.Context, id string) (*models.Playlist, error) {
-	playlistParams, imageParams, err := s.spotifyService.GetPlaylist(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if playlistParams == nil {
-		return nil, nil
-	}
-
-	images, err := s.databaseService.CreateImages(ctx, imageParams)
+	_, err = s.databaseService.CreateImages(ctx, imageParams)
 	if err != nil {
 		return nil, err
 	}
 
-	playlist, err := s.databaseService.CreatePlaylist(ctx, playlistParams, getImageUrls(images))
-	if err != nil {
-		return nil, err
-	}
-
-	return playlist, nil
+	return s.databaseService.CreatePlaylists(ctx, playlistParams)
 }
 
 func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error) {

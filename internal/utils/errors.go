@@ -20,6 +20,14 @@ func (m *MultiError) HasErrors() bool {
 	return len(m.Errors) > 0
 }
 
+func (m *MultiError) SelfOrNil() *MultiError {
+	if m.HasErrors() {
+		return m
+	}
+
+	return nil
+}
+
 func (m *MultiError) Error() string {
 	result := ""
 	for _, err := range m.Errors {
