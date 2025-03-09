@@ -21,19 +21,19 @@ func NewWebsocketHandler[M any](messageQueueSize int) *WebsocketHandler[M] {
 	}
 }
 
-func (w *WebsocketHandler[M]) AddConnection() (string, chan M) {
+func (w *WebsocketHandler[M]) AddConnection() (id string, ch chan M) {
 	utils.Logger.Info("Adding connection")
 
-	id := uuid.New().String()
-	c := make(chan M, w.messageQueueSize)
+	id = uuid.New().String()
+	ch = make(chan M, w.messageQueueSize)
 
 	w.mu.Lock()
-	w.connections[id] = c
+	w.connections[id] = ch
 	w.mu.Unlock()
 
 	utils.Logger.Info("Connection added")
 
-	return id, c
+	return id, ch
 }
 
 func (w *WebsocketHandler[M]) RemoveConnection(id string) {
