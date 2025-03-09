@@ -110,9 +110,57 @@ type Album struct {
 	Genres               []string                  `json:"genres"`
 }
 
+func (e *Album) GetID() string {
+	return e.ID
+}
+
+func (e *Album) GetAlbumType() AlbumType {
+	return e.AlbumType
+}
+
+func (e *Album) GetTotalTracks() int64 {
+	return e.TotalTracks
+}
+
+func (e *Album) GetExternalUrls() map[string]string {
+	return e.ExternalUrls
+}
+
+func (e *Album) GetHref() string {
+	return e.Href
+}
+
+func (e *Album) GetName() string {
+	return e.Name
+}
+
+func (e *Album) GetReleaseDate() string {
+	return e.ReleaseDate
+}
+
+func (e *Album) GetReleaseDatePrecision() AlbumReleaseDatePrecision {
+	return e.ReleaseDatePrecision
+}
+
+func (e *Album) GetUri() string {
+	return e.Uri
+}
+
+func (e *Album) GetGenres() []string {
+	return e.Genres
+}
+
 type AlbumImage struct {
 	AlbumID  string `json:"album_id"`
 	ImageUrl string `json:"image_url"`
+}
+
+func (e *AlbumImage) GetAlbumID() string {
+	return e.AlbumID
+}
+
+func (e *AlbumImage) GetImageUrl() string {
+	return e.ImageUrl
 }
 
 type Artist struct {
@@ -124,9 +172,41 @@ type Artist struct {
 	Genres       []string          `json:"genres"`
 }
 
+func (e *Artist) GetID() string {
+	return e.ID
+}
+
+func (e *Artist) GetExternalUrls() map[string]string {
+	return e.ExternalUrls
+}
+
+func (e *Artist) GetHref() string {
+	return e.Href
+}
+
+func (e *Artist) GetName() string {
+	return e.Name
+}
+
+func (e *Artist) GetUri() string {
+	return e.Uri
+}
+
+func (e *Artist) GetGenres() []string {
+	return e.Genres
+}
+
 type ArtistAlbum struct {
 	ArtistID string `json:"artist_id"`
 	AlbumID  string `json:"album_id"`
+}
+
+func (e *ArtistAlbum) GetArtistID() string {
+	return e.ArtistID
+}
+
+func (e *ArtistAlbum) GetAlbumID() string {
+	return e.AlbumID
 }
 
 type ArtistImage struct {
@@ -134,15 +214,43 @@ type ArtistImage struct {
 	ImageUrl string `json:"image_url"`
 }
 
+func (e *ArtistImage) GetArtistID() string {
+	return e.ArtistID
+}
+
+func (e *ArtistImage) GetImageUrl() string {
+	return e.ImageUrl
+}
+
 type ArtistTrack struct {
 	ArtistID string `json:"artist_id"`
 	TrackID  string `json:"track_id"`
+}
+
+func (e *ArtistTrack) GetArtistID() string {
+	return e.ArtistID
+}
+
+func (e *ArtistTrack) GetTrackID() string {
+	return e.TrackID
 }
 
 type Image struct {
 	Url    string `json:"url"`
 	Width  int64  `json:"width"`
 	Height int64  `json:"height"`
+}
+
+func (e *Image) GetUrl() string {
+	return e.Url
+}
+
+func (e *Image) GetWidth() int64 {
+	return e.Width
+}
+
+func (e *Image) GetHeight() int64 {
+	return e.Height
 }
 
 type Playlist struct {
@@ -153,9 +261,37 @@ type Playlist struct {
 	Uri          string            `json:"uri"`
 }
 
+func (e *Playlist) GetID() string {
+	return e.ID
+}
+
+func (e *Playlist) GetExternalUrls() map[string]string {
+	return e.ExternalUrls
+}
+
+func (e *Playlist) GetHref() string {
+	return e.Href
+}
+
+func (e *Playlist) GetName() string {
+	return e.Name
+}
+
+func (e *Playlist) GetUri() string {
+	return e.Uri
+}
+
 type PlaylistImage struct {
 	PlaylistID string `json:"playlist_id"`
 	ImageUrl   string `json:"image_url"`
+}
+
+func (e *PlaylistImage) GetPlaylistID() string {
+	return e.PlaylistID
+}
+
+func (e *PlaylistImage) GetImageUrl() string {
+	return e.ImageUrl
 }
 
 type Token struct {
@@ -164,6 +300,26 @@ type Token struct {
 	TokenType    string           `json:"token_type"`
 	RefreshToken string           `json:"refresh_token"`
 	Expiry       pgtype.Timestamp `json:"expiry"`
+}
+
+func (e *Token) GetID() int32 {
+	return e.ID
+}
+
+func (e *Token) GetAccessToken() string {
+	return e.AccessToken
+}
+
+func (e *Token) GetTokenType() string {
+	return e.TokenType
+}
+
+func (e *Token) GetRefreshToken() string {
+	return e.RefreshToken
+}
+
+func (e *Token) GetExpiry() pgtype.Timestamp {
+	return e.Expiry
 }
 
 type Track struct {
@@ -178,4 +334,48 @@ type Track struct {
 	TrackNumber  int64             `json:"track_number"`
 	Uri          string            `json:"uri"`
 	AlbumID      string            `json:"album_id"`
+}
+
+func (e *Track) GetID() string {
+	return e.ID
+}
+
+func (e *Track) GetDurationMs() int64 {
+	return e.DurationMs
+}
+
+func (e *Track) GetExplicit() bool {
+	return e.Explicit
+}
+
+func (e *Track) GetExternalUrls() map[string]string {
+	return e.ExternalUrls
+}
+
+func (e *Track) GetHref() string {
+	return e.Href
+}
+
+func (e *Track) GetName() string {
+	return e.Name
+}
+
+func (e *Track) GetPopularity() int64 {
+	return e.Popularity
+}
+
+func (e *Track) GetPreviewUrl() *string {
+	return e.PreviewUrl
+}
+
+func (e *Track) GetTrackNumber() int64 {
+	return e.TrackNumber
+}
+
+func (e *Track) GetUri() string {
+	return e.Uri
+}
+
+func (e *Track) GetAlbumID() string {
+	return e.AlbumID
 }
