@@ -19,22 +19,22 @@ func (r *queryResolver) PlayerState(ctx context.Context) (*models.PlayerState, e
 
 // PlayerState is the resolver for the playerState field.
 func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *models.PlayerState, error) {
-	utils.Logger.Info("Adding PlayerState subscription", zap.Any("context", ctx))
+	utils.Logger.Info("Adding PlayerState subscription")
 	id, ch := r.PlayerStateWebsocketHandler.AddConnection()
-	utils.Logger.Info("PlayerState subscription added", zap.Any("context", ctx))
+	utils.Logger.Info("PlayerState subscription added", zap.String("id", id))
 
 	go func(id string) {
 		<-ctx.Done()
 		r.PlayerStateWebsocketHandler.RemoveConnection(id)
-		utils.Logger.Info("PlayerState subscription closed", zap.Any("context", ctx))
+		utils.Logger.Info("PlayerState subscription closed", zap.String("id", id))
 	}(id)
 
-	utils.Logger.Debug("Getting PlayerState")
+	utils.Logger.Debug("Getting PlayerState for client", zap.String("id", id))
 	playerState, err := r.SharedService.GetPlayerState(ctx)
 	if err != nil {
 		return nil, err
 	}
-	utils.Logger.Debug("Got PlayerState, broadcasting", zap.Any("playerState", playerState))
+	utils.Logger.Debug("Got PlayerState, broadcasting")
 	ch <- playerState
 
 	return ch, nil
