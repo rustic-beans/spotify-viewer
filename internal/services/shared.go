@@ -20,6 +20,10 @@ func NewShared(databaseService IDatabase, spotifyService *Spotify, client *spoti
 	return &Shared{databaseService: databaseService, spotifyService: spotifyService, client: client}
 }
 
+type HasID interface {
+	GetID() string
+}
+
 func getImageUrls(images []*models.Image) []string {
 	urls := make([]string, 0, len(images))
 	for _, image := range images {
@@ -27,6 +31,22 @@ func getImageUrls(images []*models.Image) []string {
 	}
 
 	return urls
+}
+
+func getToCreateIDs[T HasID](ids []string, existing []T) []string {
+	existingIDs := make(map[string]struct{}, len(existing))
+	for _, item := range existing {
+		existingIDs[item.GetID()] = struct{}{}
+	}
+
+	toGetIDs := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if _, exists := existingIDs[id]; !exists {
+			toGetIDs = append(toGetIDs, id)
+		}
+	}
+
+	return toGetIDs
 }
 
 func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Artist, error) {
@@ -43,20 +63,13 @@ func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Ar
 		return artists, nil
 	}
 
-	existingArtists := make(map[string]*models.Artist, len(artists))
-	for _, artist := range artists {
-		existingArtists[artist.ID] = artist
-	}
+	toGetIDs := getToCreateIDs(ids, artists)
 
 	errs := utils.NewEmptyMultiError()
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	for _, id := range ids {
-		if _, exists := existingArtists[id]; exists {
-			continue
-		}
-
+	for _, id := range toGetIDs {
 		wg.Add(1)
 		go func(artistID string) {
 			defer wg.Done()
@@ -120,20 +133,13 @@ func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Alb
 		return albums, nil
 	}
 
-	existingAlbums := make(map[string]*models.Album, len(albums))
-	for _, album := range albums {
-		existingAlbums[album.ID] = album
-	}
+	toGetIDs := getToCreateIDs(ids, albums)
 
 	errs := utils.NewEmptyMultiError()
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	for _, id := range ids {
-		if _, exists := existingAlbums[id]; exists {
-			continue
-		}
-
+	for _, id := range toGetIDs {
 		wg.Add(1)
 		go func(albumID string) {
 			defer wg.Done()
@@ -229,22 +235,16 @@ func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Tra
 		return tracks, nil
 	}
 
-	existingTracks := make(map[string]*models.Track, len(tracks))
-	for _, track := range tracks {
-		existingTracks[track.ID] = track
-	}
+	toGetIDs := getToCreateIDs(ids, tracks)
 
 	errs := utils.NewEmptyMultiError()
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	for _, id := range ids {
-		if _, exists := existingTracks[id]; exists {
-			continue
-		}
-
+	for _, id := range toGetIDs {
 		wg.Add(1)
+
 		go func(trackID string) {
 			defer wg.Done()
 
@@ -305,21 +305,14 @@ func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.P
 		return playlists, nil
 	}
 
-	existingPlaylists := make(map[string]*models.Playlist, len(playlists))
-	for _, playlist := range playlists {
-		existingPlaylists[playlist.ID] = playlist
-	}
+	toGetIDs := getToCreateIDs(ids, playlists)
 
 	errs := utils.NewEmptyMultiError()
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	for _, id := range ids {
-		if _, exists := existingPlaylists[id]; exists {
-			continue
-		}
-
+	for _, id := range toGetIDs {
 		wg.Add(1)
 		go func(playlistID string) {
 			defer wg.Done()
