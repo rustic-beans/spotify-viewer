@@ -50,8 +50,12 @@ func (w *WebsocketHandler[M]) Broadcast(m M) {
 
 	utils.Logger.Info("Lock acquired", zap.Int("numOfConn", len(w.connections)))
 
-	for _, c := range w.connections {
-		c <- m
+	for id, c := range w.connections {
+		select {
+		case c <- m:
+		default:
+			utils.Logger.Info("Message dropped", zap.String("id", id))
+		}
 	}
 
 	utils.Logger.Info("Message broadcasted")
