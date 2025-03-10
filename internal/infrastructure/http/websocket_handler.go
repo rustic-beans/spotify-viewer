@@ -46,6 +46,7 @@ func (w *WebsocketHandler[M]) Broadcast(m M) {
 	utils.Logger.Info("Lock acquired", zap.Int("numOfConn", w.numOfConn), zap.Int("Queue length", len(w.connection)))
 
 	for range w.numOfConn {
+		utils.Logger.Debug("Broadcasting message to connection")
 		w.connection <- m
 	}
 
