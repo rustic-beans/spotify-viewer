@@ -49,7 +49,7 @@ func (w *Watcher) StartPlayerStateLoop(ctx context.Context) {
 				continue
 			}
 
-			utils.Logger.Info("Playerstate receieved", zap.Any("playerState", playerState))
+			utils.Logger.Info("Playerstate received", zap.Any("playerState", playerState))
 
 			// Check if player is not nil and that the player has an item
 			if playerState != nil && playerState.Track != nil {
