@@ -7,7 +7,7 @@ package resolver
 import (
 	"context"
 
-	"github.com/pkg/errors"
+	werrors "github.com/cockroachdb/errors"
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
@@ -34,7 +34,7 @@ func (r *subscriptionResolver) PlayerState(ctx context.Context) (<-chan *models.
 	playerState, err := r.SharedService.GetPlayerState(ctx)
 	if err != nil {
 		utils.Logger.Error("Failed getting player state", zap.Error(err))
-		return nil, errors.Wrap(err, "failed getting player state")
+		return nil, werrors.Wrap(err, "failed getting player state")
 	}
 	utils.Logger.Debug("Got PlayerState, broadcasting")
 	ch <- playerState
