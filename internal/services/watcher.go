@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/zap"
@@ -20,7 +21,6 @@ type Watcher struct {
 
 	playerStateWebsocketHandler *models.PlayerStateWebsocketHandler
 	lastPlayerState             *models.PlayerState
-	ctx                         context.Context
 }
 
 func NewWatcher(sharedService *Shared, playerStateWebsocketHandler *models.PlayerStateWebsocketHandler) *Watcher {
@@ -30,37 +30,40 @@ func NewWatcher(sharedService *Shared, playerStateWebsocketHandler *models.Playe
 	}
 }
 
-func (w *Watcher) StartPlayerStateLoop() {
-	w.ctx = context.Background()
-
+func (w *Watcher) StartPlayerStateLoop(ctx context.Context) {
 	for {
-		// Sleep for 5 seconds to give the server time to start
-		time.Sleep(sleepTime)
+		select {
+		case <-ctx.Done():
+			utils.Logger.Info("Stopping playerstate loop")
+			return
+		default:
+			// Sleep for 5 seconds to give the server time to start
+			time.Sleep(sleepTime)
 
-		playerState, err := w.sharedService.GetPlayerState(w.ctx)
-		if err != nil {
-			// This will more than likely happen in the case where nothing is playing or authentication
-			// fails
-			// TODO: Do something else here
-			utils.Logger.Error("Error getting playerstate", zap.Error(err))
-			continue
-		}
-
-		// Check if player is not nil and that the player has an item
-		if playerState != nil && playerState.Track != nil {
-			if w.lastPlayerState == nil {
-				w.lastPlayerState = playerState
+			playerState, err := w.sharedService.GetPlayerState(ctx)
+			if err != nil {
+				// This will more than likely happen in the case where nothing is playing or authentication
+				// fails
+				// TODO: Do something else here
+				utils.Logger.Error("Error getting playerstate", zap.Error(errors.Wrap(err, "failed getting playerstate")))
+				continue
 			}
 
-			// This function requires data from the previous loop so it needs to be called before the update to the playerstate
-			// This is to check if the track has changed and if so add it to the db or if the track has been replayed
-			_ = w.checkUpdate(w.ctx, playerState)
-			w.playerStateWebsocketHandler.Broadcast(playerState)
-			w.lastPlayerState = playerState
-		}
+			utils.Logger.Info("Playerstate receieved", zap.Any("playerState", playerState))
 
-		// For testing to see if the loop is working
-		utils.Logger.Debug("Playerstate receieved", zap.Any("playerState", playerState))
+			// Check if player is not nil and that the player has an item
+			if playerState != nil && playerState.Track != nil {
+				if w.lastPlayerState == nil {
+					w.lastPlayerState = playerState
+				}
+
+				// This function requires data from the previous loop so it needs to be called before the update to the playerstate
+				// This is to check if the track has changed and if so add it to the db or if the track has been replayed
+				_ = w.checkUpdate(ctx, playerState)
+				w.playerStateWebsocketHandler.Broadcast(playerState)
+				w.lastPlayerState = playerState
+			}
+		}
 	}
 }
 
@@ -70,7 +73,7 @@ func (w *Watcher) checkUpdate(_ context.Context, playerState *models.PlayerState
 	// Check if the track has just changed and if so add it to the db
 	if lastPlayerState.Track.Name != playerState.Track.Name {
 		// TODO: Add a row to the "plays" table
-		utils.Logger.Debug("Track has changed")
+		utils.Logger.Info("Track has changed", zap.String("trackName", playerState.Track.Name))
 		return true
 	}
 
@@ -85,7 +88,7 @@ func (w *Watcher) checkUpdate(_ context.Context, playerState *models.PlayerState
 	if (trackDuration/lastTrackDurationPercentage)*100 < lastPlayerProgress &&
 		//nolint:mnd // Magic number is fine here
 		playerProgress <= (trackDuration/replayTrackDurationPercentage)*int64(100) {
-		utils.Logger.Debug("Track has been replayed")
+		utils.Logger.Info("Track has been replayed", zap.String("trackName", playerState.Track.Name))
 
 		return true
 	}

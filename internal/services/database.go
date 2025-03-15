@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
+	"github.com/cockroachdb/errors"
 	"github.com/rustic-beans/spotify-viewer/internal/database"
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
@@ -71,7 +71,7 @@ func wrapOneQueryError[T any](result *T, err error) (*T, error) {
 		return nil, nil
 	}
 
-	return result, err
+	return result, errors.Wrap(err, "error querying database")
 }
 
 func wrapManyQueryError[T any](result []*T, err error) ([]*T, error) {
@@ -79,7 +79,7 @@ func wrapManyQueryError[T any](result []*T, err error) ([]*T, error) {
 		return nil, nil
 	}
 
-	return result, err
+	return result, errors.Wrap(err, "error querying database")
 }
 
 func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error) error {
@@ -101,8 +101,7 @@ func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error)
 
 	qtx := d.Queries.WithTx(tx)
 	if err = fn(qtx); err != nil {
-		err = fmt.Errorf("error with transaction: %w", err)
-		return err
+		return errors.Wrap(err, "error while executing transaction")
 	}
 
 	return tx.Commit(ctx)
@@ -110,38 +109,34 @@ func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error)
 
 func (d *Database) GetAlbums(ctx context.Context) ([]*models.Album, error) {
 	res, err := d.Queries.GetAlbums(ctx)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrap(err, "error getting albums from database"))
 }
 
 func (d *Database) GetAlbumsByID(ctx context.Context, id []string) ([]*models.Album, error) {
 	res, err := d.Queries.GetAlbumsByID(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting albums by ids %v from database", id))
 }
 
 func (d *Database) GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error) {
 	res, err := d.Queries.GetAlbumArtists(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting album artists by id %s from database", id))
 }
 
 func (d *Database) GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error) {
 	res, err := d.Queries.GetAlbumImages(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting album images by id %s from database", id))
 }
 
 func (d *Database) GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error) {
 	res, err := d.Queries.GetAlbumTracks(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting album tracks by id %s from database", id))
 }
 
-func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs, artistIDs []string) (*models.Album, error) {
-	var a *models.Album
-
-	err := d.withTX(ctx, func(q *database.Queries) error {
-		var err error
-
+func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs, artistIDs []string) (a *models.Album, err error) {
+	err = d.withTX(ctx, func(q *database.Queries) error {
 		a, err = q.CreateAlbum(ctx, album)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to run create album query")
 		}
 
 		for _, url := range imageURLs {
@@ -150,7 +145,7 @@ func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumP
 				ImageUrl: url,
 			})
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to run set album image query")
 			}
 		}
 
@@ -160,53 +155,46 @@ func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumP
 				ArtistID: id,
 			})
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to run set artist album query")
 			}
 		}
 
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
 
-	return a, nil
+	return a, errors.Wrap(err, "error creating album")
 }
 
 func (d *Database) GetArtists(ctx context.Context) ([]*models.Artist, error) {
 	res, err := d.Queries.GetArtists(ctx)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrap(err, "error getting artists from database"))
 }
 
 func (d *Database) GetArtistsByID(ctx context.Context, id []string) ([]*models.Artist, error) {
 	res, err := d.Queries.GetArtistsByID(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting artists by ids %v from database", id))
 }
 
 func (d *Database) GetArtistAlbums(ctx context.Context, id string) ([]*models.Album, error) {
 	res, err := d.Queries.GetArtistAlbums(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting artist albums by id %s from database", id))
 }
 
 func (d *Database) GetArtistImages(ctx context.Context, id string) ([]*models.Image, error) {
 	res, err := d.Queries.GetArtistImages(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting artist images by id %s from database", id))
 }
 
 func (d *Database) GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error) {
 	res, err := d.Queries.GetArtistTracks(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting artist tracks by id %s from database", id))
 }
 
-func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error) {
-	var a *models.Artist
-
-	err := d.withTX(ctx, func(q *database.Queries) error {
-		var err error
-
+func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (a *models.Artist, err error) {
+	err = d.withTX(ctx, func(q *database.Queries) error {
 		a, err = q.CreateArtist(ctx, artist)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to run create artist query")
 		}
 
 		for _, url := range imageURLs {
@@ -215,39 +203,34 @@ func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArti
 				ImageUrl: url,
 			})
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to run set artist image query")
 			}
 		}
 
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
 
-	return a, nil
+	return a, errors.Wrap(err, "error creating artist")
 }
 
 func (d *Database) GetImages(ctx context.Context) ([]*models.Image, error) {
 	res, err := d.Queries.GetImages(ctx)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrap(err, "error getting images from database"))
 }
 
 func (d *Database) GetImagesByURL(ctx context.Context, url []string) ([]*models.Image, error) {
 	res, err := d.Queries.GetImagesByURL(ctx, url)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting images by urls %v from database", url))
 }
 
-func (d *Database) CreateImages(ctx context.Context, images []*database.CreateImageParams) ([]*models.Image, error) {
-	var imgs []*models.Image
-
-	err := d.withTX(ctx, func(q *database.Queries) error {
+func (d *Database) CreateImages(ctx context.Context, images []*database.CreateImageParams) (imgs []*models.Image, err error) {
+	err = d.withTX(ctx, func(q *database.Queries) error {
 		imgs = make([]*models.Image, 0, len(images))
 
 		for _, img := range images {
 			i, err := q.CreateImage(ctx, img)
 			if err != nil {
-				return err
+				return errors.Wrap(err, fmt.Sprintf("failed to run create image query for url %s", img.Url))
 			}
 
 			imgs = append(imgs, i)
@@ -255,42 +238,37 @@ func (d *Database) CreateImages(ctx context.Context, images []*database.CreateIm
 
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
 
-	return imgs, nil
+	return imgs, errors.Wrap(err, "error creating images")
 }
 
 func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
 	res, err := d.Queries.GetTracks(ctx)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrap(err, "error getting tracks from database"))
 }
 
 func (d *Database) GetTracksByID(ctx context.Context, id []string) ([]*models.Track, error) {
 	res, err := d.Queries.GetTracksByID(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting tracks by ids %v from database", id))
 }
 
 func (d *Database) GetTrackAlbum(ctx context.Context, id string) (*models.Album, error) {
 	res, err := d.Queries.GetTrackAlbum(ctx, id)
-	return wrapOneQueryError(res, err)
+	return wrapOneQueryError(res, errors.Wrapf(err, "error getting track album by id %s from database", id))
 }
 
 func (d *Database) GetTrackArtists(ctx context.Context, id string) ([]*models.Artist, error) {
 	res, err := d.Queries.GetTrackArtists(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting track artists by id %s from database", id))
 }
 
-func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (*models.Track, error) {
-	var t *models.Track
-
-	err := d.withTX(ctx, func(q *database.Queries) error {
+func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (t *models.Track, err error) {
+	err = d.withTX(ctx, func(q *database.Queries) error {
 		var err error
 
 		t, err = q.CreateTrack(ctx, track)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to run create track query")
 		}
 
 		for _, id := range artistIDs {
@@ -299,43 +277,36 @@ func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackP
 				TrackID:  t.ID,
 			})
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to run set artist track query")
 			}
 		}
 
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
 
-	return t, nil
+	return t, errors.Wrap(err, "error creating track")
 }
 
 func (d *Database) GetPlaylists(ctx context.Context) ([]*models.Playlist, error) {
 	res, err := d.Queries.GetPlaylists(ctx)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrap(err, "error getting playlists from database"))
 }
 
 func (d *Database) GetPlaylistsByID(ctx context.Context, id []string) ([]*models.Playlist, error) {
 	res, err := d.Queries.GetPlaylistsByID(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting playlists by ids %v from database", id))
 }
 
 func (d *Database) GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error) {
 	res, err := d.Queries.GetPlaylistImages(ctx, id)
-	return wrapManyQueryError(res, err)
+	return wrapManyQueryError(res, errors.Wrapf(err, "error getting playlist images by id %s from database", id))
 }
 
-func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (*models.Playlist, error) {
-	var p *models.Playlist
-
-	err := d.withTX(ctx, func(q *database.Queries) error {
-		var err error
-
+func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (p *models.Playlist, err error) {
+	err = d.withTX(ctx, func(q *database.Queries) error {
 		p, err = q.CreatePlaylist(ctx, playlist)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to run create playlist query")
 		}
 
 		for _, url := range imageURLs {
@@ -344,25 +315,22 @@ func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.Create
 				ImageUrl:   url,
 			})
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to run set playlist image query")
 			}
 		}
 
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
 
-	return p, nil
+	return p, errors.Wrap(err, "error creating playlist")
 }
 
 func (d *Database) UpsertToken(ctx context.Context, token *database.UpsertTokenParams) (*models.Token, error) {
 	t, err := d.Queries.UpsertToken(ctx, token)
-	return wrapOneQueryError(t, err)
+	return wrapOneQueryError(t, errors.Wrap(err, "error upserting token"))
 }
 
 func (d *Database) GetToken(ctx context.Context) (*models.Token, error) {
 	t, err := d.Queries.GetToken(ctx)
-	return wrapOneQueryError(t, err)
+	return wrapOneQueryError(t, errors.Wrap(err, "error getting token"))
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/rustic-beans/spotify-viewer/internal/models"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
@@ -27,13 +28,13 @@ func NewSpotify(client *spotify.Spotify) *Spotify {
 
 func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, error) {
 	if playerState, ok := s.playerStateCache.Get(); ok {
-		utils.Logger.Info("Using cached player state", zap.Duration("time_to_expiry", s.playerStateCache.TimeToExpiry()))
+		utils.Logger.Info("Using cached player state", zap.Duration("timeToExpiry", s.playerStateCache.TimeToExpiry()))
 		return playerState, nil
 	}
 
 	playerState, err := s.client.GetPlayerState(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed getting player state")
 	}
 
 	playerStateContext := s.getContext(string(playerState.PlaybackContext.URI))
@@ -80,7 +81,7 @@ func (s *Spotify) getContext(contextURI string) *models.PlayerStateContext {
 func (s *Spotify) GetArtist(ctx context.Context, id string) (artistParams *models.CreateArtistParams, imageParams []*models.CreateImageParams, err error) {
 	artist, err := s.client.GetArtist(ctx, id)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrapf(err, "failed getting artist with id %s", id)
 	}
 
 	return spotify.FullArtistToParams(artist), spotify.ImageSliceToModelParams(artist.Images), nil
@@ -90,7 +91,7 @@ func (s *Spotify) GetArtist(ctx context.Context, id string) (artistParams *model
 func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.CreateAlbumParams, imageParams []*models.CreateImageParams, artistIDs []string, err error) {
 	album, err := s.client.GetAlbum(ctx, id)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, errors.Wrapf(err, "failed getting album with id %s", id)
 	}
 
 	artistIDs = make([]string, 0, len(album.Artists))
@@ -104,7 +105,7 @@ func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.
 func (s *Spotify) GetTrack(ctx context.Context, id string) (trackParams *models.CreateTrackParams, artistIDs []string, err error) {
 	track, err := s.client.GetTrack(ctx, id)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrapf(err, "failed getting track with id %s", id)
 	}
 
 	artistIDs = make([]string, 0, len(track.Artists))
@@ -117,14 +118,13 @@ func (s *Spotify) GetTrack(ctx context.Context, id string) (trackParams *models.
 
 func (s *Spotify) GetPlaylist(ctx context.Context, id string) (playlistParams *models.CreatePlaylistParams, imageParams []*models.CreateImageParams, err error) {
 	playlist, err := s.client.GetPlaylist(ctx, id)
-
 	if err != nil {
-		errCast, castSucceed := err.(spotifyLib.Error)
+		errCast, castSucceed := errors.UnwrapAll(err).(spotifyLib.Error)
 		if castSucceed && errCast.Status == 404 {
 			return nil, nil, nil
 		}
 
-		return nil, nil, err
+		return nil, nil, errors.Wrapf(err, "failed getting playlist with id %s", id)
 	}
 
 	return spotify.FullPlaylistToParams(playlist), spotify.ImageSliceToModelParams(playlist.Images), nil

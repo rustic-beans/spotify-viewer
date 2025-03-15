@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 )
@@ -41,14 +42,12 @@ func ReadConfig() (*Config, error) {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed reading config file")
 	}
 
 	config := NewConfig()
-
-	err = viper.Unmarshal(config)
-	if err != nil {
-		return nil, err
+	if err = viper.Unmarshal(config); err != nil {
+		return nil, errors.Wrap(err, "failed unmarshalling config")
 	}
 
 	return config, nil
@@ -60,11 +59,11 @@ func (c *Config) GetURL() string {
 
 func (c *Config) ReadToken() (*oauth2.Token, error) {
 	if c.Spotify.TokenLocation == "database" {
-		return nil, fmt.Errorf("token location is set to database")
+		return nil, errors.New("token location is set to database")
 	}
 
 	if c.Spotify.TokenLocation == "" {
-		return nil, fmt.Errorf("token location is not set")
+		return nil, errors.New("token location is not set")
 	}
 
 	return readTokenFromFile(c.Spotify.TokenLocation)
@@ -73,15 +72,11 @@ func (c *Config) ReadToken() (*oauth2.Token, error) {
 func readTokenFromFile(tokenLocation string) (*oauth2.Token, error) {
 	data, err := os.ReadFile(tokenLocation)
 	if err != nil {
-		return nil, fmt.Errorf("failed reading token file: %v", err)
+		return nil, errors.Newf("failed reading token file: %v", err)
 	}
 
 	var token oauth2.Token
-
 	err = json.Unmarshal(data, &token)
-	if err != nil {
-		return nil, fmt.Errorf("failed unmarshalling token: %v", err)
-	}
 
-	return &token, nil
+	return &token, errors.WithDetailf(errors.Wrap(err, "failed unmarshalling token"), "data: %s", string(data))
 }
