@@ -228,6 +228,7 @@ func (d *Database) CreateImages(ctx context.Context, images []*database.CreateIm
 		imgs = make([]*models.Image, 0, len(images))
 
 		for _, img := range images {
+			//nolint:govet // err is shadowed
 			i, err := q.CreateImage(ctx, img)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to run create image query for url %s", img.Url))
@@ -264,8 +265,6 @@ func (d *Database) GetTrackArtists(ctx context.Context, id string) ([]*models.Ar
 
 func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackParams, artistIDs []string) (t *models.Track, err error) {
 	err = d.withTX(ctx, func(q *database.Queries) error {
-		var err error
-
 		t, err = q.CreateTrack(ctx, track)
 		if err != nil {
 			return errors.Wrap(err, "failed to run create track query")
