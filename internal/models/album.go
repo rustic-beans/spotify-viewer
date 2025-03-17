@@ -1,8 +1,7 @@
 package models
 
 import (
-	"fmt"
-
+	"github.com/cockroachdb/errors"
 	"github.com/rustic-beans/spotify-viewer/internal/database"
 )
 
@@ -25,7 +24,7 @@ var albumMap = map[string]AlbumType{
 func StringToAlbumType(s string) (albumType AlbumType, _ error) {
 	albumType, ok := albumMap[s]
 	if !ok {
-		return AlbumTypeAlbum, fmt.Errorf("invalid album type: %s", s)
+		return AlbumTypeAlbum, errors.Newf("invalid album type: %s", s)
 	}
 
 	return albumType, nil
@@ -48,7 +47,7 @@ var releaseDatePrecisionMap = map[string]AlbumReleaseDatePrecision{
 func StringToAlbumReleaseDatePrecision(s string) (releaseDatePrecision AlbumReleaseDatePrecision, _ error) {
 	releaseDatePrecision, ok := releaseDatePrecisionMap[s]
 	if !ok {
-		return ReleaseDatePrecisionDay, fmt.Errorf("invalid album release date precision: %s", s)
+		return ReleaseDatePrecisionDay, errors.Newf("invalid album release date precision: %s", s)
 	}
 
 	return releaseDatePrecision, nil

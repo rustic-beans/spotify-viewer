@@ -6,6 +6,7 @@ import Controls from '@/components/Controls.vue';
 import ProgressBar from '@/components/ProgressBar.vue';
 import { type FragmentType, useFragment, graphql } from '@/__generated__';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 const PlayerStateFragment = graphql(/* GraphQL */ `
   fragment PlayerState on PlayerState {
@@ -33,13 +34,15 @@ const gmodhaha = Math.floor(Math.random() * 5);
 //TODO: once we have the artist image from the spotify api call, we can use the obj dominant color for this
 var color = "#821271";
 
-
+const query = useRoute().query;
+const coverMode = computed(() => (query.cover ?? 'false') === 'true');
 </script>
 
 <template>
   <div class="fixed inset-0">
     <Background
-      class="object-cover h-full w-full "
+      :class="{ 'object-cover': coverMode, 'object-contain': !coverMode }"
+      class=" h-full w-full "
       v-if="backgroundObj"
       :fragment="backgroundObj"
     />

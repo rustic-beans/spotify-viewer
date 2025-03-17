@@ -3,8 +3,9 @@ package models
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
+
+	"github.com/cockroachdb/errors"
 )
 
 // StringMap represents a map[string]string type for GraphQL
@@ -28,7 +29,7 @@ func (s *StringMap) UnmarshalGQLContext(_ context.Context, v interface{}) error 
 		for k, val := range v {
 			str, ok := val.(string)
 			if !ok {
-				return fmt.Errorf("value for key %s is not a string", k)
+				return errors.Newf("value for key %s is not a string", k)
 			}
 
 			result[k] = str
@@ -37,10 +38,10 @@ func (s *StringMap) UnmarshalGQLContext(_ context.Context, v interface{}) error 
 		*s = result
 	case string:
 		if err := json.Unmarshal([]byte(v), &s); err != nil {
-			return err
+			return errors.Wrapf(err, "failed unmarshalling %s into map[string]string", v)
 		}
 	default:
-		return fmt.Errorf("cannot unmarshal %T into map[string]string", v)
+		return errors.Newf("cannot unmarshal %T into map[string]string", v)
 	}
 
 	return nil
