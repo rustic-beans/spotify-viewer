@@ -4,9 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/labstack/echo/v4"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	spotifyLib "github.com/zmb3/spotify/v2"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 )
 
@@ -27,30 +29,28 @@ func (s *Spotify) SetupRoutes(e *echo.Echo) {
 	s.auth.setupAuthRoutes(e)
 }
 
-func (s *Spotify) Authenticate() {
+func (s *Spotify) Authenticate() error {
 	go func() {
-		s.Client = s.auth.waitForClient()
+		client, err := s.auth.waitForClient()
+		if err != nil {
+			utils.Logger.Error("Failed to authenticate", zap.Error(err))
+		}
+
+		s.Client = client
 	}()
 
-	s.auth.authenticate()
+	return s.auth.authenticate()
 }
 
 // Don't question it: https://groups.google.com/g/golang-nuts/c/y9IvZgiNowk
 func callSpotify[R *Q, Q any](spot *Spotify, f func() (R, error)) (R, error) {
-	var err error
-
 	if spot.Client == nil {
-		// TODO: return a custom error type
 		return nil, NotAuthenticatedError{}
 	}
 
 	response, err := f()
 
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	return response, errors.Wrap(err, "failed to call spotify")
 }
 
 func (s *Spotify) GetPlayerState(ctx context.Context) (*spotifyLib.PlayerState, error) {
@@ -59,7 +59,7 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*spotifyLib.PlayerState, 
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed getting player state from spotify")
 	}
 
 	playerState.Timestamp = time.Now().UnixMilli()
@@ -72,11 +72,7 @@ func (s *Spotify) GetArtist(ctx context.Context, id string) (*spotifyLib.FullArt
 		return s.Client.GetArtist(ctx, spotifyLib.ID(id))
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return artist, nil
+	return artist, errors.Wrap(err, "failed getting artist from spotify")
 }
 
 func (s *Spotify) GetAlbum(ctx context.Context, id string) (*spotifyLib.FullAlbum, error) {
@@ -84,11 +80,7 @@ func (s *Spotify) GetAlbum(ctx context.Context, id string) (*spotifyLib.FullAlbu
 		return s.Client.GetAlbum(ctx, spotifyLib.ID(id))
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return album, nil
+	return album, errors.Wrap(err, "failed getting album from spotify")
 }
 
 func (s *Spotify) GetTrack(ctx context.Context, id string) (*spotifyLib.FullTrack, error) {
@@ -96,11 +88,7 @@ func (s *Spotify) GetTrack(ctx context.Context, id string) (*spotifyLib.FullTrac
 		return s.Client.GetTrack(ctx, spotifyLib.ID(id))
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return track, nil
+	return track, errors.Wrap(err, "failed getting track from spotify")
 }
 
 func (s *Spotify) GetPlaylist(ctx context.Context, id string) (*spotifyLib.FullPlaylist, error) {
@@ -108,9 +96,5 @@ func (s *Spotify) GetPlaylist(ctx context.Context, id string) (*spotifyLib.FullP
 		return s.Client.GetPlaylist(ctx, spotifyLib.ID(id))
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return playlist, nil
+	return playlist, errors.Wrap(err, "failed getting playlist from spotify")
 }
