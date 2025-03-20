@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	sleepTime                     = 5 * time.Second
+	sleepTime                     = 10 * time.Second
 	lastTrackDurationPercentage   = int64(50)
 	replayTrackDurationPercentage = int64(5)
 )

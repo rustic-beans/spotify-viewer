@@ -49,8 +49,7 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 	}
 
 	//nolint:mnd // Magic number is fine here
-	// The cache is set to expire after 6 seconds, such that there is about 1 second of overlap for in case we have perform some VERY slow network calls. But this is unlikely.
-	s.playerStateCache.SetWithExpiry(model, 6*time.Second)
+	s.playerStateCache.SetWithExpiry(model, 9*time.Second)
 
 	if playerState.Item == nil {
 		return model, nil
