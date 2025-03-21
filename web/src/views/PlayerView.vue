@@ -26,7 +26,7 @@ const query = useRoute().query;
 const bigMode = computed(() => (query.big ?? 'false') === 'true');
 watch(() => bigMode.value, () => {
   const size = bigMode.value ? '32px' : '';
-  document.getElementsByTagName("html")[0].style["font-size"] = size;
+  document.getElementsByTagName("html")[0].style.fontSize = size;
 }, { immediate: true });
 </script>
 
