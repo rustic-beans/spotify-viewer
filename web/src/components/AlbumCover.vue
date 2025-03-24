@@ -40,7 +40,7 @@ const spotifyUrl = computed(() => {
     <img
       :src="albumUrl"
       alt="Album Cover"
-      class="w-24 h-24 rounded-sm shadow-2xl"
+      class="w-[8rem] h-[8rem] rounded-sm shadow-2xl"
     >
   </a>
 </template>
