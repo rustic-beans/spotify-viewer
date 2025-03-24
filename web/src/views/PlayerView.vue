@@ -25,7 +25,7 @@ const context = computed(() => playerState.value?.context);
 const query = useRoute().query;
 const bigMode = computed(() => (query.big ?? 'false') === 'true');
 watch(() => bigMode.value, () => {
-  const size = bigMode.value ? '32px' : '';
+  const size = bigMode.value ? '2vw' : '';
   document.getElementsByTagName("html")[0].style.fontSize = size;
 }, { immediate: true });
 </script>
