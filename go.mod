@@ -9,7 +9,7 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/jackc/pgx/v5 v5.7.2
+	github.com/jackc/pgx/v5 v5.7.3
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/spf13/viper v1.20.0
 	github.com/sqlc-dev/sqlc v1.28.0
