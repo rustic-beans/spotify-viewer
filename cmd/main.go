@@ -40,9 +40,11 @@ func main() {
 	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*models.PlayerState](config.Server.QueueSize)
 
 	dbClient := database.Connect(config)
-	if err := migrateDB(config); err != nil {
+
+	if err = migrateDB(config); err != nil {
 		utils.Logger.Fatal("failed migrating database", zap.Error(err))
 	}
+
 	databaseService := services.NewDatabase(dbClient)
 
 	token, err := getAuthToken(config, databaseService)

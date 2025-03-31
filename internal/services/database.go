@@ -215,7 +215,7 @@ func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArti
 
 func (d *Database) GetImages(ctx context.Context) ([]*models.Image, error) {
 	res, err := d.Queries.GetImages(ctx)
-	return wrapManyQueryError(res, err, fmt.Sprintf("error getting images from database"))
+	return wrapManyQueryError(res, err, "error getting images from database")
 }
 
 func (d *Database) GetImagesByURL(ctx context.Context, url []string) ([]*models.Image, error) {
@@ -245,7 +245,7 @@ func (d *Database) CreateImages(ctx context.Context, images []*database.CreateIm
 
 func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
 	res, err := d.Queries.GetTracks(ctx)
-	return wrapManyQueryError(res, err, fmt.Sprintf("error getting tracks from database"))
+	return wrapManyQueryError(res, err, "error getting tracks from database")
 }
 
 func (d *Database) GetTracksByID(ctx context.Context, id []string) ([]*models.Track, error) {
