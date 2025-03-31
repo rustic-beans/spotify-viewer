@@ -20,20 +20,14 @@ type IDatabase interface {
 	GetAlbums(ctx context.Context) ([]*models.Album, error)
 	GetAlbumsByID(ctx context.Context, id []string) ([]*models.Album, error)
 	GetAlbumArtists(ctx context.Context, id string) ([]*models.Artist, error)
-	GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error)
 	GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error)
-	CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs []string, artistIDs []string) (*models.Album, error)
+	CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, artistIDs []string) (*models.Album, error)
 
 	GetArtists(ctx context.Context) ([]*models.Artist, error)
 	GetArtistsByID(ctx context.Context, id []string) ([]*models.Artist, error)
 	GetArtistAlbums(ctx context.Context, id string) ([]*models.Album, error)
-	GetArtistImages(ctx context.Context, id string) ([]*models.Image, error)
 	GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error)
-	CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (*models.Artist, error)
-
-	GetImages(ctx context.Context) ([]*models.Image, error)
-	GetImagesByURL(ctx context.Context, url []string) ([]*models.Image, error)
-	CreateImages(ctx context.Context, image []*database.CreateImageParams) ([]*models.Image, error)
+	CreateArtist(ctx context.Context, artist *database.CreateArtistParams) (*models.Artist, error)
 
 	GetTracks(ctx context.Context) ([]*models.Track, error)
 	GetTracksByID(ctx context.Context, id []string) ([]*models.Track, error)
@@ -43,8 +37,7 @@ type IDatabase interface {
 
 	GetPlaylists(ctx context.Context) ([]*models.Playlist, error)
 	GetPlaylistsByID(ctx context.Context, id []string) ([]*models.Playlist, error)
-	GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error)
-	CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (*models.Playlist, error)
+	CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams) (*models.Playlist, error)
 
 	UpsertToken(ctx context.Context, token *database.UpsertTokenParams) (*models.Token, error)
 	GetToken(ctx context.Context) (*models.Token, error)
@@ -122,31 +115,16 @@ func (d *Database) GetAlbumArtists(ctx context.Context, id string) ([]*models.Ar
 	return wrapManyQueryError(res, err, fmt.Sprintf("error getting album artists by id %s from database", id))
 }
 
-func (d *Database) GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error) {
-	res, err := d.Queries.GetAlbumImages(ctx, id)
-	return wrapManyQueryError(res, err, fmt.Sprintf("error getting album images by id %s from database", id))
-}
-
 func (d *Database) GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error) {
 	res, err := d.Queries.GetAlbumTracks(ctx, id)
 	return wrapManyQueryError(res, err, fmt.Sprintf("error getting album tracks by id %s from database", id))
 }
 
-func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, imageURLs, artistIDs []string) (a *models.Album, err error) {
+func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumParams, artistIDs []string) (a *models.Album, err error) {
 	err = d.withTX(ctx, func(q *database.Queries) error {
 		a, err = q.CreateAlbum(ctx, album)
 		if err != nil {
 			return errors.Wrap(err, "failed to run create album query")
-		}
-
-		for _, url := range imageURLs {
-			err = q.SetAlbumImage(ctx, &database.SetAlbumImageParams{
-				AlbumID:  a.ID,
-				ImageUrl: url,
-			})
-			if err != nil {
-				return errors.Wrap(err, "failed to run set album image query")
-			}
 		}
 
 		for _, id := range artistIDs {
@@ -180,67 +158,22 @@ func (d *Database) GetArtistAlbums(ctx context.Context, id string) ([]*models.Al
 	return wrapManyQueryError(res, err, fmt.Sprintf("error getting artist albums by id %s from database", id))
 }
 
-func (d *Database) GetArtistImages(ctx context.Context, id string) ([]*models.Image, error) {
-	res, err := d.Queries.GetArtistImages(ctx, id)
-	return wrapManyQueryError(res, err, fmt.Sprintf("error getting artist images by id %s from database", id))
-}
-
 func (d *Database) GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error) {
 	res, err := d.Queries.GetArtistTracks(ctx, id)
 	return wrapManyQueryError(res, err, fmt.Sprintf("error getting artist tracks by id %s from database", id))
 }
 
-func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArtistParams, imageURLs []string) (a *models.Artist, err error) {
+func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArtistParams) (a *models.Artist, err error) {
 	err = d.withTX(ctx, func(q *database.Queries) error {
 		a, err = q.CreateArtist(ctx, artist)
 		if err != nil {
 			return errors.Wrap(err, "failed to run create artist query")
 		}
 
-		for _, url := range imageURLs {
-			err = q.SetArtistImage(ctx, &database.SetArtistImageParams{
-				ArtistID: a.ID,
-				ImageUrl: url,
-			})
-			if err != nil {
-				return errors.Wrap(err, "failed to run set artist image query")
-			}
-		}
-
 		return nil
 	})
 
 	return a, errors.Wrap(err, "error creating artist")
-}
-
-func (d *Database) GetImages(ctx context.Context) ([]*models.Image, error) {
-	res, err := d.Queries.GetImages(ctx)
-	return wrapManyQueryError(res, err, "error getting images from database")
-}
-
-func (d *Database) GetImagesByURL(ctx context.Context, url []string) ([]*models.Image, error) {
-	res, err := d.Queries.GetImagesByURL(ctx, url)
-	return wrapManyQueryError(res, err, fmt.Sprintf("error getting images by urls %v from database", url))
-}
-
-func (d *Database) CreateImages(ctx context.Context, images []*database.CreateImageParams) (imgs []*models.Image, err error) {
-	err = d.withTX(ctx, func(q *database.Queries) error {
-		imgs = make([]*models.Image, 0, len(images))
-
-		for _, img := range images {
-			//nolint:govet // err is shadowed
-			i, err := q.CreateImage(ctx, img)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to run create image query for url %s", img.Url))
-			}
-
-			imgs = append(imgs, i)
-		}
-
-		return nil
-	})
-
-	return imgs, errors.Wrap(err, "error creating images")
 }
 
 func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
@@ -296,26 +229,11 @@ func (d *Database) GetPlaylistsByID(ctx context.Context, id []string) ([]*models
 	return wrapManyQueryError(res, err, fmt.Sprintf("error getting playlists by ids %v from database", id))
 }
 
-func (d *Database) GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error) {
-	res, err := d.Queries.GetPlaylistImages(ctx, id)
-	return wrapManyQueryError(res, err, fmt.Sprintf("error getting playlist images by id %s from database", id))
-}
-
-func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams, imageURLs []string) (p *models.Playlist, err error) {
+func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.CreatePlaylistParams) (p *models.Playlist, err error) {
 	err = d.withTX(ctx, func(q *database.Queries) error {
 		p, err = q.CreatePlaylist(ctx, playlist)
 		if err != nil {
 			return errors.Wrap(err, "failed to run create playlist query")
-		}
-
-		for _, url := range imageURLs {
-			err = q.SetPlaylistImage(ctx, &database.SetPlaylistImageParams{
-				PlaylistID: p.ID,
-				ImageUrl:   url,
-			})
-			if err != nil {
-				return errors.Wrap(err, "failed to run set playlist image query")
-			}
 		}
 
 		return nil

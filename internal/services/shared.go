@@ -20,15 +20,6 @@ func NewShared(databaseService IDatabase, spotifyService *Spotify, client *spoti
 	return &Shared{databaseService: databaseService, spotifyService: spotifyService, client: client}
 }
 
-func getImageUrls(images []*models.Image) []string {
-	urls := make([]string, 0, len(images))
-	for _, image := range images {
-		urls = append(urls, image.Url)
-	}
-
-	return urls
-}
-
 func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Artist, error) {
 	artists, err := s.databaseService.GetArtistsByID(ctx, ids)
 	if err != nil {
@@ -55,17 +46,12 @@ func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Ar
 			continue
 		}
 
-		artistParams, imageParams, err := s.spotifyService.GetArtist(ctx, id)
+		artistParams, err := s.spotifyService.GetArtist(ctx, id)
 		if multierr.AppendInto(&errs, errors.Wrap(err, "failed getting artist")) {
 			continue
 		}
 
-		images, err := s.databaseService.CreateImages(ctx, imageParams)
-		if multierr.AppendInto(&errs, errors.Wrap(err, "failed creating images")) {
-			continue
-		}
-
-		artist, err := s.databaseService.CreateArtist(ctx, artistParams, getImageUrls(images))
+		artist, err := s.databaseService.CreateArtist(ctx, artistParams)
 		if multierr.AppendInto(&errs, errors.Wrap(err, "failed creating artist")) {
 			continue
 		}
@@ -102,13 +88,8 @@ func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Alb
 			continue
 		}
 
-		albumParams, imageParams, artistIDs, err := s.spotifyService.GetAlbum(ctx, id)
+		albumParams, artistIDs, err := s.spotifyService.GetAlbum(ctx, id)
 		if multierr.AppendInto(&errs, errors.Wrap(err, "failed getting album")) {
-			continue
-		}
-
-		images, err := s.databaseService.CreateImages(ctx, imageParams)
-		if multierr.AppendInto(&errs, errors.Wrap(err, "failed creating images")) {
 			continue
 		}
 
@@ -117,7 +98,7 @@ func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Alb
 			continue
 		}
 
-		album, err := s.databaseService.CreateAlbum(ctx, albumParams, getImageUrls(images), artistIDs)
+		album, err := s.databaseService.CreateAlbum(ctx, albumParams, artistIDs)
 		if multierr.AppendInto(&errs, errors.Wrap(err, "failed creating album")) {
 			continue
 		}
@@ -206,7 +187,7 @@ func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.P
 			continue
 		}
 
-		playlistParams, imageParams, err := s.spotifyService.GetPlaylist(ctx, id)
+		playlistParams, err := s.spotifyService.GetPlaylist(ctx, id)
 		if multierr.AppendInto(&errs, errors.Wrap(err, "failed getting playlist")) {
 			continue
 		}
@@ -215,12 +196,7 @@ func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.P
 			continue
 		}
 
-		images, err := s.databaseService.CreateImages(ctx, imageParams)
-		if multierr.AppendInto(&errs, errors.Wrap(err, "failed creating images")) {
-			continue
-		}
-
-		playlist, err := s.databaseService.CreatePlaylist(ctx, playlistParams, getImageUrls(images))
+		playlist, err := s.databaseService.CreatePlaylist(ctx, playlistParams)
 		if multierr.AppendInto(&errs, errors.Wrap(err, "failed creating playlist")) {
 			continue
 		}
@@ -293,26 +269,16 @@ func (s *Shared) getContext(ctx context.Context, contextModel *models.PlayerStat
 			return nil, errors.Wrap(err, "failed getting context artist")
 		}
 
-		images, err := s.GetArtistImages(ctx, contextModel.ID)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed getting context artist images")
-		}
-
 		contextModel.Name = artists[0].Name
-		contextModel.ImageURL = images[0].Url
+		contextModel.ImageURL = artists[0].ImageUrl
 	case "album":
 		albums, err := s.GetAlbumsByID(ctx, []string{contextModel.ID})
 		if err != nil {
 			return nil, errors.Wrap(err, "failed getting context album")
 		}
 
-		images, err := s.GetAlbumImages(ctx, contextModel.ID)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed getting context album images")
-		}
-
 		contextModel.Name = albums[0].Name
-		contextModel.ImageURL = images[0].Url
+		contextModel.ImageURL = albums[0].ImageUrl
 	case "playlist":
 		playlists, err := s.GetPlaylistByID(ctx, []string{contextModel.ID})
 		if err != nil {
@@ -322,13 +288,8 @@ func (s *Shared) getContext(ctx context.Context, contextModel *models.PlayerStat
 		if len(playlists) == 0 {
 			contextModel.Name = "Probably Radio"
 		} else {
-			images, err := s.GetPlaylistImages(ctx, contextModel.ID)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed getting context playlist images")
-			}
-
 			contextModel.Name = playlists[0].Name
-			contextModel.ImageURL = images[0].Url
+			contextModel.ImageURL = playlists[0].ImageUrl
 		}
 	}
 
@@ -343,10 +304,6 @@ func (s *Shared) GetAlbumArtists(ctx context.Context, id string) ([]*models.Arti
 	return s.databaseService.GetAlbumArtists(ctx, id)
 }
 
-func (s *Shared) GetAlbumImages(ctx context.Context, id string) ([]*models.Image, error) {
-	return s.databaseService.GetAlbumImages(ctx, id)
-}
-
 func (s *Shared) GetAlbumTracks(ctx context.Context, id string) ([]*models.Track, error) {
 	return s.databaseService.GetAlbumTracks(ctx, id)
 }
@@ -359,16 +316,8 @@ func (s *Shared) GetArtistAlbums(ctx context.Context, id string) ([]*models.Albu
 	return s.databaseService.GetArtistAlbums(ctx, id)
 }
 
-func (s *Shared) GetArtistImages(ctx context.Context, id string) ([]*models.Image, error) {
-	return s.databaseService.GetArtistImages(ctx, id)
-}
-
 func (s *Shared) GetArtistTracks(ctx context.Context, id string) ([]*models.Track, error) {
 	return s.databaseService.GetArtistTracks(ctx, id)
-}
-
-func (s *Shared) GetImages(ctx context.Context) ([]*models.Image, error) {
-	return s.databaseService.GetImages(ctx)
 }
 
 func (s *Shared) GetTracks(ctx context.Context) ([]*models.Track, error) {
@@ -385,8 +334,4 @@ func (s *Shared) GetTrackArtists(ctx context.Context, id string) ([]*models.Arti
 
 func (s *Shared) GetPlaylists(ctx context.Context) ([]*models.Playlist, error) {
 	return s.databaseService.GetPlaylists(ctx)
-}
-
-func (s *Shared) GetPlaylistImages(ctx context.Context, id string) ([]*models.Image, error) {
-	return s.databaseService.GetPlaylistImages(ctx, id)
 }

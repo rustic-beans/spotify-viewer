@@ -77,20 +77,20 @@ func (s *Spotify) getContext(contextURI string) *models.PlayerStateContext {
 	}
 }
 
-func (s *Spotify) GetArtist(ctx context.Context, id string) (artistParams *models.CreateArtistParams, imageParams []*models.CreateImageParams, err error) {
+func (s *Spotify) GetArtist(ctx context.Context, id string) (artistParams *models.CreateArtistParams, err error) {
 	artist, err := s.client.GetArtist(ctx, id)
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "failed getting artist with id %s", id)
+		return nil, errors.Wrapf(err, "failed getting artist with id %s", id)
 	}
 
-	return spotify.FullArtistToParams(artist), spotify.ImageSliceToModelParams(artist.Images), nil
+	return spotify.FullArtistToParams(artist), nil
 }
 
 // TODO: This is kind bad. Use a DTO or CreateInput from gqlgen instead
-func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.CreateAlbumParams, imageParams []*models.CreateImageParams, artistIDs []string, err error) {
+func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.CreateAlbumParams, artistIDs []string, err error) {
 	album, err := s.client.GetAlbum(ctx, id)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed getting album with id %s", id)
+		return nil, nil, errors.Wrapf(err, "failed getting album with id %s", id)
 	}
 
 	artistIDs = make([]string, 0, len(album.Artists))
@@ -98,7 +98,7 @@ func (s *Spotify) GetAlbum(ctx context.Context, id string) (albumParams *models.
 		artistIDs = append(artistIDs, string(artist.ID))
 	}
 
-	return spotify.FullAlbumToParams(album), spotify.ImageSliceToModelParams(album.Images), artistIDs, nil
+	return spotify.FullAlbumToParams(album), artistIDs, nil
 }
 
 func (s *Spotify) GetTrack(ctx context.Context, id string) (trackParams *models.CreateTrackParams, artistIDs []string, err error) {
@@ -115,16 +115,16 @@ func (s *Spotify) GetTrack(ctx context.Context, id string) (trackParams *models.
 	return spotify.FullTrackToParams(track), artistIDs, nil
 }
 
-func (s *Spotify) GetPlaylist(ctx context.Context, id string) (playlistParams *models.CreatePlaylistParams, imageParams []*models.CreateImageParams, err error) {
+func (s *Spotify) GetPlaylist(ctx context.Context, id string) (playlistParams *models.CreatePlaylistParams, err error) {
 	playlist, err := s.client.GetPlaylist(ctx, id)
 	if err != nil {
 		errCast, castSucceed := errors.UnwrapAll(err).(spotifyLib.Error)
 		if castSucceed && errCast.Status == 404 {
-			return nil, nil, nil
+			return nil, nil
 		}
 
-		return nil, nil, errors.Wrapf(err, "failed getting playlist with id %s", id)
+		return nil, errors.Wrapf(err, "failed getting playlist with id %s", id)
 	}
 
-	return spotify.FullPlaylistToParams(playlist), spotify.ImageSliceToModelParams(playlist.Images), nil
+	return spotify.FullPlaylistToParams(playlist), nil
 }
