@@ -14,12 +14,16 @@ const ImagesFragment = graphql(/* GraphQL */ `
 `);
 
 const props = defineProps<{
-  fragment: FragmentType<typeof ImagesFragment>,
+  fragment?: FragmentType<typeof ImagesFragment>,
 }>();
 
 const backgroundObj = computed(() => useFragment(ImagesFragment, props.fragment));
 
 const backgroundUrl = computed(() => {
+  if (backgroundObj.value === undefined) {
+    return Math.floor(Math.random() * 20) == 1 ? "/gmoderror.jpg" : undefined;
+  }
+
   const backgroundValue = backgroundObj.value.images;
   if (backgroundValue.length > 0) {
     return backgroundValue[0].url;
@@ -33,7 +37,8 @@ const backgroundUrl = computed(() => {
 <template>
   <img
     :src="backgroundUrl"
-    alt="Background image"
+    v-if="backgroundUrl"
+    alt="Background"
     class="w-24 h-24 rounded-sm shadow-2xl"
   >
 </template>
