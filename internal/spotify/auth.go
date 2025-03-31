@@ -129,5 +129,5 @@ func (sa *Auth) authenticate() error {
 
 	utils.Logger.Error("needs spotify login", zap.String("url", url))
 
-	return errors.New("needs spotify login")
+	return nil
 }
