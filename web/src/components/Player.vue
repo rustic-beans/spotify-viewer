@@ -30,9 +30,8 @@ const playerStateObj = computed(() => useFragment(PlayerStateFragment, props.fra
 const trackObj = computed(() => playerStateObj.value.track);
 const imagesObj = computed(() => trackObj.value?.album);
 const backgroundObj = computed(() => trackObj.value?.album);
-const gmodhaha = Math.floor(Math.random() * 5);
 //TODO: once we have the artist image from the spotify api call, we can use the obj dominant color for this
-var color = "#821271";
+const color = "#821271";
 
 const query = useRoute().query;
 const coverMode = computed(() => (query.cover ?? 'false') === 'true');
@@ -43,15 +42,8 @@ const coverMode = computed(() => (query.cover ?? 'false') === 'true');
     <Background
       :class="{ 'object-cover': coverMode, 'object-contain': !coverMode }"
       class=" h-full w-full "
-      v-if="backgroundObj"
       :fragment="backgroundObj"
     />
-    <div 
-      class="object-cover h-full w-full"
-      v-if="gmodhaha == 1"
-    >
-      <img src="/gmoderror.jpg" alt="Gmod Error" class="object-cover h-full w-full" />
-    </div>
     <div
       class="object-cover h-full w-full blur-sm "
       :style="{ 'background-color': color }"
