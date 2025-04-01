@@ -7,9 +7,7 @@ import { type FragmentType, useFragment, graphql } from '@/__generated__';
 (the same as the album cover) ) */
 const ImagesFragment = graphql(/* GraphQL */ `
   fragment BackgroundImages on Album {
-    images {
-      url
-    }
+    imageUrl
   }
 `);
 
@@ -24,12 +22,7 @@ const backgroundUrl = computed(() => {
     return Math.floor(Math.random() * 20) == 1 ? "/gmoderror.jpg" : undefined;
   }
 
-  const backgroundValue = backgroundObj.value.images;
-  if (backgroundValue.length > 0) {
-    return backgroundValue[0].url;
-  }
-
-  return undefined;
+  return backgroundObj.value.imageUrl;
 });
 
 </script>
