@@ -2,10 +2,10 @@ module github.com/rustic-beans/spotify-viewer
 
 go 1.23.0
 
-toolchain go1.23.2
+toolchain go1.24.1
 
 require (
-	github.com/99designs/gqlgen v0.17.68
+	github.com/99designs/gqlgen v0.17.70
 	github.com/cockroachdb/errors v1.11.3
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0
