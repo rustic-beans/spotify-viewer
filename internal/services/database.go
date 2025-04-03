@@ -99,7 +99,7 @@ func (d *Database) withTX(ctx context.Context, fn func(*database.Queries) error)
 		}
 	}()
 
-	qtx := d.Queries.WithTx(tx)
+	qtx := d.WithTx(tx)
 	if err = fn(qtx); err != nil {
 		return errors.Wrap(err, "error while executing transaction")
 	}
