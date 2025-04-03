@@ -76,6 +76,7 @@ func (m *SpotifyViewer) Build(ctx context.Context, source *dagger.Directory) (*d
 		WithExec([]string{"apt-get", "update"}).
 		WithExec([]string{"apt-get", "install", "-y", "ca-certificates"}).
 		WithExec([]string{"update-ca-certificates"}).
+		WithDirectory("/app/database/migrations", source.Directory("./database/migrations")).
 		WithFile("/app/backend", bin.File("backend")).
 		WithFile("/app/config.yaml", source.File("config-example.yaml")).
 		WithDirectory("/app/web/dist", web).
