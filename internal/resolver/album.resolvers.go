@@ -17,11 +17,6 @@ func (r *albumResolver) ExternalUrls(ctx context.Context, obj *database.Album) (
 	return obj.ExternalUrls, nil
 }
 
-// Images is the resolver for the images field.
-func (r *albumResolver) Images(ctx context.Context, obj *database.Album) ([]*database.Image, error) {
-	return r.SharedService.GetAlbumImages(ctx, obj.ID)
-}
-
 // Artists is the resolver for the artists field.
 func (r *albumResolver) Artists(ctx context.Context, obj *database.Album) ([]*database.Artist, error) {
 	return r.SharedService.GetAlbumArtists(ctx, obj.ID)

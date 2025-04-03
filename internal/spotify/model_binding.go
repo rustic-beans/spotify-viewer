@@ -5,25 +5,19 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
-func ImageToParams(i *spotify.Image) *models.CreateImageParams {
-	return &models.CreateImageParams{
-		Url:    i.URL,
-		Width:  int64(i.Width),
-		Height: int64(i.Height),
-	}
-}
-
-func ImageSliceToModelParams(images []spotify.Image) []*models.CreateImageParams {
+func getImageURL(images []spotify.Image) string {
 	if images == nil {
-		return nil
+		return ""
 	}
 
-	imgModels := make([]*models.CreateImageParams, len(images))
+	largestImage := images[0]
 	for i, image := range images {
-		imgModels[i] = ImageToParams(&image)
+		if image.Width > largestImage.Width {
+			largestImage = images[i]
+		}
 	}
 
-	return imgModels
+	return largestImage.URL
 }
 
 func FullArtistToParams(a *spotify.FullArtist) *models.CreateArtistParams {
@@ -34,6 +28,7 @@ func FullArtistToParams(a *spotify.FullArtist) *models.CreateArtistParams {
 		Name:         a.Name,
 		Uri:          string(a.URI),
 		Genres:       a.Genres,
+		ImageUrl:     getImageURL(a.Images),
 	}
 }
 
@@ -52,6 +47,7 @@ func FullAlbumToParams(a *spotify.FullAlbum) *models.CreateAlbumParams {
 		ReleaseDatePrecision: releaseDatePrecision,
 		Uri:                  string(a.URI),
 		Genres:               a.Genres,
+		ImageUrl:             getImageURL(a.Images),
 	}
 }
 
@@ -83,5 +79,6 @@ func FullPlaylistToParams(p *spotify.FullPlaylist) *models.CreatePlaylistParams 
 		Href:         p.Endpoint,
 		Name:         p.Name,
 		Uri:          string(p.URI),
+		ImageUrl:     getImageURL(p.Images),
 	}
 }

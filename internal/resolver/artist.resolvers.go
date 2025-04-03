@@ -27,11 +27,6 @@ func (r *artistResolver) Tracks(ctx context.Context, obj *database.Artist) ([]*d
 	return r.SharedService.GetArtistTracks(ctx, obj.ID)
 }
 
-// Images is the resolver for the images field.
-func (r *artistResolver) Images(ctx context.Context, obj *database.Artist) ([]*database.Image, error) {
-	return r.SharedService.GetArtistImages(ctx, obj.ID)
-}
-
 // Artists is the resolver for the artists field.
 func (r *queryResolver) Artists(ctx context.Context) ([]*database.Artist, error) {
 	return r.SharedService.GetArtists(ctx)
