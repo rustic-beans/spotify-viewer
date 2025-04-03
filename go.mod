@@ -2,7 +2,7 @@ module github.com/rustic-beans/spotify-viewer
 
 go 1.23.0
 
-toolchain go1.23.2
+toolchain go1.24.1
 
 require (
 	github.com/99designs/gqlgen v0.17.68
@@ -12,7 +12,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/labstack/echo/v4 v4.13.3
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.20.1
 	github.com/sqlc-dev/sqlc v1.28.0
 	github.com/vektah/gqlparser/v2 v2.5.23
 	github.com/zmb3/spotify/v2 v2.4.3
