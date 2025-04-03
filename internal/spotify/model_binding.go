@@ -5,7 +5,7 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
-func getImageUrl(images []spotify.Image) string {
+func getImageURL(images []spotify.Image) string {
 	if images == nil {
 		return ""
 	}
@@ -28,7 +28,7 @@ func FullArtistToParams(a *spotify.FullArtist) *models.CreateArtistParams {
 		Name:         a.Name,
 		Uri:          string(a.URI),
 		Genres:       a.Genres,
-		ImageUrl:     getImageUrl(a.Images),
+		ImageUrl:     getImageURL(a.Images),
 	}
 }
 
@@ -47,7 +47,7 @@ func FullAlbumToParams(a *spotify.FullAlbum) *models.CreateAlbumParams {
 		ReleaseDatePrecision: releaseDatePrecision,
 		Uri:                  string(a.URI),
 		Genres:               a.Genres,
-		ImageUrl:             getImageUrl(a.Images),
+		ImageUrl:             getImageURL(a.Images),
 	}
 }
 
@@ -79,6 +79,6 @@ func FullPlaylistToParams(p *spotify.FullPlaylist) *models.CreatePlaylistParams 
 		Href:         p.Endpoint,
 		Name:         p.Name,
 		Uri:          string(p.URI),
-		ImageUrl:     getImageUrl(p.Images),
+		ImageUrl:     getImageURL(p.Images),
 	}
 }
