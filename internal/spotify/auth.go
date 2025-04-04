@@ -84,7 +84,7 @@ func (sa *Auth) finalizeAuth() echo.HandlerFunc {
 			utils.Logger.Fatal("failed getting current user", zap.Error(errors.WithContextTags(err, ctx)))
 		}
 
-		return c.String(http.StatusOK, "You are logged in as: "+user.User.DisplayName)
+		return c.String(http.StatusOK, "You are logged in as: "+user.DisplayName)
 	}
 }
 
@@ -99,7 +99,7 @@ func (sa *Auth) waitForClient() (*spotifyLib.Client, error) {
 		return nil, errors.Wrap(err, "failed getting current user")
 	}
 
-	utils.Logger.Info("logged in as: " + user.User.DisplayName)
+	utils.Logger.Info("logged in as: " + user.DisplayName)
 
 	return client, nil
 }
@@ -129,5 +129,5 @@ func (sa *Auth) authenticate() error {
 
 	utils.Logger.Error("needs spotify login", zap.String("url", url))
 
-	return errors.New("needs spotify login")
+	return nil
 }

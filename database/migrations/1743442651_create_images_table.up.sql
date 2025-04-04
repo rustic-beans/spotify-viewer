@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS images (
+  url    TEXT NOT NULL PRIMARY KEY,
+  width  BIGINT NOT NULL,
+  height BIGINT NOT NULL
+);

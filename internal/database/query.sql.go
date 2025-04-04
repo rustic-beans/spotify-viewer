@@ -12,9 +12,9 @@ import (
 )
 
 const createAlbum = `-- name: CreateAlbum :one
-INSERT INTO albums (id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres
+INSERT INTO albums (id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres, image_url)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+RETURNING id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres, image_url
 `
 
 type CreateAlbumParams struct {
@@ -28,6 +28,7 @@ type CreateAlbumParams struct {
 	ReleaseDatePrecision AlbumReleaseDatePrecision `json:"release_date_precision"`
 	Uri                  string                    `json:"uri"`
 	Genres               []string                  `json:"genres"`
+	ImageUrl             string                    `json:"image_url"`
 }
 
 func (q *Queries) CreateAlbum(ctx context.Context, arg *CreateAlbumParams) (*Album, error) {
@@ -42,6 +43,7 @@ func (q *Queries) CreateAlbum(ctx context.Context, arg *CreateAlbumParams) (*Alb
 		arg.ReleaseDatePrecision,
 		arg.Uri,
 		arg.Genres,
+		arg.ImageUrl,
 	)
 	var i Album
 	err := row.Scan(
@@ -55,14 +57,15 @@ func (q *Queries) CreateAlbum(ctx context.Context, arg *CreateAlbumParams) (*Alb
 		&i.ReleaseDatePrecision,
 		&i.Uri,
 		&i.Genres,
+		&i.ImageUrl,
 	)
 	return &i, err
 }
 
 const createArtist = `-- name: CreateArtist :one
-INSERT INTO artists (id, external_urls, href, name, uri, genres)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, external_urls, href, name, uri, genres
+INSERT INTO artists (id, external_urls, href, name, uri, genres, image_url)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, external_urls, href, name, uri, genres, image_url
 `
 
 type CreateArtistParams struct {
@@ -72,6 +75,7 @@ type CreateArtistParams struct {
 	Name         string            `json:"name"`
 	Uri          string            `json:"uri"`
 	Genres       []string          `json:"genres"`
+	ImageUrl     string            `json:"image_url"`
 }
 
 func (q *Queries) CreateArtist(ctx context.Context, arg *CreateArtistParams) (*Artist, error) {
@@ -82,6 +86,7 @@ func (q *Queries) CreateArtist(ctx context.Context, arg *CreateArtistParams) (*A
 		arg.Name,
 		arg.Uri,
 		arg.Genres,
+		arg.ImageUrl,
 	)
 	var i Artist
 	err := row.Scan(
@@ -91,33 +96,15 @@ func (q *Queries) CreateArtist(ctx context.Context, arg *CreateArtistParams) (*A
 		&i.Name,
 		&i.Uri,
 		&i.Genres,
+		&i.ImageUrl,
 	)
 	return &i, err
 }
 
-const createImage = `-- name: CreateImage :one
-INSERT INTO images (url, width, height)
-VALUES ($1, $2, $3) ON CONFLICT DO NOTHING
-RETURNING url, width, height
-`
-
-type CreateImageParams struct {
-	Url    string `json:"url"`
-	Width  int64  `json:"width"`
-	Height int64  `json:"height"`
-}
-
-func (q *Queries) CreateImage(ctx context.Context, arg *CreateImageParams) (*Image, error) {
-	row := q.db.QueryRow(ctx, createImage, arg.Url, arg.Width, arg.Height)
-	var i Image
-	err := row.Scan(&i.Url, &i.Width, &i.Height)
-	return &i, err
-}
-
 const createPlaylist = `-- name: CreatePlaylist :one
-INSERT INTO playlists (id, external_urls, href, name, uri)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, external_urls, href, name, uri
+INSERT INTO playlists (id, external_urls, href, name, uri, image_url)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, external_urls, href, name, uri, image_url
 `
 
 type CreatePlaylistParams struct {
@@ -126,6 +113,7 @@ type CreatePlaylistParams struct {
 	Href         string            `json:"href"`
 	Name         string            `json:"name"`
 	Uri          string            `json:"uri"`
+	ImageUrl     string            `json:"image_url"`
 }
 
 func (q *Queries) CreatePlaylist(ctx context.Context, arg *CreatePlaylistParams) (*Playlist, error) {
@@ -135,6 +123,7 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg *CreatePlaylistParams)
 		arg.Href,
 		arg.Name,
 		arg.Uri,
+		arg.ImageUrl,
 	)
 	var i Playlist
 	err := row.Scan(
@@ -143,6 +132,7 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg *CreatePlaylistParams)
 		&i.Href,
 		&i.Name,
 		&i.Uri,
+		&i.ImageUrl,
 	)
 	return &i, err
 }
@@ -199,7 +189,7 @@ func (q *Queries) CreateTrack(ctx context.Context, arg *CreateTrackParams) (*Tra
 }
 
 const getAlbumArtists = `-- name: GetAlbumArtists :many
-SELECT artists.id, artists.external_urls, artists.href, artists.name, artists.uri, artists.genres
+SELECT artists.id, artists.external_urls, artists.href, artists.name, artists.uri, artists.genres, artists.image_url
 FROM artists
 JOIN artist_albums ON artists.id = artist_albums.artist_id
 WHERE artist_albums.album_id = $1
@@ -221,34 +211,8 @@ func (q *Queries) GetAlbumArtists(ctx context.Context, albumID string) ([]*Artis
 			&i.Name,
 			&i.Uri,
 			&i.Genres,
+			&i.ImageUrl,
 		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getAlbumImages = `-- name: GetAlbumImages :many
-SELECT images.url, images.width, images.height
-FROM images
-JOIN album_images ON images.url = album_images.image_url
-WHERE album_images.album_id = $1
-`
-
-func (q *Queries) GetAlbumImages(ctx context.Context, albumID string) ([]*Image, error) {
-	rows, err := q.db.Query(ctx, getAlbumImages, albumID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Image
-	for rows.Next() {
-		var i Image
-		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -298,7 +262,7 @@ func (q *Queries) GetAlbumTracks(ctx context.Context, albumID string) ([]*Track,
 }
 
 const getAlbums = `-- name: GetAlbums :many
-SELECT id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres
+SELECT id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres, image_url
 FROM albums
 ORDER BY name
 `
@@ -323,6 +287,7 @@ func (q *Queries) GetAlbums(ctx context.Context) ([]*Album, error) {
 			&i.ReleaseDatePrecision,
 			&i.Uri,
 			&i.Genres,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -335,7 +300,7 @@ func (q *Queries) GetAlbums(ctx context.Context) ([]*Album, error) {
 }
 
 const getAlbumsByID = `-- name: GetAlbumsByID :many
-SELECT id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres
+SELECT id, album_type, total_tracks, external_urls, href, name, release_date, release_date_precision, uri, genres, image_url
 FROM albums
 WHERE id = ANY($1::text[])
 `
@@ -360,6 +325,7 @@ func (q *Queries) GetAlbumsByID(ctx context.Context, dollar_1 []string) ([]*Albu
 			&i.ReleaseDatePrecision,
 			&i.Uri,
 			&i.Genres,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -372,7 +338,7 @@ func (q *Queries) GetAlbumsByID(ctx context.Context, dollar_1 []string) ([]*Albu
 }
 
 const getArtistAlbums = `-- name: GetArtistAlbums :many
-SELECT albums.id, albums.album_type, albums.total_tracks, albums.external_urls, albums.href, albums.name, albums.release_date, albums.release_date_precision, albums.uri, albums.genres
+SELECT albums.id, albums.album_type, albums.total_tracks, albums.external_urls, albums.href, albums.name, albums.release_date, albums.release_date_precision, albums.uri, albums.genres, albums.image_url
 FROM albums
 JOIN artist_albums ON albums.id = artist_albums.album_id
 WHERE artist_albums.artist_id = $1
@@ -398,34 +364,8 @@ func (q *Queries) GetArtistAlbums(ctx context.Context, artistID string) ([]*Albu
 			&i.ReleaseDatePrecision,
 			&i.Uri,
 			&i.Genres,
+			&i.ImageUrl,
 		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getArtistImages = `-- name: GetArtistImages :many
-SELECT images.url, images.width, images.height
-FROM images
-JOIN artist_images ON images.url = artist_images.image_url
-WHERE artist_images.artist_id = $1
-`
-
-func (q *Queries) GetArtistImages(ctx context.Context, artistID string) ([]*Image, error) {
-	rows, err := q.db.Query(ctx, getArtistImages, artistID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Image
-	for rows.Next() {
-		var i Image
-		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -476,7 +416,7 @@ func (q *Queries) GetArtistTracks(ctx context.Context, artistID string) ([]*Trac
 }
 
 const getArtists = `-- name: GetArtists :many
-SELECT id, external_urls, href, name, uri, genres
+SELECT id, external_urls, href, name, uri, genres, image_url
 FROM artists
 ORDER BY name
 `
@@ -497,6 +437,7 @@ func (q *Queries) GetArtists(ctx context.Context) ([]*Artist, error) {
 			&i.Name,
 			&i.Uri,
 			&i.Genres,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -509,7 +450,7 @@ func (q *Queries) GetArtists(ctx context.Context) ([]*Artist, error) {
 }
 
 const getArtistsByID = `-- name: GetArtistsByID :many
-SELECT id, external_urls, href, name, uri, genres
+SELECT id, external_urls, href, name, uri, genres, image_url
 FROM artists
 WHERE id = ANY($1::text[])
 `
@@ -530,6 +471,7 @@ func (q *Queries) GetArtistsByID(ctx context.Context, dollar_1 []string) ([]*Art
 			&i.Name,
 			&i.Uri,
 			&i.Genres,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -541,87 +483,8 @@ func (q *Queries) GetArtistsByID(ctx context.Context, dollar_1 []string) ([]*Art
 	return items, nil
 }
 
-const getImages = `-- name: GetImages :many
-SELECT url, width, height
-FROM images
-ORDER BY url
-`
-
-func (q *Queries) GetImages(ctx context.Context) ([]*Image, error) {
-	rows, err := q.db.Query(ctx, getImages)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Image
-	for rows.Next() {
-		var i Image
-		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getImagesByURL = `-- name: GetImagesByURL :many
-SELECT url, width, height
-FROM images
-WHERE url = ANY($1::text[])
-`
-
-func (q *Queries) GetImagesByURL(ctx context.Context, dollar_1 []string) ([]*Image, error) {
-	rows, err := q.db.Query(ctx, getImagesByURL, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Image
-	for rows.Next() {
-		var i Image
-		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPlaylistImages = `-- name: GetPlaylistImages :many
-SELECT images.url, images.width, images.height
-FROM images
-JOIN playlist_images ON images.url = playlist_images.image_url
-WHERE playlist_images.playlist_id = $1
-`
-
-func (q *Queries) GetPlaylistImages(ctx context.Context, playlistID string) ([]*Image, error) {
-	rows, err := q.db.Query(ctx, getPlaylistImages, playlistID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Image
-	for rows.Next() {
-		var i Image
-		if err := rows.Scan(&i.Url, &i.Width, &i.Height); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getPlaylists = `-- name: GetPlaylists :many
-SELECT id, external_urls, href, name, uri
+SELECT id, external_urls, href, name, uri, image_url
 FROM playlists
 ORDER BY name
 `
@@ -641,6 +504,7 @@ func (q *Queries) GetPlaylists(ctx context.Context) ([]*Playlist, error) {
 			&i.Href,
 			&i.Name,
 			&i.Uri,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -653,7 +517,7 @@ func (q *Queries) GetPlaylists(ctx context.Context) ([]*Playlist, error) {
 }
 
 const getPlaylistsByID = `-- name: GetPlaylistsByID :many
-SELECT id, external_urls, href, name, uri
+SELECT id, external_urls, href, name, uri, image_url
 FROM playlists
 WHERE id = ANY($1::text[])
 `
@@ -673,6 +537,7 @@ func (q *Queries) GetPlaylistsByID(ctx context.Context, dollar_1 []string) ([]*P
 			&i.Href,
 			&i.Name,
 			&i.Uri,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -704,7 +569,7 @@ func (q *Queries) GetToken(ctx context.Context) (*Token, error) {
 }
 
 const getTrackAlbum = `-- name: GetTrackAlbum :one
-SELECT albums.id, albums.album_type, albums.total_tracks, albums.external_urls, albums.href, albums.name, albums.release_date, albums.release_date_precision, albums.uri, albums.genres
+SELECT albums.id, albums.album_type, albums.total_tracks, albums.external_urls, albums.href, albums.name, albums.release_date, albums.release_date_precision, albums.uri, albums.genres, albums.image_url
 FROM albums
 JOIN tracks ON albums.id = tracks.album_id
 WHERE tracks.id = $1
@@ -724,12 +589,13 @@ func (q *Queries) GetTrackAlbum(ctx context.Context, id string) (*Album, error) 
 		&i.ReleaseDatePrecision,
 		&i.Uri,
 		&i.Genres,
+		&i.ImageUrl,
 	)
 	return &i, err
 }
 
 const getTrackArtists = `-- name: GetTrackArtists :many
-SELECT artists.id, artists.external_urls, artists.href, artists.name, artists.uri, artists.genres
+SELECT artists.id, artists.external_urls, artists.href, artists.name, artists.uri, artists.genres, artists.image_url
 FROM artists
 JOIN artist_tracks ON artists.id = artist_tracks.artist_id
 WHERE artist_tracks.track_id = $1
@@ -751,6 +617,7 @@ func (q *Queries) GetTrackArtists(ctx context.Context, trackID string) ([]*Artis
 			&i.Name,
 			&i.Uri,
 			&i.Genres,
+			&i.ImageUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -838,21 +705,6 @@ func (q *Queries) GetTracksByID(ctx context.Context, dollar_1 []string) ([]*Trac
 	return items, nil
 }
 
-const setAlbumImage = `-- name: SetAlbumImage :exec
-INSERT INTO album_images (album_id, image_url)
-VALUES ($1, $2)
-`
-
-type SetAlbumImageParams struct {
-	AlbumID  string `json:"album_id"`
-	ImageUrl string `json:"image_url"`
-}
-
-func (q *Queries) SetAlbumImage(ctx context.Context, arg *SetAlbumImageParams) error {
-	_, err := q.db.Exec(ctx, setAlbumImage, arg.AlbumID, arg.ImageUrl)
-	return err
-}
-
 const setArtistAlbum = `-- name: SetArtistAlbum :exec
 INSERT INTO artist_albums (artist_id, album_id)
 VALUES ($1, $2)
@@ -868,21 +720,6 @@ func (q *Queries) SetArtistAlbum(ctx context.Context, arg *SetArtistAlbumParams)
 	return err
 }
 
-const setArtistImage = `-- name: SetArtistImage :exec
-INSERT INTO artist_images (artist_id, image_url)
-VALUES ($1, $2)
-`
-
-type SetArtistImageParams struct {
-	ArtistID string `json:"artist_id"`
-	ImageUrl string `json:"image_url"`
-}
-
-func (q *Queries) SetArtistImage(ctx context.Context, arg *SetArtistImageParams) error {
-	_, err := q.db.Exec(ctx, setArtistImage, arg.ArtistID, arg.ImageUrl)
-	return err
-}
-
 const setArtistTrack = `-- name: SetArtistTrack :exec
 INSERT INTO artist_tracks (artist_id, track_id)
 VALUES ($1, $2)
@@ -895,21 +732,6 @@ type SetArtistTrackParams struct {
 
 func (q *Queries) SetArtistTrack(ctx context.Context, arg *SetArtistTrackParams) error {
 	_, err := q.db.Exec(ctx, setArtistTrack, arg.ArtistID, arg.TrackID)
-	return err
-}
-
-const setPlaylistImage = `-- name: SetPlaylistImage :exec
-INSERT INTO playlist_images (playlist_id, image_url)
-VALUES ($1, $2)
-`
-
-type SetPlaylistImageParams struct {
-	PlaylistID string `json:"playlist_id"`
-	ImageUrl   string `json:"image_url"`
-}
-
-func (q *Queries) SetPlaylistImage(ctx context.Context, arg *SetPlaylistImageParams) error {
-	_, err := q.db.Exec(ctx, setPlaylistImage, arg.PlaylistID, arg.ImageUrl)
 	return err
 }
 

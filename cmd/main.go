@@ -19,6 +19,10 @@ import (
 	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/graphql"
 	httpLib "github.com/rustic-beans/spotify-viewer/internal/infrastructure/http"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
@@ -36,6 +40,11 @@ func main() {
 	playerStateWebsocketHandler := httpLib.NewWebsocketHandler[*models.PlayerState](config.Server.QueueSize)
 
 	dbClient := database.Connect(config)
+
+	if err = migrateDB(config); err != nil {
+		utils.Logger.Fatal("failed migrating database", zap.Error(err))
+	}
+
 	databaseService := services.NewDatabase(dbClient)
 
 	token, err := getAuthToken(config, databaseService)
@@ -124,4 +133,32 @@ func healthCheck(e *echo.Echo, databaseService services.IDatabase) {
 
 		return c.String(http.StatusOK, "healthy")
 	})
+}
+
+func migrateDB(config *utils.Config) error {
+	utils.Logger.Info("migrating database")
+
+	m, err := migrate.New(
+		"file://database/migrations",
+		config.Database.Source,
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed creating driver")
+	}
+	defer m.Close()
+
+	version, dirty, err := m.Version()
+	if err != nil && !errors.Is(err, migrate.ErrNilVersion) {
+		return errors.Wrap(err, "failed getting version")
+	}
+
+	utils.Logger.Info("database version", zap.Uint("version", version), zap.Bool("dirty", dirty))
+
+	err = m.Up()
+	if err == nil || err.Error() == "no change" {
+		utils.Logger.Info("database migrated")
+		return nil
+	}
+
+	return errors.Wrap(err, "failed migrating")
 }

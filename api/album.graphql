@@ -36,8 +36,11 @@ type Album {
   A list of the genres the album is associated with
   """
   genres: [String!]!
+  """
+  A url to the albums's image
+  """
+  imageUrl: String!
 
-  images: [Image!]!
   artists: [Artist!]
   tracks: [Track!]
 }

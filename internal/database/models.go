@@ -108,11 +108,7 @@ type Album struct {
 	ReleaseDatePrecision AlbumReleaseDatePrecision `json:"release_date_precision"`
 	Uri                  string                    `json:"uri"`
 	Genres               []string                  `json:"genres"`
-}
-
-type AlbumImage struct {
-	AlbumID  string `json:"album_id"`
-	ImageUrl string `json:"image_url"`
+	ImageUrl             string                    `json:"image_url"`
 }
 
 type Artist struct {
@@ -122,6 +118,7 @@ type Artist struct {
 	Name         string            `json:"name"`
 	Uri          string            `json:"uri"`
 	Genres       []string          `json:"genres"`
+	ImageUrl     string            `json:"image_url"`
 }
 
 type ArtistAlbum struct {
@@ -129,20 +126,9 @@ type ArtistAlbum struct {
 	AlbumID  string `json:"album_id"`
 }
 
-type ArtistImage struct {
-	ArtistID string `json:"artist_id"`
-	ImageUrl string `json:"image_url"`
-}
-
 type ArtistTrack struct {
 	ArtistID string `json:"artist_id"`
 	TrackID  string `json:"track_id"`
-}
-
-type Image struct {
-	Url    string `json:"url"`
-	Width  int64  `json:"width"`
-	Height int64  `json:"height"`
 }
 
 type Playlist struct {
@@ -151,11 +137,7 @@ type Playlist struct {
 	Href         string            `json:"href"`
 	Name         string            `json:"name"`
 	Uri          string            `json:"uri"`
-}
-
-type PlaylistImage struct {
-	PlaylistID string `json:"playlist_id"`
-	ImageUrl   string `json:"image_url"`
+	ImageUrl     string            `json:"image_url"`
 }
 
 type Token struct {

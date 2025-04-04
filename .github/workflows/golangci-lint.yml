@@ -23,6 +23,6 @@ jobs:
           go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
           make generate
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.61
+          version: v2.0

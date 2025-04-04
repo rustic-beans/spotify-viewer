@@ -23,10 +23,13 @@ type Artist {
   A list of genres the artist is associated with.  For example, "Prog Rock" or "Post-Grunge".  If not yet classified, the slice is empty.
   """
   genres: [String!]!
+  """
+  A url to the artist's image
+  """
+  imageUrl: String!
 
   albums: [Album!]
   tracks: [Track!]
-  images: [Image!]!
 }
 
 extend type Query {

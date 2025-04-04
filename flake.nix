@@ -24,6 +24,7 @@
               go
               gotools
               golangci-lint
+              go-migrate
               sqlc
               nodejs_22
               hl.packages.${system}.default

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS artist_images;
+DROP TABLE IF EXISTS artists;
