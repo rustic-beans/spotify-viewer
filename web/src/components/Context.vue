@@ -19,6 +19,7 @@ const contextObj = computed(() => useFragment(ContextFragment, props.fragment));
 const contextName = computed(() => contextObj.value.name || 'Name could not be found');
 const contextType = computed(() => 'PLAYING FROM ' + contextObj.value.type.toUpperCase() || 'SOMEWHERE');
 const contextImage = computed(() => contextObj.value.imageUrl || '/placeholder.png');
+
 </script>
 
 <template>
@@ -34,7 +35,7 @@ const contextImage = computed(() => contextObj.value.imageUrl || '/placeholder.p
       class="hidden md:block w-12 h-12 rounded-sm object-cover"
     >
     <div class="md:pr-3 max-md:text-center md:text-left max-md:w-full max-md:pt-4 max-md:self-start">
-      <div class="text-xs uppercase tracking-wider opacity-75">{{ contextType }}</div>
+      <div class="text-[0.875em] uppercase tracking-wider opacity-75" >{{ contextType }}</div>
       <div class="font-medium">{{ contextName }}</div>
     </div>
   </a>

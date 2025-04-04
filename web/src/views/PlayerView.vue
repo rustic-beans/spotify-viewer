@@ -24,10 +24,13 @@ const context = computed(() => playerState.value?.context);
 
 const query = useRoute().query;
 const bigMode = computed(() => (query.big ?? 'false') === 'true');
+const componentSize = computed(() => bigMode.value ? 'font-size: 150%' : '');
 watch(() => bigMode.value, () => {
   const size = bigMode.value ? '2vw' : '';
   document.getElementsByTagName("html")[0].style.fontSize = size;
 }, { immediate: true });
+
+
 </script>
 
 <template>
@@ -35,8 +38,8 @@ watch(() => bigMode.value, () => {
     <div v-if="!loading && playerState && context">
       <Player :fragment="playerState" />
 
-      <UpNext />
-      <Context :fragment="context!" />
+      <UpNext :style="componentSize" />
+      <Context :style="componentSize" :fragment="context!" />
     </div>
     <div
       class="text-center"
