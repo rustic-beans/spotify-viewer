@@ -72,7 +72,7 @@ func (s *Spotify) GetArtist(ctx context.Context, id string) (*spotifyLib.FullArt
 		return s.Client.GetArtist(ctx, spotifyLib.ID(id))
 	})
 
-	return artist, errors.Wrap(err, "failed getting artist from spotify")
+	return artist, errors.Wrapf(err, "failed getting artist %s from spotify", id)
 }
 
 func (s *Spotify) GetAlbum(ctx context.Context, id string) (*spotifyLib.FullAlbum, error) {
@@ -80,7 +80,7 @@ func (s *Spotify) GetAlbum(ctx context.Context, id string) (*spotifyLib.FullAlbu
 		return s.Client.GetAlbum(ctx, spotifyLib.ID(id))
 	})
 
-	return album, errors.Wrap(err, "failed getting album from spotify")
+	return album, errors.Wrapf(err, "failed getting album %s from spotify", id)
 }
 
 func (s *Spotify) GetTrack(ctx context.Context, id string) (*spotifyLib.FullTrack, error) {
@@ -88,7 +88,7 @@ func (s *Spotify) GetTrack(ctx context.Context, id string) (*spotifyLib.FullTrac
 		return s.Client.GetTrack(ctx, spotifyLib.ID(id))
 	})
 
-	return track, errors.Wrap(err, "failed getting track from spotify")
+	return track, errors.Wrapf(err, "failed getting track %s from spotify", id)
 }
 
 func (s *Spotify) GetPlaylist(ctx context.Context, id string) (*spotifyLib.FullPlaylist, error) {
@@ -96,5 +96,5 @@ func (s *Spotify) GetPlaylist(ctx context.Context, id string) (*spotifyLib.FullP
 		return s.Client.GetPlaylist(ctx, spotifyLib.ID(id))
 	})
 
-	return playlist, errors.Wrap(err, "failed getting playlist from spotify")
+	return playlist, errors.Wrapf(err, "failed getting playlist %s from spotify", id)
 }

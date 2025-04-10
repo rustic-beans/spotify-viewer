@@ -133,14 +133,14 @@ func (d *Database) CreateAlbum(ctx context.Context, album *database.CreateAlbumP
 				ArtistID: id,
 			})
 			if err != nil {
-				return errors.Wrap(err, "failed to run set artist album query")
+				return errors.Wrapf(err, "failed to run set artist album query for artist %s", id)
 			}
 		}
 
 		return nil
 	})
 
-	return a, errors.Wrap(err, "error creating album")
+	return a, errors.Wrapf(err, "error creating album with id %s", album.ID)
 }
 
 func (d *Database) GetArtists(ctx context.Context) ([]*models.Artist, error) {
@@ -173,7 +173,7 @@ func (d *Database) CreateArtist(ctx context.Context, artist *database.CreateArti
 		return nil
 	})
 
-	return a, errors.Wrap(err, "error creating artist")
+	return a, errors.Wrapf(err, "error creating artist with id %s", artist.ID)
 }
 
 func (d *Database) GetTracks(ctx context.Context) ([]*models.Track, error) {
@@ -209,14 +209,14 @@ func (d *Database) CreateTrack(ctx context.Context, track *database.CreateTrackP
 				TrackID:  t.ID,
 			})
 			if err != nil {
-				return errors.Wrap(err, "failed to run set artist track query")
+				return errors.Wrapf(err, "failed to run set artist track query for artist %s", id)
 			}
 		}
 
 		return nil
 	})
 
-	return t, errors.Wrap(err, "error creating track")
+	return t, errors.Wrapf(err, "error creating track with id %s", track.ID)
 }
 
 func (d *Database) GetPlaylists(ctx context.Context) ([]*models.Playlist, error) {
@@ -239,7 +239,7 @@ func (d *Database) CreatePlaylist(ctx context.Context, playlist *database.Create
 		return nil
 	})
 
-	return p, errors.Wrap(err, "error creating playlist")
+	return p, errors.Wrapf(err, "error creating playlist with id %s", playlist.ID)
 }
 
 func (d *Database) UpsertToken(ctx context.Context, token *database.UpsertTokenParams) (*models.Token, error) {
