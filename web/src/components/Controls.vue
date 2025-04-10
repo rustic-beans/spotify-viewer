@@ -30,46 +30,47 @@ const isPlaying = computed(() => controlObj.value.isPlaying);
 
 <style scoped>
 @keyframes quiet {
-  25%{
-    transform: scaleY(.6);
+  25% {
+    transform: scaleY(0.6);
   }
-  50%{
-    transform: scaleY(.4);
+  50% {
+    transform: scaleY(0.4);
   }
-  75%{
-    transform: scaleY(.8);
+  75% {
+    transform: scaleY(0.8);
   }
 }
 
 @keyframes normal {
-  25%{
+  25% {
     transform: scaleY(1);
   }
-  50%{
-    transform: scaleY(.4);
+  50% {
+    transform: scaleY(0.4);
   }
-  75%{
-    transform: scaleY(.6);
+  75% {
+    transform: scaleY(0.6);
   }
 }
 
 @keyframes loud {
-  25%{
+  25% {
     transform: scaleY(1);
   }
-  50%{
-    transform: scaleY(.4);
+  50% {
+    transform: scaleY(0.4);
   }
-  75%{
+  75% {
     transform: scaleY(1.2);
   }
 }
 
-body{
+body {
   display: flex;
   justify-content: center;
   background: black;
-  margin: 0;padding: 0;
+  margin: 0;
+  padding: 0;
   align-items: center;
   height: 100vh;
 }
@@ -85,7 +86,7 @@ body{
 }
 
 .box {
-  transform: scaleY(.4);
+  transform: scaleY(0.4);
   height: 100%;
   width: var(--boxSize);
   background: #fff;
