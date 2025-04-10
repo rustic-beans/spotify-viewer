@@ -6,7 +6,7 @@ import (
 )
 
 func getImageURL(images []spotify.Image) string {
-	if images == nil {
+	if len(images) == 0 {
 		return ""
 	}
 
