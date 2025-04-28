@@ -20,7 +20,7 @@ jobs:
         # Pin at some point
         uses: rustic-beans/dagger-for-github@main
         with:
-          version: "0.15.3"
+          version: "0.18.2"
           verb: call
           args: build --source=.
           cache_config: "type=gha,mode=max,url=${{ env.ACTIONS_CACHE_URL }},token=${{ env.ACTIONS_RUNTIME_TOKEN }}"
