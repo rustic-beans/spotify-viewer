@@ -41,7 +41,7 @@ const trackLink = computed(() => {
       <h1 class="text-6xl font-bold text-white mb-2">{{ trackObj.name }}</h1>
     </a>
 
-    <p class="text-xl text-gray-400">
+    <p class="text-[2rem] text-gray-400">
       <template
         v-for="(artist, index) in artists"
         :key="artist.name!"
