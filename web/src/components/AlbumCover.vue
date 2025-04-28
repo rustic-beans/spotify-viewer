@@ -5,9 +5,7 @@ import { type FragmentType, useFragment, graphql } from '@/__generated__';
 const ImagesFragment = graphql(/* GraphQL */ `
   fragment AlbumImages on Album {
     externalUrls
-    images {
-      url
-    }
+    imageUrl
   }
 `);
 
@@ -18,12 +16,7 @@ const props = defineProps<{
 const imagesObj = computed(() => useFragment(ImagesFragment, props.fragment));
 
 const albumUrl = computed(() => {
-  const imageValue = imagesObj.value.images;
-  if (imageValue.length > 0) {
-    return imageValue[0].url;
-  }
-
-  return 'https://i.scdn.co/image/ab67616d0000b273a545e3a3e6cf0cc009297553';
+  return imagesObj.value.imageUrl;
 });
 
 const spotifyUrl = computed(() => {

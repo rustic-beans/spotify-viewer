@@ -31,7 +31,7 @@ const trackObj = computed(() => playerStateObj.value.track);
 const imagesObj = computed(() => trackObj.value?.album);
 const backgroundObj = computed(() => trackObj.value?.album);
 //TODO: once we have the artist image from the spotify api call, we can use the obj dominant color for this
-var color = "#821271";
+const color = "#821271";
 
 const query = useRoute().query;
 const coverMode = computed(() => (query.cover ?? 'false') === 'true');
@@ -42,7 +42,6 @@ const coverMode = computed(() => (query.cover ?? 'false') === 'true');
     <Background
       :class="{ 'object-cover': coverMode, 'object-contain': !coverMode }"
       class=" h-full w-full "
-      v-if="backgroundObj"
       :fragment="backgroundObj"
     />
     <div

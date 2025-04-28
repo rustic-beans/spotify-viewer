@@ -7,25 +7,22 @@ import { type FragmentType, useFragment, graphql } from '@/__generated__';
 (the same as the album cover) ) */
 const ImagesFragment = graphql(/* GraphQL */ `
   fragment BackgroundImages on Album {
-    images {
-      url
-    }
+    imageUrl
   }
 `);
 
 const props = defineProps<{
-  fragment: FragmentType<typeof ImagesFragment>,
+  fragment?: FragmentType<typeof ImagesFragment>,
 }>();
 
 const backgroundObj = computed(() => useFragment(ImagesFragment, props.fragment));
 
 const backgroundUrl = computed(() => {
-  const backgroundValue = backgroundObj.value.images;
-  if (backgroundValue.length > 0) {
-    return backgroundValue[0].url;
+  if (backgroundObj.value === undefined) {
+    return Math.floor(Math.random() * 20) == 1 ? "/gmoderror.jpg" : undefined;
   }
 
-  return undefined;
+  return backgroundObj.value.imageUrl;
 });
 
 </script>
@@ -33,7 +30,8 @@ const backgroundUrl = computed(() => {
 <template>
   <img
     :src="backgroundUrl"
-    alt="Background image"
+    v-if="backgroundUrl"
+    alt="Background"
     class="w-24 h-24 rounded-sm shadow-2xl"
   >
 </template>
