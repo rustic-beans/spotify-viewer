@@ -22,7 +22,7 @@ jobs:
       - name: Call Backend Publish Function
         uses: rustic-beans/dagger-for-github@main
         with:
-          version: "0.15.3"
+          version: "0.18.2"
           verb: call
           args: publish-github --source=. --registry=$DOCKER_REGISTRY --image-name=$DOCKER_IMAGE_NAME --username=$DOCKER_USERNAME --password=env:DOCKER_PASSWORD --tag=$DOCKER_TAG
           cache_config: "type=gha,mode=max,url=${{ env.ACTIONS_CACHE_URL }},token=${{ env.ACTIONS_RUNTIME_TOKEN }}"
