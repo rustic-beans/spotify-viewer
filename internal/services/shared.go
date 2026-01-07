@@ -30,19 +30,14 @@ func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Ar
 		return artists, nil
 	}
 
+	existingIDs := make(map[string]bool, len(artists))
+	for _, artist := range artists {
+		existingIDs[artist.ID] = true
+	}
+
 	var errs error
-
 	for _, id := range ids {
-		found := false
-
-		for _, artist := range artists {
-			if artist.ID == id {
-				found = true
-				break
-			}
-		}
-
-		if found {
+		if existingIDs[id] {
 			continue
 		}
 
@@ -72,19 +67,14 @@ func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Alb
 		return albums, nil
 	}
 
+	existingIDs := make(map[string]bool, len(albums))
+	for _, album := range albums {
+		existingIDs[album.ID] = true
+	}
+
 	var errs error
-
 	for _, id := range ids {
-		found := false
-
-		for _, album := range albums {
-			if album.ID == id {
-				found = true
-				break
-			}
-		}
-
-		if found {
+		if existingIDs[id] {
 			continue
 		}
 
@@ -119,19 +109,14 @@ func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Tra
 		return tracks, nil
 	}
 
+	existingIDs := make(map[string]bool, len(tracks))
+	for _, track := range tracks {
+		existingIDs[track.ID] = true
+	}
+
 	var errs error
-
 	for _, id := range ids {
-		found := false
-
-		for _, track := range tracks {
-			if track.ID == id {
-				found = true
-				break
-			}
-		}
-
-		if found {
+		if existingIDs[id] {
 			continue
 		}
 
@@ -171,19 +156,14 @@ func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.P
 		return playlists, nil
 	}
 
+	existingIDs := make(map[string]bool, len(playlists))
+	for _, playlist := range playlists {
+		existingIDs[playlist.ID] = true
+	}
+
 	var errs error
-
 	for _, id := range ids {
-		found := false
-
-		for _, playlist := range playlists {
-			if playlist.ID == id {
-				found = true
-				break
-			}
-		}
-
-		if found {
+		if existingIDs[id] {
 			continue
 		}
 
