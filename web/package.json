@@ -16,7 +16,7 @@
     "watch:dev": "vite"
   },
   "dependencies": {
-    "@apollo/client": "^3.13.4",
+    "@apollo/client": "^3.14.0",
     "@tailwindcss/vite": "^4.0.14",
     "@vue/apollo-composable": "^4.2.2",
     "@vue/typescript-plugin": "^2.2.8",
