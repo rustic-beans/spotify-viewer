@@ -19,7 +19,7 @@ func New() *zap.Logger {
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig:    encoderConfig,
 		InitialFields: map[string]interface{}{
-			"app": "calculation-backend",
+			"app": "spotify-viewer",
 			"pid": os.Getpid(),
 		},
 	}
