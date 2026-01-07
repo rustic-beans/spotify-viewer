@@ -59,7 +59,12 @@ func (w *Watcher) StartPlayerStateLoop(ctx context.Context) {
 
 				// This function requires data from the previous loop so it needs to be called before the update to the playerstate
 				// This is to check if the track has changed and if so add it to the db or if the track has been replayed
-				_ = w.checkUpdate(ctx, playerState)
+				updated := w.checkUpdate(ctx, playerState)
+				if updated {
+					// TODO: Add a row to the "plays" table when checkUpdate returns true
+					utils.Logger.Debug("Track update detected, should record play")
+				}
+
 				w.playerStateWebsocketHandler.Broadcast(playerState)
 				w.lastPlayerState = playerState
 			}
