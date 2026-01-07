@@ -14,6 +14,11 @@ import (
 	spotifyLib "github.com/zmb3/spotify/v2"
 )
 
+const (
+	playerStateCacheDuration = 9 * time.Second
+	contextURIParts          = 3
+)
+
 type Spotify struct {
 	client           *spotify.Spotify
 	playerStateCache *utils.SingleValueCache[*models.PlayerState]
@@ -48,8 +53,7 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 		IsPlaying:  playerState.Playing,
 	}
 
-	//nolint:mnd // Magic number is fine here
-	s.playerStateCache.SetWithExpiry(model, 9*time.Second)
+	s.playerStateCache.SetWithExpiry(model, playerStateCacheDuration)
 
 	if playerState.Item == nil {
 		return model, nil
@@ -66,8 +70,7 @@ func (s *Spotify) getContext(contextURI string) *models.PlayerStateContext {
 	}
 
 	splitContext := strings.Split(contextURI, ":")
-	//nolint:mnd // Magic number is fine here
-	if len(splitContext) != 3 {
+	if len(splitContext) != contextURIParts {
 		return &models.PlayerStateContext{}
 	}
 
