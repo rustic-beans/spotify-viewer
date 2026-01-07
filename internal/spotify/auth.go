@@ -2,6 +2,8 @@ package spotify
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 
@@ -22,6 +24,14 @@ type Auth struct {
 	tokenSaveFunc func(*oauth2.Token) error
 }
 
+func generateRandomState() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", errors.Wrap(err, "failed to generate random state")
+	}
+	return base64.URLEncoding.EncodeToString(b), nil
+}
+
 func newAuth(config *utils.Config, token *oauth2.Token, tokenSaveFunc func(*oauth2.Token) error) *Auth {
 	redirectURL := fmt.Sprintf("http://%s/callback", config.GetURL())
 
@@ -32,8 +42,13 @@ func newAuth(config *utils.Config, token *oauth2.Token, tokenSaveFunc func(*oaut
 		spotifyAuth.WithClientSecret(config.Spotify.ClientSecret),
 	)
 
+	state, err := generateRandomState()
+	if err != nil {
+		utils.Logger.Fatal("failed to generate OAuth state", zap.Error(err))
+	}
+
 	return &Auth{
-		state:         "state", // TODO: unique state string to identify the session, should be random
+		state:         state,
 		auth:          auth,
 		ch:            make(chan *spotifyLib.Client),
 		token:         token,
