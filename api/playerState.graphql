@@ -11,6 +11,7 @@ type PlayerState {
   progressMs: Int!
   isPlaying: Boolean!
   track: Track
+  nextTrack: Track
   context: PlayerStateContext!
 }
 

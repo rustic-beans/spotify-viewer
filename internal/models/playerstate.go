@@ -11,12 +11,14 @@ type PlayerStateContext struct {
 }
 
 type PlayerState struct {
-	Timestamp  int64               `json:"timestamp"`
-	ProgressMs int64               `json:"progressMs"`
-	IsPlaying  bool                `json:"isPlaying"`
-	TrackID    string              `json:"trackId"`
-	Track      *Track              `json:"track"`
-	Context    *PlayerStateContext `json:"context"`
+	Timestamp   int64               `json:"timestamp"`
+	ProgressMs  int64               `json:"progressMs"`
+	IsPlaying   bool                `json:"isPlaying"`
+	TrackID     string              `json:"trackId"`
+	Track       *Track              `json:"track"`
+	NextTrackID string              `json:"nextTrackId"`
+	NextTrack   *Track              `json:"nextTrack"`
+	Context     *PlayerStateContext `json:"context"`
 }
 
 type PlayerStateWebsocketHandler = http.WebsocketHandler[*PlayerState]

@@ -15,12 +15,16 @@ const { result, loading, error } = useSubscription(graphql(/* GraphQL */ `
       context {
         ...Context
       }
+      nextTrack {
+        ...UpNextTrack
+      }
     }
   }
 `));
 
 const playerState = computed(() => result?.value?.playerState);
 const context = computed(() => playerState.value?.context);
+const nextTrack = computed(() => playerState.value?.nextTrack);
 
 const query = useRoute().query;
 const bigMode = computed(() => (query.big ?? 'false') === 'true');
@@ -38,8 +42,8 @@ watch(() => bigMode.value, () => {
     <div v-if="!loading && playerState && context">
       <Player :fragment="playerState" />
 
-      <UpNext :style="componentSize" />
-      <Context :style="componentSize" :fragment="context!" />
+      <UpNext v-if="nextTrack" :fragment="nextTrack" />
+      <Context :fragment="context!" />
     </div>
     <div
       class="text-center"

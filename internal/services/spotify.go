@@ -61,6 +61,15 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*models.PlayerState, erro
 
 	model.TrackID = string(playerState.Item.ID)
 
+	// Get the queue to retrieve the next track
+	queue, err := s.client.GetQueue(ctx)
+	if err != nil {
+		utils.Logger.Warn("Failed getting queue", zap.Error(err))
+	} else if queue != nil && len(queue.Items) > 0 {
+		// The first item in the queue is the next track
+		model.NextTrackID = string(queue.Items[0].ID)
+	}
+
 	return model, nil
 }
 

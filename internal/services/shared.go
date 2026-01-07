@@ -8,6 +8,7 @@ import (
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
 	"github.com/rustic-beans/spotify-viewer/internal/utils"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 )
 
 type Shared struct {
@@ -251,6 +252,16 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 
 	playerState.Track = trackRes.track
 	playerState.Context = contextRes.context
+
+	// Get the next track if available
+	if playerState.NextTrackID != "" {
+		nextTracks, err := s.GetTracksByID(ctx, []string{playerState.NextTrackID})
+		if err != nil {
+			utils.Logger.Warn("Failed getting next track", zap.Error(err))
+		} else if len(nextTracks) > 0 {
+			playerState.NextTrack = nextTracks[0]
+		}
+	}
 
 	return playerState, nil
 }

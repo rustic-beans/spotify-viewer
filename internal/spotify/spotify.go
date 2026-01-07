@@ -98,3 +98,11 @@ func (s *Spotify) GetPlaylist(ctx context.Context, id string) (*spotifyLib.FullP
 
 	return playlist, errors.Wrapf(err, "failed getting playlist %s from spotify", id)
 }
+
+func (s *Spotify) GetQueue(ctx context.Context) (*spotifyLib.Queue, error) {
+	queue, err := callSpotify(s, func() (*spotifyLib.Queue, error) {
+		return s.Client.GetQueue(ctx)
+	})
+
+	return queue, errors.Wrap(err, "failed getting queue from spotify")
+}
