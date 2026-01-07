@@ -33,13 +33,24 @@ make generate
 ```
 Every time you change something in `ent/schema` you have to run this command again.
 
-Then run the backend with the following command:
+Then start the database with:
+```
+docker compose up -d
+```
+
+Finally run the backend with the following command:
 ```bash
 make start
 ```
 
+You can also install `gow` and the watch mode to automatically restart the server on code changes:
+```bash
+go install github.com/mitranim/gow@latest
+make watch
+```
+
 ### Frontend 
-### Development
+#### Development
 ```
 cd web
 npm i
@@ -47,7 +58,7 @@ npm run generate
 npm run dev
 ```
 
-### Build
+#### Build
 ```
 cd web
 npm i
