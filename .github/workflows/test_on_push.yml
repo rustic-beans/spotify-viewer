@@ -1,5 +1,5 @@
 name: test_on_push
-on: 
+on:
   pull_request:
     branches: [master]
 
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4  
+        uses: actions/checkout@v6
       - name: Expose GitHub Runtime
         uses: crazy-max/ghaction-github-runtime@v3
       - name: Env
@@ -28,4 +28,3 @@ jobs:
           # Maybe add this back if we want to see cool output
           # cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           #
-          

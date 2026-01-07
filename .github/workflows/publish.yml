@@ -1,5 +1,5 @@
 name: publish
-on: 
+on:
   push:
     branches: [master]
 
@@ -12,7 +12,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4  
+        uses: actions/checkout@v6
       - name: Expose GitHub Runtime
         uses: crazy-max/ghaction-github-runtime@v3
       - name: Env
