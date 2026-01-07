@@ -34,7 +34,7 @@ func (m *SpotifyViewer) BuildWeb(source *dagger.Directory) *dagger.Directory {
 func (m *SpotifyViewer) BuildGoEnv(source *dagger.Directory) *dagger.Container {
 	// create a Dagger cache volume for dependencies
 	goCache := dag.CacheVolume("go-modules")
-	return dag.Go(dagger.GoOpts{Version: "1.23"}).
+	return dag.Go(dagger.GoOpts{Version: "1.24"}).
 		WithSource(source).
 		WithModuleCache(goCache).
 		WithExec([]string{"make", "generate"}).

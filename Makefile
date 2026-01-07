@@ -14,3 +14,6 @@ setup:
 	docker-compose up -d
 	go mod tidy
 	$(MAKE) generate
+
+test:
+	go test ./...
