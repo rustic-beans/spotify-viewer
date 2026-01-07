@@ -8,7 +8,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/jackc/pgx/v5 v5.7.2
+	github.com/jackc/pgx/v5 v5.8.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/spf13/viper v1.20.0
 	github.com/sqlc-dev/sqlc v1.28.0
