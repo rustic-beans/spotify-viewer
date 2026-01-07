@@ -155,7 +155,7 @@ func migrateDB(config *utils.Config) error {
 	utils.Logger.Info("database version", zap.Uint("version", version), zap.Bool("dirty", dirty))
 
 	err = m.Up()
-	if err == nil || err.Error() == "no change" {
+	if err == nil || errors.Is(err, migrate.ErrNoChange) {
 		utils.Logger.Info("database migrated")
 		return nil
 	}
