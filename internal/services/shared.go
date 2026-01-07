@@ -201,38 +201,56 @@ func (s *Shared) GetPlayerState(ctx context.Context) (*models.PlayerState, error
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	//nolint:mnd // There can only be 2 channels
-	channel := make(chan error, 2)
+	type trackResult struct {
+		track *models.Track
+		err   error
+	}
+
+	type contextResult struct {
+		context *models.PlayerStateContext
+		err     error
+	}
+
+	trackChan := make(chan trackResult, 1)
+	contextChan := make(chan contextResult, 1)
 
 	go func(ctx context.Context) {
 		tracks, err := s.GetTracksByID(ctx, []string{playerState.TrackID})
 		if err != nil {
-			channel <- errors.Wrap(err, "failed getting playerstate track")
-
+			trackChan <- trackResult{err: errors.Wrap(err, "failed getting playerstate track")}
 			return
 		}
 
-		playerState.Track = tracks[0]
-		channel <- nil
+		if len(tracks) == 0 {
+			trackChan <- trackResult{err: errors.New("no tracks returned for playerstate track")}
+			return
+		}
+
+		trackChan <- trackResult{track: tracks[0]}
 	}(ctx)
 
 	go func() {
 		playerStateContext, err := s.getContext(ctx, playerState.Context)
 		if err != nil {
-			channel <- errors.Wrap(err, "failed getting playerstate context")
-
+			contextChan <- contextResult{err: errors.Wrap(err, "failed getting playerstate context")}
 			return
 		}
 
-		playerState.Context = playerStateContext
-		channel <- nil
+		contextChan <- contextResult{context: playerStateContext}
 	}()
 
-	for i := 0; i < 2; i++ {
-		if err := <-channel; err != nil {
-			return nil, errors.Wrap(err, "failed getting playerstate")
-		}
+	trackRes := <-trackChan
+	if trackRes.err != nil {
+		return nil, trackRes.err
 	}
+
+	contextRes := <-contextChan
+	if contextRes.err != nil {
+		return nil, contextRes.err
+	}
+
+	playerState.Track = trackRes.track
+	playerState.Context = contextRes.context
 
 	return playerState, nil
 }
