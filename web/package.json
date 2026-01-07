@@ -4,14 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "run-p watch:*",
     "build": "run-s generate type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "format": "prettier --write src/",
-    "generate": "graphql-codegen"
+    "generate": "graphql-codegen",
+    "watch:generate": "graphql-codegen --watch",
+    "watch:dev": "vite"
   },
   "dependencies": {
     "@apollo/client": "^3.13.4",
