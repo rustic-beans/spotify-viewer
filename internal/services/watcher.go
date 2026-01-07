@@ -59,7 +59,7 @@ func (w *Watcher) StartPlayerStateLoop(ctx context.Context) {
 
 				// This function requires data from the previous loop so it needs to be called before the update to the playerstate
 				// This is to check if the track has changed and if so add it to the db or if the track has been replayed
-				updated := w.checkUpdate(ctx, playerState)
+				updated := w.checkUpdate(playerState)
 				if updated {
 					// TODO: Add a row to the "plays" table when checkUpdate returns true
 					utils.Logger.Debug("Track update detected, should record play")
@@ -72,7 +72,7 @@ func (w *Watcher) StartPlayerStateLoop(ctx context.Context) {
 	}
 }
 
-func (w *Watcher) checkUpdate(_ context.Context, playerState *models.PlayerState) bool {
+func (w *Watcher) checkUpdate(playerState *models.PlayerState) bool {
 	lastPlayerState := w.lastPlayerState
 
 	// Check if the track has just changed and if so add it to the db
@@ -87,14 +87,13 @@ func (w *Watcher) checkUpdate(_ context.Context, playerState *models.PlayerState
 	playerProgress := playerState.ProgressMs
 
 	// Check for replays
-	// TODO: Maybe find a better way to do this but works for now
-	// Check if last track update duration is more than 50% done and if current progress is less than 05% into the track
+	// Check if last track update duration is more than 50% done and if current progress is less than 5% into the track
 	// This is what constitutes as a replay
-	if (trackDuration/lastTrackDurationPercentage)*100 < lastPlayerProgress &&
-		//nolint:mnd // Magic number is fine here
-		playerProgress <= (trackDuration/replayTrackDurationPercentage)*int64(100) {
-		utils.Logger.Info("Track has been replayed", zap.String("trackName", playerState.Track.Name))
+	trackHalfwayPoint := trackDuration * lastTrackDurationPercentage / 100
+	trackReplayThreshold := trackDuration * replayTrackDurationPercentage / 100
 
+	if lastPlayerProgress > trackHalfwayPoint && playerProgress <= trackReplayThreshold {
+		utils.Logger.Info("Track has been replayed", zap.String("trackName", playerState.Track.Name))
 		return true
 	}
 
