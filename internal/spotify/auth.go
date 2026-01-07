@@ -16,6 +16,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const (
+	stateRandomByteSize = 32
+)
+
 type Auth struct {
 	auth          *spotifyAuth.Authenticator
 	state         string
@@ -25,10 +29,11 @@ type Auth struct {
 }
 
 func generateRandomState() (string, error) {
-	b := make([]byte, 32)
+	b := make([]byte, stateRandomByteSize)
 	if _, err := rand.Read(b); err != nil {
 		return "", errors.Wrap(err, "failed to generate random state")
 	}
+
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
@@ -92,6 +97,7 @@ func (sa *Auth) finalizeAuth() echo.HandlerFunc {
 		if err != nil {
 			utils.Logger.Fatal("failed creating client", zap.Error(err))
 		}
+
 		sa.ch <- client
 
 		user, err := client.CurrentUser(context.Background())

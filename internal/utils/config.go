@@ -76,6 +76,7 @@ func readTokenFromFile(tokenLocation string) (*oauth2.Token, error) {
 	}
 
 	var token oauth2.Token
+
 	err = json.Unmarshal(data, &token)
 
 	return &token, errors.WithDetailf(errors.Wrap(err, "failed unmarshalling token"), "data: %s", string(data))

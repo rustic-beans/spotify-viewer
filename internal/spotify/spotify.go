@@ -57,7 +57,6 @@ func (s *Spotify) GetPlayerState(ctx context.Context) (*spotifyLib.PlayerState, 
 	playerState, err := callSpotify(s, func() (*spotifyLib.PlayerState, error) {
 		return s.Client.PlayerState(ctx)
 	})
-
 	if err != nil {
 		return nil, errors.Wrap(err, "failed getting player state from spotify")
 	}

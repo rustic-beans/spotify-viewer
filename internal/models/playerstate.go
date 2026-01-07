@@ -1,6 +1,6 @@
 package models
 
-import "github.com/rustic-beans/spotify-viewer/internal/infrastructure/http"
+import "github.com/rustic-beans/spotify-viewer/internal/infrastructure/httphandler"
 
 type PlayerStateContext struct {
 	ID       string `json:"id"`
@@ -21,4 +21,4 @@ type PlayerState struct {
 	Context     *PlayerStateContext `json:"context"`
 }
 
-type PlayerStateWebsocketHandler = http.WebsocketHandler[*PlayerState]
+type PlayerStateWebsocketHandler = httphandler.WebsocketHandler[*PlayerState]

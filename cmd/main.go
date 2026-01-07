@@ -17,7 +17,7 @@ import (
 
 	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/database"
 	"github.com/rustic-beans/spotify-viewer/internal/infrastructure/graphql"
-	httpLib "github.com/rustic-beans/spotify-viewer/internal/infrastructure/http"
+	httpLib "github.com/rustic-beans/spotify-viewer/internal/infrastructure/httphandler"
 	"github.com/rustic-beans/spotify-viewer/internal/spotify"
 
 	"github.com/golang-migrate/migrate/v4"

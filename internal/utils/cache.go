@@ -52,6 +52,7 @@ func (c *SingleValueCache[T]) Clear() {
 	c.hasValue = false
 
 	var zero T
+
 	c.value = zero
 }
 

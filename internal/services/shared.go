@@ -37,6 +37,7 @@ func (s *Shared) GetArtistsByID(ctx context.Context, ids []string) ([]*models.Ar
 	}
 
 	var errs error
+
 	for _, id := range ids {
 		if existingIDs[id] {
 			continue
@@ -74,6 +75,7 @@ func (s *Shared) GetAlbumsByID(ctx context.Context, ids []string) ([]*models.Alb
 	}
 
 	var errs error
+
 	for _, id := range ids {
 		if existingIDs[id] {
 			continue
@@ -116,6 +118,7 @@ func (s *Shared) GetTracksByID(ctx context.Context, ids []string) ([]*models.Tra
 	}
 
 	var errs error
+
 	for _, id := range ids {
 		if existingIDs[id] {
 			continue
@@ -163,6 +166,7 @@ func (s *Shared) GetPlaylistByID(ctx context.Context, ids []string) ([]*models.P
 	}
 
 	var errs error
+
 	for _, id := range ids {
 		if existingIDs[id] {
 			continue
