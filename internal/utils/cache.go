@@ -37,7 +37,7 @@ func (c *SingleValueCache[T]) Get() (T, bool) {
 
 	var zero T
 
-	if !c.HasValue() {
+	if !c.hasValue || time.Now().After(c.expiresAt) {
 		return zero, false
 	}
 
@@ -73,11 +73,9 @@ func (c *SingleValueCache[T]) TimeToExpiry() time.Duration {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	if !c.HasValue() {
+	if !c.hasValue || time.Now().After(c.expiresAt) {
 		return -1
 	}
 
-	remaining := time.Until(c.expiresAt)
-
-	return remaining
+	return time.Until(c.expiresAt)
 }
