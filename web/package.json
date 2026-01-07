@@ -37,7 +37,7 @@
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^24.9.1",
     "@parcel/watcher": "^2.5.1",
-    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@vue/eslint-config-prettier": "^10.1.0",
     "@vue/eslint-config-typescript": "^14.5.0",
     "@vue/tsconfig": "^0.7.0",
