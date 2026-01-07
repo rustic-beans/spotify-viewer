@@ -68,7 +68,7 @@ func wrapOneQueryError[T any](result *T, err error, wrapMessage string) (*T, err
 }
 
 func wrapManyQueryError[T any](result []*T, err error, wrapMessage string) ([]*T, error) {
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
 
