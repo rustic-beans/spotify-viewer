@@ -1,4 +1,4 @@
-package utils //nolint:revive // utils is an acceptable utility package name
+package utils
 
 import (
 	"os"

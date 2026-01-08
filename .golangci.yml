@@ -70,6 +70,10 @@ linters:
       - linters:
           - gocritic
         text: "sloppyReassign:"
+      - path: "internal/utils/*"
+        linters:
+          - revive
+        text: "var-naming: avoid meaningless package names"
     paths:
       - third_party$
       - builtin$
