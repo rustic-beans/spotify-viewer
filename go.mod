@@ -15,7 +15,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.31
 	github.com/zmb3/spotify/v2 v2.4.3
 	go.uber.org/multierr v1.11.0
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 	golang.org/x/oauth2 v0.34.0
 )
 
