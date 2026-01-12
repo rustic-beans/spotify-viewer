@@ -19,7 +19,7 @@
     "@apollo/client": "^3.14.0",
     "@tailwindcss/vite": "^4.0.14",
     "@vue/apollo-composable": "^4.2.2",
-    "@vue/typescript-plugin": "^2.2.8",
+    "@vue/typescript-plugin": "^3.2.2",
     "@vueuse/core": "^13.0.0",
     "graphql": "^16.9.0",
     "graphql-tag": "^2.12.6",
