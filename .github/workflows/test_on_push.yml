@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Expose GitHub Runtime
-        uses: crazy-max/ghaction-github-runtime@v3
+        uses: crazy-max/ghaction-github-runtime@v4
       - name: Env
         run: |
           # ACTIONS_RUNTIME_TOKEN, ACTIONS_RUNTIME_URL should be exposed
